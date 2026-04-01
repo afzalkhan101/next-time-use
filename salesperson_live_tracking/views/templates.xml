@@ -1,0 +1,397 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="live_tracking_page" name="Salesperson Live Tracking">
+        <html lang="en">
+            <head>
+                <meta charset="utf-8"/>
+                <meta name="viewport" content="width=device-width, initial-scale=1"/>
+                <title>Salesperson Live Tracking</title>
+                <style>
+                    :root {
+                        --bg: linear-gradient(135deg, #0f172a 0%, #134e4a 45%, #f59e0b 100%);
+                        --panel: rgba(255, 255, 255, 0.92);
+                        --text: #0f172a;
+                        --muted: #475569;
+                        --live: #15803d;
+                        --idle: #b45309;
+                        --offline: #64748b;
+                        --accent: #0f766e;
+                    }
+                    * { box-sizing: border-box; }
+                    body {
+                        margin: 0;
+                        font-family: "Segoe UI", "Helvetica Neue", sans-serif;
+                        min-height: 100vh;
+                        background: var(--bg);
+                        color: var(--text);
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        padding: 20px;
+                    }
+                    .tracker-shell {
+                        width: min(960px, 100%);
+                        display: grid;
+                        gap: 18px;
+                    }
+                    .hero {
+                        background: var(--panel);
+                        border-radius: 28px;
+                        padding: 24px;
+                        box-shadow: 0 24px 60px rgba(15, 23, 42, 0.24);
+                    }
+                    .hero-top {
+                        display: flex;
+                        align-items: flex-start;
+                        justify-content: space-between;
+                        gap: 12px;
+                    }
+                    .hero h1 {
+                        margin: 0 0 8px;
+                        font-size: clamp(1.8rem, 4vw, 3rem);
+                        line-height: 1;
+                    }
+                    .hero p {
+                        margin: 0;
+                        color: var(--muted);
+                        font-size: 1rem;
+                    }
+                    .status-pill {
+                        border: 0;
+                        border-radius: 999px;
+                        padding: 10px 16px;
+                        font-weight: 700;
+                        color: white;
+                        background: var(--offline);
+                        white-space: nowrap;
+                    }
+                    .status-pill.live { background: var(--live); }
+                    .status-pill.idle { background: var(--idle); }
+                    .status-pill.offline { background: var(--offline); }
+                    .card-grid {
+                        display: grid;
+                        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+                        gap: 14px;
+                        margin-top: 22px;
+                    }
+                    .info-card {
+                        background: rgba(248, 250, 252, 0.9);
+                        border-radius: 20px;
+                        padding: 16px;
+                    }
+                    .label {
+                        display: block;
+                        color: var(--muted);
+                        font-size: 0.82rem;
+                        margin-bottom: 6px;
+                        text-transform: uppercase;
+                        letter-spacing: 0.08em;
+                    }
+                    .value {
+                        font-size: 1.15rem;
+                        font-weight: 700;
+                    }
+                    .action-bar {
+                        display: flex;
+                        flex-wrap: wrap;
+                        gap: 12px;
+                        margin-top: 22px;
+                    }
+                    .btn {
+                        border: 0;
+                        border-radius: 16px;
+                        padding: 14px 18px;
+                        font-size: 1rem;
+                        font-weight: 700;
+                        cursor: pointer;
+                        text-decoration: none;
+                        transition: transform 0.15s ease, opacity 0.15s ease;
+                    }
+                    .btn:hover { transform: translateY(-1px); }
+                    .btn-primary {
+                        background: var(--accent);
+                        color: white;
+                    }
+                    .btn-secondary {
+                        background: #e2e8f0;
+                        color: var(--text);
+                    }
+                    .btn-ghost {
+                        background: transparent;
+                        color: var(--text);
+                        border: 1px solid rgba(15, 23, 42, 0.14);
+                    }
+                    .notice {
+                        background: rgba(15, 23, 42, 0.72);
+                        color: white;
+                        border-radius: 18px;
+                        padding: 16px 18px;
+                    }
+                    .notice strong {
+                        display: block;
+                        margin-bottom: 6px;
+                    }
+                    .notice a {
+                        color: #fde68a;
+                    }
+                    .pulse {
+                        display: inline-flex;
+                        align-items: center;
+                        gap: 8px;
+                    }
+                    .pulse::before {
+                        content: "";
+                        width: 12px;
+                        height: 12px;
+                        border-radius: 50%;
+                        background: currentColor;
+                        box-shadow: 0 0 0 rgba(21, 128, 61, 0.5);
+                        animation: pulse 1.6s infinite;
+                    }
+                    @keyframes pulse {
+                        0% { box-shadow: 0 0 0 0 rgba(21, 128, 61, 0.4); }
+                        70% { box-shadow: 0 0 0 14px rgba(21, 128, 61, 0); }
+                        100% { box-shadow: 0 0 0 0 rgba(21, 128, 61, 0); }
+                    }
+                    @media (max-width: 640px) {
+                        body { padding: 12px; }
+                        .hero { padding: 18px; border-radius: 22px; }
+                        .hero-top { flex-direction: column; }
+                        .btn { width: 100%; text-align: center; }
+                    }
+                </style>
+            </head>
+            <body>
+                <main class="tracker-shell">
+                    <section class="hero">
+                        <div class="hero-top">
+                            <div>
+                                <h1>Easy Sales Tracking</h1>
+                                <p>
+                                    <t t-out="user.name"/> can start live GPS sharing from this page.
+                                    Keep it open on mobile for continuous updates.
+                                </p>
+                            </div>
+                            <div id="statusPill" t-attf-class="status-pill #{tracker.tracking_status}">
+                                <span class="pulse" t-if="tracker.tracking_status == 'live'">
+                                    <t t-out="tracker.tracking_status_label"/>
+                                </span>
+                                <span t-else="">
+                                    <t t-out="tracker.tracking_status_label"/>
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="card-grid">
+                            <div class="info-card">
+                                <span class="label">Last Update</span>
+                                <div class="value" id="lastSeenValue">
+                                    <t t-out="tracker.last_seen or 'Not tracked yet'"/>
+                                </div>
+                            </div>
+                            <div class="info-card">
+                                <span class="label">Latitude</span>
+                                <div class="value" id="latitudeValue">
+                                    <t t-out="tracker.latitude or '--'"/>
+                                </div>
+                            </div>
+                            <div class="info-card">
+                                <span class="label">Longitude</span>
+                                <div class="value" id="longitudeValue">
+                                    <t t-out="tracker.longitude or '--'"/>
+                                </div>
+                            </div>
+                            <div class="info-card">
+                                <span class="label">Location</span>
+                                <div class="value" id="locationNameValue">
+                                    <t t-out="tracker.location_name or '--'"/>
+                                </div>
+                            </div>
+                            <div class="info-card">
+                                <span class="label">Accuracy</span>
+                                <div class="value" id="accuracyValue">
+                                    <t t-out="tracker.last_accuracy or '--'"/> m
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="action-bar">
+                            <button id="startButton" class="btn btn-primary" type="button">Start Live Tracking</button>
+                            <button id="stopButton" class="btn btn-secondary" type="button">Stop Tracking</button>
+                            <a class="btn btn-ghost" t-att-href="my_tracking_url">Open My Status</a>
+                            <a id="mapButton" class="btn btn-ghost" t-att-href="tracker.openstreetmap_url or '#'" target="_blank">Open in Map</a>
+                        </div>
+                    </section>
+
+                    <section class="notice" id="noticeBox">
+                        <strong>How it works</strong>
+                        Tap Start, allow GPS permission, and the browser will send regular location updates into Odoo.
+                        For best results on mobile, use HTTPS and keep this page active.
+                    </section>
+                </main>
+
+                <script>
+                    (() => {
+                        const state = {
+                            tracking: false,
+                            watchId: null,
+                            heartbeatId: null,
+                            lastPayload: null,
+                        };
+
+                        const els = {
+                            startButton: document.getElementById("startButton"),
+                            stopButton: document.getElementById("stopButton"),
+                            statusPill: document.getElementById("statusPill"),
+                            noticeBox: document.getElementById("noticeBox"),
+                            lastSeenValue: document.getElementById("lastSeenValue"),
+                            latitudeValue: document.getElementById("latitudeValue"),
+                            longitudeValue: document.getElementById("longitudeValue"),
+                            locationNameValue: document.getElementById("locationNameValue"),
+                            accuracyValue: document.getElementById("accuracyValue"),
+                            mapButton: document.getElementById("mapButton"),
+                        };
+
+                        const updateStatus = (status, label) => {
+                            els.statusPill.className = `status-pill ${status || "offline"}`;
+                            els.statusPill.textContent = label || "Offline";
+                        };
+
+                        const setNotice = (title, message) => {
+                            els.noticeBox.innerHTML = `<strong>${title}</strong>${message}`;
+                        };
+
+                        const sendJson = async (url, payload) => {
+                            const response = await fetch(url, {
+                                method: "POST",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify(payload || {}),
+                                credentials: "same-origin",
+                                keepalive: true,
+                            });
+                            if (!response.ok) {
+                                throw new Error(`Request failed with status ${response.status}`);
+                            }
+                            return response.json();
+                        };
+
+                        const refreshMetrics = (payload, response) => {
+                            const latitude = payload.latitude?.toFixed ? payload.latitude.toFixed(6) : payload.latitude;
+                            const longitude = payload.longitude?.toFixed ? payload.longitude.toFixed(6) : payload.longitude;
+                            const accuracy = payload.accuracy ? Number(payload.accuracy).toFixed(1) : "--";
+                            els.latitudeValue.textContent = latitude || "--";
+                            els.longitudeValue.textContent = longitude || "--";
+                            els.locationNameValue.textContent = response.location_name || "--";
+                            els.accuracyValue.textContent = `${accuracy} m`;
+                            els.lastSeenValue.textContent = response.last_seen || new Date().toLocaleString();
+                            if (response.map_url) {
+                                els.mapButton.href = response.map_url;
+                            }
+                            updateStatus(response.status, response.status_label);
+                            if (payload.accuracy &amp;&amp; Number(payload.accuracy) &gt; 200) {
+                                setNotice("Low GPS accuracy", "Current device accuracy is too low for an exact area name. Move outdoors or enable stronger GPS for a better location.");
+                            }
+                        };
+
+                        const sendLocation = async (position) => {
+                            const payload = {
+                                latitude: position.coords.latitude,
+                                longitude: position.coords.longitude,
+                                accuracy: position.coords.accuracy,
+                                speed: position.coords.speed,
+                                heading: position.coords.heading,
+                                source: "browser",
+                            };
+                            state.lastPayload = payload;
+                            const result = await sendJson("/salesperson_tracking/update", payload);
+                            refreshMetrics(payload, result);
+                            if (!payload.accuracy || Number(payload.accuracy) &lt;= 200) {
+                                setNotice("Tracking is active", "Odoo is receiving fresh GPS points from this device.");
+                            }
+                        };
+
+                        const startTracking = async () => {
+                            if (!navigator.geolocation) {
+                                setNotice("Location unavailable", "This browser does not support geolocation.");
+                                return;
+                            }
+                            if (state.tracking) {
+                                return;
+                            }
+                            state.tracking = true;
+                            updateStatus("live", "Starting...");
+                            const options = {
+                                enableHighAccuracy: true,
+                                maximumAge: 5000,
+                                timeout: 15000,
+                            };
+                            navigator.geolocation.getCurrentPosition(
+                                (position) => {
+                                    sendLocation(position).catch((error) => {
+                                        setNotice("Update failed", error.message);
+                                    });
+                                },
+                                (error) => {
+                                    state.tracking = false;
+                                    updateStatus("offline", "Offline");
+                                    setNotice("Permission needed", error.message || "GPS access was denied.");
+                                },
+                                options
+                            );
+                            state.watchId = navigator.geolocation.watchPosition(
+                                (position) => {
+                                    sendLocation(position).catch((error) => {
+                                        setNotice("Update failed", error.message);
+                                    });
+                                },
+                                (error) => {
+                                    setNotice("Tracking error", error.message || "Could not read device location.");
+                                },
+                                options
+                            );
+                            state.heartbeatId = window.setInterval(() => {
+                                if (!state.lastPayload) {
+                                    return;
+                                }
+                                sendJson("/salesperson_tracking/update", state.lastPayload)
+                                    .then((result) => refreshMetrics(state.lastPayload, result))
+                                    .catch((error) => setNotice("Heartbeat failed", error.message));
+                            }, 20000);
+                        };
+
+                        const stopTracking = async () => {
+                            state.tracking = false;
+                            if (state.watchId !== null) {
+                                navigator.geolocation.clearWatch(state.watchId);
+                                state.watchId = null;
+                            }
+                            if (state.heartbeatId !== null) {
+                                window.clearInterval(state.heartbeatId);
+                                state.heartbeatId = null;
+                            }
+                            try {
+                                await sendJson("/salesperson_tracking/stop", {});
+                            } catch (error) {
+                                setNotice("Stop warning", error.message);
+                            }
+                            updateStatus("offline", "Offline");
+                            setNotice("Tracking stopped", "This device is no longer sending live position updates.");
+                        };
+
+                        els.startButton.addEventListener("click", () => {
+                            startTracking().catch((error) => setNotice("Start failed", error.message));
+                        });
+                        els.stopButton.addEventListener("click", () => {
+                            stopTracking().catch((error) => setNotice("Stop failed", error.message));
+                        });
+                        window.addEventListener("pagehide", () => {
+                            if (state.tracking) {
+                                navigator.sendBeacon("/salesperson_tracking/stop", new Blob(["{}"], { type: "application/json" }));
+                            }
+                        });
+                    })();
+                </script>
+            </body>
+        </html>
+    </template>
+</odoo>

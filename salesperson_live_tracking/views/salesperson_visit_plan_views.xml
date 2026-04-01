@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_salesperson_visit_plan_tree" model="ir.ui.view">
+        <field name="name">salesperson.visit.plan.tree</field>
+        <field name="model">salesperson.visit.plan</field>
+        <field name="arch" type="xml">
+            <list string="Planned Visits" decoration-success="is_covered" default_order="visit_date desc, sequence">
+                <field name="visit_date"/>
+                <field name="user_id"/>
+                <field name="sale_team_id" optional="show"/>
+                <field name="location_name"/>
+                <field name="partner_id" optional="show"/>
+                <field name="radius_meters" optional="show"/>
+                <field name="is_covered"/>
+                <field name="stay_duration_display" string="Time Spent"/>
+                <field name="first_arrival" optional="show"/>
+                <field name="last_departure" optional="show"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_salesperson_visit_plan_form" model="ir.ui.view">
+        <field name="name">salesperson.visit.plan.form</field>
+        <field name="model">salesperson.visit.plan</field>
+        <field name="arch" type="xml">
+            <form string="Planned Visit">
+                <sheet>
+                    <group>
+                        <group string="Plan">
+                            <field name="user_id"/>
+                            <field name="visit_date"/>
+                            <field name="location_name"/>
+                            <field name="partner_id"/>
+                            <field name="radius_meters"/>
+                        </group>
+                        <group string="Coordinates">
+                            <field name="latitude" readonly="1"/>
+                            <field name="longitude" readonly="1"/>
+                            <field name="manual_latitude"/>
+                            <field name="manual_longitude"/>
+                            <field name="openstreetmap_url" widget="url" string="OpenStreetMap"/>
+                        </group>
+                    </group>
+                    <group string="Visit Result">
+                        <group>
+                            <field name="is_covered" readonly="1"/>
+                            <field name="stay_duration_display" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="first_arrival" readonly="1"/>
+                            <field name="last_departure" readonly="1"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_salesperson_visit_plan" model="ir.actions.act_window">
+        <field name="name">Planned Visits</field>
+        <field name="res_model">salesperson.visit.plan</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('visit_date', '=', context_today().strftime('%Y-%m-%d'))]</field>
+    </record>
+
+    <record id="action_salesperson_visit_plan_my" model="ir.actions.act_window">
+        <field name="name">My Planned Visits</field>
+        <field name="res_model">salesperson.visit.plan</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('user_id', '=', uid), ('visit_date', '=', context_today().strftime('%Y-%m-%d'))]</field>
+        <field name="context">{'default_user_id': uid}</field>
+    </record>
+
+    <menuitem id="menu_salesperson_visit_plan_my" name="My Planned Visits" parent="menu_salesperson_tracking_root" action="action_salesperson_visit_plan_my" sequence="8" groups="sales_team.group_sale_salesman"/>
+    <menuitem id="menu_salesperson_visit_plan" name="Planned Visits" parent="menu_salesperson_tracking_root" action="action_salesperson_visit_plan" sequence="9" groups="sales_team.group_sale_manager"/>
+</odoo>

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_users_view_form_salesperson_tracking" model="ir.ui.view">
+        <field name="name">res.users.form.salesperson.tracking</field>
+        <field name="model">res.users</field>
+        <field name="inherit_id" ref="base.view_users_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[hasclass('oe_button_box')]" position="inside">
+                <button
+                    name="action_open_live_tracking_page"
+                    type="object"
+                    class="oe_stat_button"
+                    icon="fa-location-arrow"
+                    groups="sales_team.group_sale_salesman"
+                >
+                    <div class="o_stat_info">
+                        <span class="o_stat_text">Live Tracking</span>
+                    </div>
+                </button>
+            </xpath>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_salesperson_tracker_tree" model="ir.ui.view">
+        <field name="name">salesperson.tracker.tree</field>
+        <field name="model">salesperson.tracker</field>
+        <field name="arch" type="xml">
+            <list string="Salesperson Tracking" decoration-success="tracking_status == 'live'" decoration-warning="tracking_status == 'idle'" decoration-muted="tracking_status == 'offline'">
+                <field name="user_id"/>
+                <field name="sale_team_id" optional="show"/>
+                <field name="tracking_status"/>
+                <field name="last_seen"/>
+                <field name="last_accuracy" optional="show"/>
+                <field name="last_speed" optional="hide"/>
+                <field name="today_plan_count" optional="show"/>
+                <field name="today_covered_count" optional="show"/>
+                <field name="location_name" optional="show"/>
+                <field name="latitude" optional="show"/>
+                <field name="longitude" optional="show"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_salesperson_tracker_kanban" model="ir.ui.view">
+        <field name="name">salesperson.tracker.kanban</field>
+        <field name="model">salesperson.tracker</field>
+        <field name="arch" type="xml">
+            <kanban class="o_kanban_mobile">
+                <field name="user_id"/>
+                <field name="sale_team_id"/>
+                <field name="tracking_status"/>
+                <field name="tracking_status_label"/>
+                <field name="last_seen"/>
+                <field name="last_accuracy"/>
+                <field name="latitude"/>
+                <field name="longitude"/>
+                <field name="history_count"/>
+                <field name="today_plan_count"/>
+                <field name="today_covered_count"/>
+                <field name="location_name"/>
+                <templates>
+                    <t t-name="card">
+                        <div class="o_kanban_card o_kanban_record">
+                            <div class="o_kanban_card_header d-flex justify-content-between align-items-start mb-2">
+                                <div>
+                                    <strong class="d-block fs-5">
+                                        <field name="user_id"/>
+                                    </strong>
+                                    <span class="text-muted">
+                                        <field name="sale_team_id"/>
+                                    </span>
+                                </div>
+                                <span t-attf-class="badge rounded-pill #{record.tracking_status.raw_value == 'live' and 'text-bg-success' or record.tracking_status.raw_value == 'idle' and 'text-bg-warning' or 'text-bg-secondary'}">
+                                    <field name="tracking_status_label"/>
+                                </span>
+                            </div>
+                            <div class="mb-2 text-body-secondary">
+                                <i class="fa fa-clock-o me-1"/>
+                                <field name="last_seen"/>
+                            </div>
+                            <div class="d-flex justify-content-between small mb-2">
+                                <span>Lat: <field name="latitude"/></span>
+                                <span>Lng: <field name="longitude"/></span>
+                            </div>
+                            <div class="small mb-3">
+                                <strong>Location:</strong> <field name="location_name"/>
+                            </div>
+                            <div class="d-flex justify-content-between small mb-3">
+                                <span>Accuracy: <field name="last_accuracy"/> m</span>
+                                <span>Logs: <field name="history_count"/></span>
+                            </div>
+                            <div class="d-flex justify-content-between small mb-3">
+                                <span>Planned: <field name="today_plan_count"/></span>
+                                <span>Covered: <field name="today_covered_count"/></span>
+                            </div>
+                            <footer class="d-flex gap-2">
+                                <button type="object" name="action_open_live_tracking_page" class="btn btn-primary btn-sm">Live Page</button>
+                                <button type="object" name="action_view_history" class="btn btn-outline-secondary btn-sm">History</button>
+                            </footer>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="view_salesperson_tracker_form" model="ir.ui.view">
+        <field name="name">salesperson.tracker.form</field>
+        <field name="model">salesperson.tracker</field>
+        <field name="arch" type="xml">
+            <form string="Salesperson Tracker">
+                <header>
+                    <button name="action_open_live_tracking_page" type="object" string="Open Live Page" class="btn-primary"/>
+                    <button name="action_view_history" type="object" string="Location History"/>
+                    <button name="action_view_today_visit_plan" type="object" string="Today's Visit Plan"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_history" type="object" class="oe_stat_button" icon="fa-map-marker">
+                            <div class="o_stat_info">
+                                <field name="history_count" class="o_stat_value"/>
+                                <span class="o_stat_text">Logs</span>
+                            </div>
+                        </button>
+                        <button name="action_view_today_visit_plan" type="object" class="oe_stat_button" icon="fa-list-ul">
+                            <div class="o_stat_info">
+                                <field name="today_covered_count" class="o_stat_value"/>
+                                <span class="o_stat_text">Covered Today</span>
+                            </div>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <h1><field name="user_id"/></h1>
+                        <div class="text-muted">
+                            <field name="sale_team_id"/>
+                        </div>
+                    </div>
+                    <group>
+                        <group string="Tracking">
+                            <field name="tracking_status" readonly="1"/>
+                            <field name="is_tracking"/>
+                            <field name="last_seen"/>
+                            <field name="last_accuracy"/>
+                            <field name="last_speed"/>
+                            <field name="last_heading"/>
+                        </group>
+                        <group string="Location">
+                            <field name="partner_id"/>
+                            <field name="location_name" readonly="1"/>
+                            <field name="latitude" readonly="1"/>
+                            <field name="longitude" readonly="1"/>
+                            <field name="openstreetmap_url" widget="url" string="OpenStreetMap"/>
+                        </group>
+                        <group string="Today's Visits">
+                            <field name="today_plan_count" readonly="1"/>
+                            <field name="today_covered_count" readonly="1"/>
+                            <field name="today_visit_summary" readonly="1" widget="text" nolabel="1" placeholder="No planned locations for today."/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_salesperson_tracker_map" model="ir.ui.view">
+        <field name="name">salesperson.tracker.map</field>
+        <field name="model">salesperson.tracker</field>
+        <field name="arch" type="xml">
+            <map string="Live Salespersons" res_partner="partner_id" hide_address="1">
+                <field name="user_id" string="Salesperson"/>
+                <field name="tracking_status_label" string="Status"/>
+                <field name="last_seen" string="Last Update"/>
+            </map>
+        </field>
+    </record>
+
+    <record id="view_salesperson_location_log_tree" model="ir.ui.view">
+        <field name="name">salesperson.location.log.tree</field>
+        <field name="model">salesperson.location.log</field>
+        <field name="arch" type="xml">
+            <list string="Location History">
+                <field name="tracked_at"/>
+                <field name="user_id"/>
+                <field name="location_name"/>
+                <field name="latitude"/>
+                <field name="longitude"/>
+                <field name="accuracy" optional="show"/>
+                <field name="speed" optional="show"/>
+                <field name="source" optional="show"/>
+                <field name="openstreetmap_url" widget="url" string="Map"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_salesperson_location_log_form" model="ir.ui.view">
+        <field name="name">salesperson.location.log.form</field>
+        <field name="model">salesperson.location.log</field>
+        <field name="arch" type="xml">
+            <form string="Location Log">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="tracker_id"/>
+                            <field name="user_id"/>
+                            <field name="tracked_at"/>
+                            <field name="source"/>
+                            <field name="location_name"/>
+                        </group>
+                        <group>
+                            <field name="latitude"/>
+                            <field name="longitude"/>
+                            <field name="accuracy"/>
+                            <field name="speed"/>
+                            <field name="heading"/>
+                            <field name="openstreetmap_url" widget="url" string="OpenStreetMap"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_salesperson_tracker_dashboard" model="ir.actions.act_window">
+        <field name="name">Salesperson Tracking</field>
+        <field name="res_model">salesperson.tracker</field>
+        <field name="view_mode">kanban,list,form,map</field>
+        <field name="domain">[('tracking_status', '=', 'live')]</field>
+    </record>
+
+    <record id="action_salesperson_tracker_my" model="ir.actions.act_window">
+        <field name="name">My Tracking</field>
+        <field name="res_model">salesperson.tracker</field>
+        <field name="view_mode">form,list,map</field>
+        <field name="domain">[('user_id', '=', uid)]</field>
+        <field name="context">{'default_user_id': uid}</field>
+    </record>
+
+    <record id="action_salesperson_location_history" model="ir.actions.act_window">
+        <field name="name">Location History</field>
+        <field name="res_model">salesperson.location.log</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('tracked_at', '&gt;=', context_today().strftime('%Y-%m-%d 00:00:00'))]</field>
+    </record>
+
+    <record id="action_salesperson_live_page" model="ir.actions.act_url">
+        <field name="name">Live Tracking</field>
+        <field name="url">/salesperson_tracking/live</field>
+        <field name="target">self</field>
+    </record>
+
+    <menuitem id="menu_salesperson_tracking_root" name="Salesperson Tracking" parent="sale.sale_menu_root" sequence="65" groups="sales_team.group_sale_salesman"/>
+    <menuitem id="menu_salesperson_tracking_live" name="Live Tracking" parent="menu_salesperson_tracking_root" action="action_salesperson_live_page" sequence="1" groups="sales_team.group_sale_salesman"/>
+    <menuitem id="menu_salesperson_tracking_my" name="My Status" parent="menu_salesperson_tracking_root" action="action_salesperson_tracker_my" sequence="2" groups="sales_team.group_sale_salesman"/>
+    <menuitem id="menu_salesperson_tracking_dashboard" name="Team Dashboard" parent="menu_salesperson_tracking_root" action="action_salesperson_tracker_dashboard" sequence="5" groups="sales_team.group_sale_manager"/>
+    <menuitem id="menu_salesperson_tracking_history" name="Location History" parent="menu_salesperson_tracking_root" action="action_salesperson_location_history" sequence="10" groups="sales_team.group_sale_manager"/>
+</odoo>

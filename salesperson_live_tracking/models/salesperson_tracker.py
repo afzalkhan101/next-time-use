@@ -13,7 +13,7 @@ class SalespersonTracker(models.Model):
     _description = "Salesperson Live Tracker"
     _order = "last_seen desc, id desc"
 
-    _MAX_PRECISE_LOCATION_ACCURACY_METERS =5
+    _MAX_PRECISE_LOCATION_ACCURACY_METERS = 200.0
 
     user_id = fields.Many2one("res.users", required=True, ondelete="cascade", index=True)
     partner_id = fields.Many2one("res.partner", related="user_id.partner_id", store=True, readonly=True)
@@ -78,7 +78,6 @@ class SalespersonTracker(models.Model):
             ("last_seen", "=", False),
             ("last_seen", "<", fields.Datetime.to_string(now - timedelta(minutes=30))),
         ]
-
         mapping = {
             "live": live_domain,
             "idle": idle_domain,
@@ -257,6 +256,14 @@ class SalespersonTracker(models.Model):
                 "default_tracker_id": self.id,
                 "search_default_today": 1,
             },
+        }
+
+    def action_open_moving_map_view(self):
+        self.ensure_one()
+        return {
+            "type": "ir.actions.act_url",
+            "url": "/salesperson_tracking/moving_map/%d" % self.id,
+            "target": "new",
         }
 
     def action_open_live_tracking_page(self):

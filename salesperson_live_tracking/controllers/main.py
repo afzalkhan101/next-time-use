@@ -64,6 +64,47 @@ class SalespersonTrackingController(http.Controller):
             "map_url": tracker.openstreetmap_url,
         })
 
+    @http.route("/salesperson_tracking/moving_map/<int:tracker_id>", type="http", auth="user", website=False)
+    def salesperson_tracking_moving_map(self, tracker_id, **kwargs):
+        user = self._check_salesperson_access()
+        tracker = request.env["salesperson.tracker"].sudo().browse(tracker_id)
+        if not tracker.exists():
+            return request.not_found()
+        today_start = fields.Datetime.to_string(
+            fields.Datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+        )
+        logs = request.env["salesperson.location.log"].sudo().search(
+            [
+                ("tracker_id", "=", tracker_id),
+                ("tracked_at", ">=", today_start),
+            ],
+            order="tracked_at asc",
+        )
+        location_points = [
+            {
+                "lat": log.latitude,
+                "lng": log.longitude,
+                "accuracy": log.accuracy,
+                "speed": log.speed,
+                "time": fields.Datetime.to_string(log.tracked_at),
+                "location_name": log.location_name or "",
+            }
+            for log in logs
+            if log.latitude and log.longitude
+        ]
+        import json as json_lib
+        import base64 as base64_lib
+        json_str = json_lib.dumps(location_points)
+        json_b64 = base64_lib.b64encode(json_str.encode("utf-8")).decode("ascii")
+        values = {
+            "tracker": tracker,
+            "user": user,
+            "location_points_b64": json_b64,
+            "total_logs": len(location_points),
+        }
+        return request.render("salesperson_live_tracking.moving_map_page", values)
+
+
     @http.route("/salesperson_tracking/stop", type="http", auth="user", methods=["POST"], csrf=False)
     def salesperson_tracking_stop(self, **kwargs):
         user = self._check_salesperson_access()

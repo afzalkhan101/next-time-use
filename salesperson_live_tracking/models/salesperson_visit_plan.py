@@ -1,9 +1,7 @@
 from collections import defaultdict
 from datetime import datetime, time, timedelta
 from math import asin, cos, radians, sin, sqrt
-
 import pytz
-
 from odoo import api, fields, models
 from odoo.exceptions import ValidationError
 
@@ -14,7 +12,6 @@ def _haversine_distance_meters(lat1, lon1, lat2, lon2):
     dlon = radians(lon2 - lon1)
     a = sin(dlat / 2.0) ** 2 + cos(radians(lat1)) * cos(radians(lat2)) * sin(dlon / 2.0) ** 2
     return 2.0 * radius * asin(sqrt(a))
-
 
 class SalespersonVisitPlan(models.Model):
     _name = "salesperson.visit.plan"
@@ -40,7 +37,7 @@ class SalespersonVisitPlan(models.Model):
     stay_duration_minutes = fields.Float(compute="_compute_visit_metrics", digits=(16, 2))
     stay_duration_display = fields.Char(compute="_compute_visit_metrics")
     openstreetmap_url = fields.Char(compute="_compute_map_url")
-
+    
     @api.onchange("partner_id")
     def _onchange_partner_id(self):
         for plan in self:

@@ -229,13 +229,13 @@
         <field name="url">/salesperson_tracking/live</field>
         <field name="target">self</field>
     </record>
-    
+
     <menuitem id="menu_salesperson_tracking_root"
             name="Salesperson Tracking"
             action="action_salesperson_tracker_dashboard"
-            sequence="10"/>
+            sequence="10" web_icon="salesperson_live_tracking,static/description/icon.png"/>
 
-    <!-- Sub Menus -->
+   
     <menuitem id="menu_salesperson_tracking_live"
             name="Live Tracking"
             parent="menu_salesperson_tracking_root"

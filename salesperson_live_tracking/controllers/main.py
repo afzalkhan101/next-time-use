@@ -1,5 +1,5 @@
 import json
-
+from datetime import datetime
 from odoo import fields, http, _
 from odoo.exceptions import AccessError, ValidationError
 from odoo.http import request
@@ -111,3 +111,16 @@ class SalespersonTrackingController(http.Controller):
         tracker = user.sudo()._ensure_salesperson_tracker()
         tracker.sudo().write({"is_tracking": False})
         return request.make_json_response({"ok": True, "status": tracker.tracking_status})
+    
+    @http.route('/salesperson_tracking/update_location', type='json', auth='user')
+    def update_location(self, latitude, longitude):
+        user = request.env.user
+        tracker = request.env['salesperson.tracker'].sudo().search([('user_id','=',user.id)], limit=1)
+        if tracker:
+            tracker.write({
+                'latitude': latitude,
+                'longitude': longitude,
+                'last_seen': datetime.now(),
+                'tracking_status': 'live',
+            })
+        return {'status': 'ok'}

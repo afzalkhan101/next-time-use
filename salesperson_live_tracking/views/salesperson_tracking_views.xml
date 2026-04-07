@@ -76,7 +76,7 @@
                                 <button type="object" name="action_open_live_tracking_page" class="btn btn-primary btn-sm">Live Page</button>
                                 <button type="object" name="action_view_history" class="btn btn-outline-secondary btn-sm">History</button>
                                 <button type="object" name="action_open_moving_map_view" class="btn btn-outline-primary btn-sm">
-                                    <i class="fa fa-map-marker me-1"/>Moving Map View
+                                   Moving Map View
                                 </button>
                             </footer>
                         </div>

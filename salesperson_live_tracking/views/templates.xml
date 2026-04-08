@@ -231,11 +231,7 @@
             </head>
             <body>
                 <main class="shell">
-
-                    <!-- ── Main card ── -->
                     <div class="card">
-
-                        <!-- Header -->
                         <div class="header-row">
                             <div>
                                 <p class="page-title">Live GPS Tracking</p>

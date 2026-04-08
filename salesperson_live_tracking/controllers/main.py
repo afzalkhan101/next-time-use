@@ -3,7 +3,8 @@ from datetime import datetime
 from odoo import fields, http, _
 from odoo.exceptions import AccessError, ValidationError
 from odoo.http import request
-
+import json as json_lib
+import base64 as base64_lib
 
 class SalespersonTrackingController(http.Controller):
     def _check_salesperson_access(self):
@@ -66,8 +67,10 @@ class SalespersonTrackingController(http.Controller):
 
     @http.route("/salesperson_tracking/moving_map/<int:tracker_id>", type="http", auth="user", website=False)
     def salesperson_tracking_moving_map(self, tracker_id, **kwargs):
+   
         user = self._check_salesperson_access()
         tracker = request.env["salesperson.tracker"].sudo().browse(tracker_id)
+        print("tracker:", tracker)
         if not tracker.exists():
             return request.not_found()
         today_start = fields.Datetime.to_string(
@@ -92,8 +95,7 @@ class SalespersonTrackingController(http.Controller):
             for log in logs
             if log.latitude and log.longitude
         ]
-        import json as json_lib
-        import base64 as base64_lib
+        
         json_str = json_lib.dumps(location_points)
         json_b64 = base64_lib.b64encode(json_str.encode("utf-8")).decode("ascii")
         values = {

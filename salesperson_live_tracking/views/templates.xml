@@ -291,6 +291,11 @@
                                     <t t-else="">—</t>
                                 </div>
                             </div>
+
+                            <div class="metric-card">
+                                <div class="metric-label">Taking Time</div>
+                                <div class="metric-value" id="takingTimeValue">—</div>
+                            </div>
                         </div>
 
                         <!-- Actions -->
@@ -343,7 +348,9 @@
                             tracking:    false,
                             watchId:     null,
                             heartbeatId: null,
+                            timerId:     null,
                             lastPayload: null,
+                            trackingStart: null,
                         };
 
                         /* ── DOM refs ── */
@@ -360,6 +367,7 @@
                             longitudeValue:    $('longitudeValue'),
                             locationNameValue: $('locationNameValue'),
                             accuracyValue:     $('accuracyValue'),
+                            takingTimeValue:   $('takingTimeValue'),
                             mapButton:         $('mapButton'),
                         };
 
@@ -375,6 +383,23 @@
                             // type: '' | 'success' | 'warning' | 'danger'
                             el.noticeBox.className = `notice${type ? ' notice-' + type : ''}`;
                             el.noticeBox.innerHTML = `<strong>${title}</strong>${message}`;
+                        };
+
+                        const formatDuration = (ms) => {
+                            const totalSec = Math.floor(ms / 1000);
+                            const h = Math.floor(totalSec / 3600);
+                            const m = Math.floor((totalSec % 3600) / 60);
+                            const s = totalSec % 60;
+                            const pad = (n) => String(n).padStart(2, '0');
+                            return h > 0
+                                ? `${pad(h)}:${pad(m)}:${pad(s)}`
+                                : `${pad(m)}:${pad(s)}`;
+                        };
+
+                        const tickTimer = () => {
+                            if (!state.trackingStart) return;
+                            const elapsed = Date.now() - state.trackingStart;
+                            el.takingTimeValue.textContent = formatDuration(elapsed);
                         };
 
                         const postJson = async (url, payload) => {
@@ -440,6 +465,10 @@
                             el.startButton.disabled = true;
                             updateStatus('live', 'Starting…');
 
+                            state.trackingStart = Date.now();
+                            el.takingTimeValue.textContent = '00:00';
+                            state.timerId = setInterval(tickTimer, 1000);
+
                             const opts = { enableHighAccuracy: true, maximumAge: 5000, timeout: 15000 };
 
                             navigator.geolocation.getCurrentPosition(
@@ -447,6 +476,9 @@
                                 (err) => {
                                     state.tracking = false;
                                     el.startButton.disabled = false;
+                                    if (state.timerId !== null) { clearInterval(state.timerId); state.timerId = null; }
+                                    state.trackingStart = null;
+                                    el.takingTimeValue.textContent = '—';
                                     updateStatus('offline', 'Offline');
                                     setNotice('danger', 'Permission needed',
                                         ' ' + (err.message || 'GPS access was denied.'));
@@ -478,6 +510,12 @@
                                 clearInterval(state.heartbeatId);
                                 state.heartbeatId = null;
                             }
+                            if (state.timerId !== null) {
+                                clearInterval(state.timerId);
+                                state.timerId = null;
+                            }
+                            state.trackingStart = null;
+                            el.takingTimeValue.textContent = '—';
                             el.startButton.disabled = false;
                             try {
                                 await postJson('/salesperson_tracking/stop', {});
@@ -517,7 +555,7 @@
                 <title>Moving Map — <t t-out="tracker.user_id.name"/></title>
                 <link rel="stylesheet"
                       href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.css"/>
-                <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.js"/>
+                <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.js"></script>
                 <style>
                     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 

@@ -1,361 +1,472 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+
+    <!-- ══════════════════════════════════════════════════════════
+         TEMPLATE 1: Salesperson Live Tracking Page
+         Route: /salesperson_tracking/my  (or your existing route)
+    ══════════════════════════════════════════════════════════ -->
     <template id="live_tracking_page" name="Salesperson Live Tracking">
         <html lang="en">
             <head>
                 <meta charset="utf-8"/>
                 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-                <title>Salesperson Live Tracking</title>
+                <title>Live Tracking — <t t-out="user.name"/></title>
                 <style>
-                     :root {
-                        --bg: linear-gradient(135deg,#0f172a,#1e293b,#0f766e,#22c55e);
-                        --glass: rgba(255,255,255,0.65);
-                        --text:#0f172a;
-                        --muted:#64748b;
-                        --live:#22c55e;
-                        --idle:#f59e0b;
-                        --offline:#64748b;
+                    /* ── Reset ── */
+                    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+                    /* ── Tokens ── */
+                    :root {
+                        --radius-sm:  6px;
+                        --radius-md:  10px;
+                        --radius-lg:  14px;
+                        --radius-xl:  20px;
+                        --shadow-card: 0 1px 4px rgba(0,0,0,.08), 0 0 0 .5px rgba(0,0,0,.06);
+                        --shadow-btn:  0 1px 3px rgba(0,0,0,.12);
+
+                        /* Palette */
+                        --green-50:  #eaf3de;
+                        --green-100: #c0dd97;
+                        --green-600: #3b6d11;
+                        --green-700: #27500a;
+                        --amber-50:  #faeeda;
+                        --amber-400: #ef9f27;
+                        --amber-700: #854f0b;
+                        --gray-50:   #f8f9fa;
+                        --gray-100:  #f1f3f5;
+                        --gray-200:  #e9ecef;
+                        --gray-400:  #868e96;
+                        --gray-600:  #495057;
+                        --gray-900:  #212529;
+                        --purple:    #4a1942;
+                        --red-50:    #fcebeb;
+                        --red-600:   #a32d2d;
+                        --red-border:#f09595;
+
+                        /* Semantic */
+                        --bg:        #f4f6f8;
+                        --surface:   #ffffff;
+                        --border:    rgba(0,0,0,.08);
+                        --text:      #1a1d23;
+                        --muted:     #6b7280;
+                        --faint:     #9ca3af;
                     }
 
-                    *{box-sizing:border-box;margin:0;padding:0;}
-
-                    body{
-                        font-family:"Inter",sans-serif;
-                        min-height:100vh;
-                        background:var(--bg);
-                        display:flex;
-                        align-items:center;
-                        justify-content:center;
-                        padding:20px;
+                    /* ── Base ── */
+                    body {
+                        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+                        background: var(--bg);
+                        color: var(--text);
+                        min-height: 100vh;
+                        padding: 24px 16px;
+                        line-height: 1.5;
+                        font-size: 14px;
                     }
 
-                    .tracker-shell{
-                        width:min(960px,100%);
-                        display:grid;
-                        gap:18px;
+                    /* ── Shell ── */
+                    .shell {
+                        max-width: 920px;
+                        margin: 0 auto;
+                        display: flex;
+                        flex-direction: column;
+                        gap: 16px;
                     }
 
-                    .hero{
-                        background:var(--glass);
-                        backdrop-filter:blur(18px);
-                        border-radius:26px;
-                        padding:26px;
-                        border:1px solid rgba(255,255,255,0.2);
-                        box-shadow:0 20px 60px rgba(0,0,0,0.25);
-                        animation:fadeUp .6s ease;
+                    /* ── Card ── */
+                    .card {
+                        background: var(--surface);
+                        border-radius: var(--radius-xl);
+                        border: .5px solid var(--border);
+                        box-shadow: var(--shadow-card);
+                        padding: 24px;
                     }
 
-                    @keyframes fadeUp{
-                        from{opacity:0;transform:translateY(20px);}
-                        to{opacity:1;transform:translateY(0);}
+                    /* ── Header row ── */
+                    .header-row {
+                        display: flex;
+                        align-items: flex-start;
+                        justify-content: space-between;
+                        gap: 16px;
+                        margin-bottom: 22px;
                     }
 
-                    .hero-top{
-                        display:flex;
-                        justify-content:space-between;
-                        gap:12px;
+                    .page-title {
+                        font-size: 20px;
+                        font-weight: 600;
+                        color: var(--text);
+                        margin-bottom: 4px;
                     }
 
-                    .hero h1{
-                        font-size:2.3rem;
-                        margin-bottom:6px;
+                    .page-sub { color: var(--muted); font-size: 13px; }
+
+                    /* ── Status badge ── */
+                    .status-badge {
+                        display: inline-flex;
+                        align-items: center;
+                        gap: 6px;
+                        padding: 6px 14px;
+                        border-radius: 999px;
+                        font-size: 12px;
+                        font-weight: 600;
+                        flex-shrink: 0;
+                        letter-spacing: .02em;
                     }
 
-                    .hero p{color:var(--muted);}
-
-                    /* STATUS */
-                    .status-pill{
-                        padding:10px 16px;
-                        border-radius:999px;
-                        font-weight:600;
-                        color:white;
-                        background:var(--offline);
-                        box-shadow:0 6px 18px rgba(0,0,0,0.2);
+                    .status-dot {
+                        width: 7px;
+                        height: 7px;
+                        border-radius: 50%;
+                        flex-shrink: 0;
                     }
 
-                    .status-pill.live{
-                        background:var(--live);
-                        box-shadow:0 0 16px rgba(34,197,94,0.7);
+                    .badge-live   { background: var(--green-50);  color: var(--green-600); border: .5px solid var(--green-100); }
+                    .badge-idle   { background: var(--amber-50);  color: var(--amber-700); border: .5px solid var(--amber-400); }
+                    .badge-offline{ background: var(--gray-100);  color: var(--gray-400);  border: .5px solid var(--gray-200);  }
+
+                    .dot-live    { background: var(--green-600); }
+                    .dot-idle    { background: var(--amber-400); }
+                    .dot-offline { background: var(--gray-400); }
+
+                    /* ── Metrics grid ── */
+                    .metrics-grid {
+                        display: grid;
+                        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+                        gap: 10px;
+                        margin-bottom: 22px;
                     }
 
-                    .status-pill.idle{background:var(--idle);}
-
-                    /* CARDS */
-                    .card-grid{
-                        margin-top:20px;
-                        display:grid;
-                        grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
-                        gap:14px;
+                    .metric-card {
+                        background: var(--gray-50);
+                        border: .5px solid var(--border);
+                        border-radius: var(--radius-md);
+                        padding: 12px 14px;
                     }
 
-                    .info-card{
-                        background:rgba(255,255,255,0.7);
-                        backdrop-filter:blur(10px);
-                        border-radius:16px;
-                        padding:16px;
-                        transition:.25s;
-                        border:1px solid rgba(255,255,255,0.2);
+                    .metric-label {
+                        font-size: 10px;
+                        text-transform: uppercase;
+                        letter-spacing: .06em;
+                        color: var(--faint);
+                        margin-bottom: 5px;
+                        font-weight: 500;
                     }
 
-                    .info-card:hover{
-                        transform:translateY(-4px) scale(1.02);
-                        box-shadow:0 12px 30px rgba(0,0,0,0.25);
+                    .metric-value {
+                        font-size: 14px;
+                        font-weight: 600;
+                        color: var(--text);
+                        white-space: nowrap;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
                     }
 
-                    .label{
-                        font-size:.75rem;
-                        text-transform:uppercase;
-                        color:var(--muted);
+                    /* ── Action bar ── */
+                    .action-bar {
+                        display: flex;
+                        flex-wrap: wrap;
+                        gap: 8px;
                     }
 
-                    .value{
-                        font-size:1.2rem;
-                        font-weight:700;
-                        margin-top:6px;
+                    .btn {
+                        display: inline-flex;
+                        align-items: center;
+                        gap: 7px;
+                        padding: 9px 18px;
+                        border-radius: var(--radius-md);
+                        font-size: 13px;
+                        font-weight: 500;
+                        cursor: pointer;
+                        border: .5px solid var(--border);
+                        background: var(--surface);
+                        color: var(--text);
+                        text-decoration: none;
+                        box-shadow: var(--shadow-btn);
+                        transition: background .15s, transform .1s, box-shadow .15s;
                     }
 
-                    /* BUTTONS */
-                    .action-bar{
-                        margin-top:20px;
-                        display:flex;
-                        flex-wrap:wrap;
-                        gap:10px;
+                    .btn:hover  { background: var(--gray-50); }
+                    .btn:active { transform: scale(.98); }
+
+                    .btn-primary {
+                        background: var(--green-600);
+                        color: #fff;
+                        border-color: var(--green-600);
+                        box-shadow: 0 2px 8px rgba(59,109,17,.3);
                     }
 
-                    .btn{
-                        padding:14px 18px;
-                        border-radius:14px;
-                        border:none;
-                        font-weight:600;
-                        cursor:pointer;
-                        transition:.2s;
-                        text-decoration:none;
+                    .btn-primary:hover { background: var(--green-700); }
+
+                    .btn-danger {
+                        background: var(--surface);
+                        color: var(--red-600);
+                        border-color: var(--red-border);
                     }
 
-                    .btn-primary{
-                        background:linear-gradient(135deg,#16a34a,#22c55e);
-                        color:white;
-                        box-shadow:0 8px 20px rgba(34,197,94,0.4);
+                    .btn-danger:hover { background: var(--red-50); }
+
+                    .btn svg { width: 14px; height: 14px; flex-shrink: 0; }
+
+                    /* ── Notice box ── */
+                    .notice {
+                        margin-top: 18px;
+                        padding: 13px 16px;
+                        border-radius: var(--radius-md);
+                        border: .5px solid #bfdbfe;
+                        background: #eff6ff;
+                        font-size: 13px;
+                        color: #1d4ed8;
                     }
 
-                    .btn-primary:hover{transform:translateY(-2px);}
+                    .notice strong { font-weight: 600; margin-right: 5px; }
 
-                    .btn-secondary{background:#e2e8f0;}
+                    .notice.notice-success  { background: var(--green-50);  border-color: var(--green-100); color: var(--green-600); }
+                    .notice.notice-warning  { background: var(--amber-50);  border-color: var(--amber-400); color: var(--amber-700); }
+                    .notice.notice-danger   { background: var(--red-50);    border-color: var(--red-border); color: var(--red-600); }
 
-                    .btn-ghost{
-                        background:rgba(255,255,255,0.5);
-                        backdrop-filter:blur(8px);
-                    }
+                    /* ── Divider ── */
+                    .divider { border: none; border-top: .5px solid var(--border); margin: 20px 0; }
 
-                    /* NOTICE */
-                    .notice{
-                        background:rgba(15,23,42,0.8);
-                        color:white;
-                        border-radius:16px;
-                        padding:16px;
-                    }
-
-                    @media(max-width:640px){
-                        .hero-top{flex-direction:column;}
-                        .btn{width:100%;}
+                    /* ── Responsive ── */
+                    @media (max-width: 520px) {
+                        .header-row  { flex-direction: column; }
+                        .action-bar .btn { flex: 1 1 calc(50% - 4px); justify-content: center; }
                     }
                 </style>
             </head>
             <body>
-                <main class="tracker-shell">
-                    <section class="hero">
-                        <div class="hero-top">
+                <main class="shell">
+
+                    <!-- ── Main card ── -->
+                    <div class="card">
+
+                        <!-- Header -->
+                        <div class="header-row">
                             <div>
-                                <h1>Easy Sales Tracking</h1>
-                                <p>
-                                    <t t-out="user.name"/> can start live GPS sharing from this page.
+                                <p class="page-title">Live GPS Tracking</p>
+                                <p class="page-sub">
+                                    <strong><t t-out="user.name"/></strong> — start live GPS sharing from this page.
                                     Keep it open on mobile for continuous updates.
                                 </p>
                             </div>
-                            <div id="statusPill" t-attf-class="status-pill #{tracker.tracking_status}">
-                                <span class="pulse" t-if="tracker.tracking_status == 'live'">
-                                    <t t-out="tracker.tracking_status_label"/>
-                                </span>
-                                <span t-else="">
+                            <div id="statusBadge"
+                                 t-attf-class="status-badge #{ 'badge-' + tracker.tracking_status }">
+                                <span id="statusDot"
+                                      t-attf-class="status-dot #{ 'dot-' + tracker.tracking_status }"/>
+                                <span id="statusLabel">
                                     <t t-out="tracker.tracking_status_label"/>
                                 </span>
                             </div>
                         </div>
 
-                        <div class="card-grid">
-                            <div class="info-card">
-                                <span class="label">Last Update</span>
-                                <div class="value" id="lastSeenValue">
+                        <!-- Metrics -->
+                        <div class="metrics-grid">
+                            <div class="metric-card">
+                                <div class="metric-label">Last update</div>
+                                <div class="metric-value" id="lastSeenValue">
                                     <t t-out="tracker.last_seen or 'Not tracked yet'"/>
                                 </div>
                             </div>
-                            <div class="info-card">
-                                <span class="label">Latitude</span>
-                                <div class="value" id="latitudeValue">
-                                    <t t-out="tracker.latitude or '--'"/>
+                            <div class="metric-card">
+                                <div class="metric-label">Latitude</div>
+                                <div class="metric-value" id="latitudeValue">
+                                    <t t-out="tracker.latitude or '—'"/>
                                 </div>
                             </div>
-                            <div class="info-card">
-                                <span class="label">Longitude</span>
-                                <div class="value" id="longitudeValue">
-                                    <t t-out="tracker.longitude or '--'"/>
+                            <div class="metric-card">
+                                <div class="metric-label">Longitude</div>
+                                <div class="metric-value" id="longitudeValue">
+                                    <t t-out="tracker.longitude or '—'"/>
                                 </div>
                             </div>
-                            <div class="info-card">
-                                <span class="label">Location</span>
-                                <div class="value" id="locationNameValue">
-                                    <t t-out="tracker.location_name or '--'"/>
+                            <div class="metric-card">
+                                <div class="metric-label">Location</div>
+                                <div class="metric-value" id="locationNameValue">
+                                    <t t-out="tracker.location_name or '—'"/>
                                 </div>
                             </div>
-                            <div class="info-card">
-                                <span class="label">Accuracy</span>
-                                <div class="value" id="accuracyValue">
-                                    <t t-out="tracker.last_accuracy or '--'"/> m
+                            <div class="metric-card">
+                                <div class="metric-label">Accuracy</div>
+                                <div class="metric-value" id="accuracyValue">
+                                    <t t-if="tracker.last_accuracy">
+                                        <t t-out="tracker.last_accuracy"/> m
+                                    </t>
+                                    <t t-else="">—</t>
                                 </div>
                             </div>
                         </div>
 
+                        <!-- Actions -->
                         <div class="action-bar">
-                            <button id="startButton" class="btn btn-primary" type="button">Start Live Tracking</button>
-                            <button id="stopButton" class="btn btn-secondary" type="button">Stop Tracking</button>
-                            <a class="btn btn-ghost" t-att-href="my_tracking_url">Open My Status</a>
-                            <a id="mapButton" class="btn btn-ghost" t-att-href="tracker.openstreetmap_url or '#'" target="_blank">Open in Map</a>
+                            <button id="startButton" class="btn btn-primary" type="button">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/>
+                                </svg>
+                                Start tracking
+                            </button>
+                            <button id="stopButton" class="btn btn-danger" type="button">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="10"/><rect x="9" y="9" width="6" height="6"/>
+                                </svg>
+                                Stop
+                            </button>
+                            <a class="btn" t-att-href="my_tracking_url">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+                                </svg>
+                                My status page
+                            </a>
+                            <a id="mapButton" class="btn"
+                               t-att-href="tracker.openstreetmap_url or '#'"
+                               target="_blank">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/>
+                                </svg>
+                                Open in map
+                            </a>
                         </div>
-                    </section>
 
-                    <section class="notice" id="noticeBox">
-                        <strong>How it works</strong>
-                        Tap Start, allow GPS permission, and the browser will send regular location updates into Odoo.
-                        For best results on mobile, use HTTPS and keep this page active.
-                    </section>
+                        <!-- Notice -->
+                        <div class="notice" id="noticeBox">
+                            <strong>How it works</strong>
+                            Tap Start, allow GPS permission, and the browser will send regular location
+                            updates into Odoo. For best results on mobile, use HTTPS and keep this page active.
+                        </div>
+
+                    </div><!-- /.card -->
+
                 </main>
 
                 <script>
                     (() => {
+                        'use strict';
+
+                        /* ── State ── */
                         const state = {
-                            tracking: false,
-                            watchId: null,
+                            tracking:    false,
+                            watchId:     null,
                             heartbeatId: null,
                             lastPayload: null,
                         };
 
-                        const els = {
-                            startButton: document.getElementById("startButton"),
-                            stopButton: document.getElementById("stopButton"),
-                            statusPill: document.getElementById("statusPill"),
-                            noticeBox: document.getElementById("noticeBox"),
-                            lastSeenValue: document.getElementById("lastSeenValue"),
-                            latitudeValue: document.getElementById("latitudeValue"),
-                            longitudeValue: document.getElementById("longitudeValue"),
-                            locationNameValue: document.getElementById("locationNameValue"),
-                            accuracyValue: document.getElementById("accuracyValue"),
-                            mapButton: document.getElementById("mapButton"),
+                        /* ── DOM refs ── */
+                        const $  = (id) => document.getElementById(id);
+                        const el = {
+                            startButton:       $('startButton'),
+                            stopButton:        $('stopButton'),
+                            statusBadge:       $('statusBadge'),
+                            statusDot:         $('statusDot'),
+                            statusLabel:       $('statusLabel'),
+                            noticeBox:         $('noticeBox'),
+                            lastSeenValue:     $('lastSeenValue'),
+                            latitudeValue:     $('latitudeValue'),
+                            longitudeValue:    $('longitudeValue'),
+                            locationNameValue: $('locationNameValue'),
+                            accuracyValue:     $('accuracyValue'),
+                            mapButton:         $('mapButton'),
                         };
 
+                        /* ── Helpers ── */
                         const updateStatus = (status, label) => {
-                            els.statusPill.className = `status-pill ${status || "offline"}`;
-                            els.statusPill.textContent = label || "Offline";
+                            const s = status || 'offline';
+                            el.statusBadge.className = `status-badge badge-${s}`;
+                            el.statusDot.className   = `status-dot dot-${s}`;
+                            el.statusLabel.textContent = label || 'Offline';
                         };
 
-                        const setNotice = (title, message) => {
-                            els.noticeBox.innerHTML = `<strong>${title}</strong>${message}`;
+                        const setNotice = (type, title, message) => {
+                            // type: '' | 'success' | 'warning' | 'danger'
+                            el.noticeBox.className = `notice${type ? ' notice-' + type : ''}`;
+                            el.noticeBox.innerHTML = `<strong>${title}</strong>${message}`;
                         };
 
-                        const sendJson = async (url, payload) => {
-                            const response = await fetch(url, {
-                                method: "POST",
-                                headers: { "Content-Type": "application/json" },
-                                body: JSON.stringify(payload || {}),
-                                credentials: "same-origin",
-                                keepalive: true,
+                        const postJson = async (url, payload) => {
+                            const res = await fetch(url, {
+                                method:      'POST',
+                                headers:     { 'Content-Type': 'application/json' },
+                                body:        JSON.stringify(payload || {}),
+                                credentials: 'same-origin',
+                                keepalive:   true,
                             });
-                            if (!response.ok) {
-                                throw new Error(`Request failed with status ${response.status}`);
-                            }
-                            return response.json();
+                            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                            return res.json();
                         };
 
-                        const refreshMetrics = (payload, response) => {
-                            const latitude = payload.latitude?.toFixed ? payload.latitude.toFixed(6) : payload.latitude;
-                            const longitude = payload.longitude?.toFixed ? payload.longitude.toFixed(6) : payload.longitude;
-                            const accuracy = payload.accuracy ? Number(payload.accuracy).toFixed(1) : "--";
-                            els.latitudeValue.textContent = latitude || "--";
-                            els.longitudeValue.textContent = longitude || "--";
-                            els.locationNameValue.textContent = response.location_name || "--";
-                            els.accuracyValue.textContent = `${accuracy} m`;
-                            els.lastSeenValue.textContent = response.last_seen || new Date().toLocaleString();
-                            if (response.map_url) {
-                                els.mapButton.href = response.map_url;
-                            }
-                            updateStatus(response.status, response.status_label);
-                            if (payload.accuracy &amp;&amp; Number(payload.accuracy) &gt; 200) {
-                                setNotice("Low GPS accuracy", "Current device accuracy is too low for an exact area name. Move outdoors or enable stronger GPS for a better location.");
+                        const refreshMetrics = (payload, resp) => {
+                            const lat = payload.latitude?.toFixed  ? payload.latitude.toFixed(6)  : payload.latitude;
+                            const lng = payload.longitude?.toFixed ? payload.longitude.toFixed(6) : payload.longitude;
+                            const acc = payload.accuracy ? Number(payload.accuracy).toFixed(1)    : '—';
+
+                            el.latitudeValue.textContent      = lat || '—';
+                            el.longitudeValue.textContent     = lng || '—';
+                            el.locationNameValue.textContent  = resp.location_name || '—';
+                            el.accuracyValue.textContent      = acc !== '—' ? `${acc} m` : '—';
+                            el.lastSeenValue.textContent      = resp.last_seen || new Date().toLocaleTimeString();
+
+                            if (resp.map_url) el.mapButton.href = resp.map_url;
+                            updateStatus(resp.status, resp.status_label);
+
+                            if (payload.accuracy &amp;&amp; Number(payload.accuracy) > 200) {
+                                setNotice('warning', 'Low GPS accuracy',
+                                    ' Move outdoors or enable high-accuracy mode for a precise location name.');
                             }
                         };
 
+                        /* ── Tracking logic ── */
                         const sendLocation = async (position) => {
                             const payload = {
-                                latitude: position.coords.latitude,
+                                latitude:  position.coords.latitude,
                                 longitude: position.coords.longitude,
-                                accuracy: position.coords.accuracy,
-                                speed: position.coords.speed,
-                                heading: position.coords.heading,
-                                source: "browser",
+                                accuracy:  position.coords.accuracy,
+                                speed:     position.coords.speed,
+                                heading:   position.coords.heading,
+                                source:    'browser',
                             };
                             state.lastPayload = payload;
-                            const result = await sendJson("/salesperson_tracking/update", payload);
+                            const result = await postJson('/salesperson_tracking/update', payload);
                             refreshMetrics(payload, result);
                             if (!payload.accuracy || Number(payload.accuracy) &lt;= 200) {
-                                setNotice("Tracking is active", "Odoo is receiving fresh GPS points from this device.");
+                                setNotice('success', 'Tracking active',
+                                    ' Odoo is receiving fresh GPS points from this device.');
                             }
                         };
 
                         const startTracking = async () => {
                             if (!navigator.geolocation) {
-                                setNotice("Location unavailable", "This browser does not support geolocation.");
+                                setNotice('danger', 'Not supported',
+                                    ' This browser does not support geolocation.');
                                 return;
                             }
-                            if (state.tracking) {
-                                return;
-                            }
+                            if (state.tracking) return;
                             state.tracking = true;
-                            updateStatus("live", "Starting...");
-                            const options = {
-                                enableHighAccuracy: true,
-                                maximumAge: 5000,
-                                timeout: 15000,
-                            };
+
+                            el.startButton.disabled = true;
+                            updateStatus('live', 'Starting…');
+
+                            const opts = { enableHighAccuracy: true, maximumAge: 5000, timeout: 15000 };
+
                             navigator.geolocation.getCurrentPosition(
-                                (position) => {
-                                    sendLocation(position).catch((error) => {
-                                        setNotice("Update failed", error.message);
-                                    });
-                                },
-                                (error) => {
+                                (pos) => sendLocation(pos).catch((e) => setNotice('danger', 'Update failed', ' ' + e.message)),
+                                (err) => {
                                     state.tracking = false;
-                                    updateStatus("offline", "Offline");
-                                    setNotice("Permission needed", error.message || "GPS access was denied.");
+                                    el.startButton.disabled = false;
+                                    updateStatus('offline', 'Offline');
+                                    setNotice('danger', 'Permission needed',
+                                        ' ' + (err.message || 'GPS access was denied.'));
                                 },
-                                options
+                                opts
                             );
+
                             state.watchId = navigator.geolocation.watchPosition(
-                                (position) => {
-                                    sendLocation(position).catch((error) => {
-                                        setNotice("Update failed", error.message);
-                                    });
-                                },
-                                (error) => {
-                                    setNotice("Tracking error", error.message || "Could not read device location.");
-                                },
-                                options
+                                (pos) => sendLocation(pos).catch((e) => setNotice('warning', 'Update failed', ' ' + e.message)),
+                                (err) => setNotice('warning', 'Tracking error', ' ' + (err.message || 'Could not read device location.')),
+                                opts
                             );
-                            state.heartbeatId = window.setInterval(() => {
-                                if (!state.lastPayload) {
-                                    return;
-                                }
-                                sendJson("/salesperson_tracking/update", state.lastPayload)
-                                    .then((result) => refreshMetrics(state.lastPayload, result))
-                                    .catch((error) => setNotice("Heartbeat failed", error.message));
+
+                            state.heartbeatId = setInterval(() => {
+                                if (!state.lastPayload) return;
+                                postJson('/salesperson_tracking/update', state.lastPayload)
+                                    .then((r)  => refreshMetrics(state.lastPayload, r))
+                                    .catch((e) => setNotice('warning', 'Heartbeat failed', ' ' + e.message));
                             }, 20000);
                         };
 
@@ -366,27 +477,33 @@
                                 state.watchId = null;
                             }
                             if (state.heartbeatId !== null) {
-                                window.clearInterval(state.heartbeatId);
+                                clearInterval(state.heartbeatId);
                                 state.heartbeatId = null;
                             }
+                            el.startButton.disabled = false;
                             try {
-                                await sendJson("/salesperson_tracking/stop", {});
-                            } catch (error) {
-                                setNotice("Stop warning", error.message);
+                                await postJson('/salesperson_tracking/stop', {});
+                            } catch (e) {
+                                setNotice('warning', 'Stop warning', ' ' + e.message);
                             }
-                            updateStatus("offline", "Offline");
-                            setNotice("Tracking stopped", "This device is no longer sending live position updates.");
+                            updateStatus('offline', 'Offline');
+                            setNotice('', 'Tracking stopped',
+                                ' This device is no longer sending live position updates.');
                         };
 
-                        els.startButton.addEventListener("click", () => {
-                            startTracking().catch((error) => setNotice("Start failed", error.message));
-                        });
-                        els.stopButton.addEventListener("click", () => {
-                            stopTracking().catch((error) => setNotice("Stop failed", error.message));
-                        });
-                        window.addEventListener("pagehide", () => {
+                        /* ── Event listeners ── */
+                        el.startButton.addEventListener('click', () =>
+                            startTracking().catch((e) => setNotice('danger', 'Start failed', ' ' + e.message)));
+
+                        el.stopButton.addEventListener('click', () =>
+                            stopTracking().catch((e) => setNotice('danger', 'Stop failed', ' ' + e.message)));
+
+                        window.addEventListener('pagehide', () => {
                             if (state.tracking) {
-                                navigator.sendBeacon("/salesperson_tracking/stop", new Blob(["{}"], { type: "application/json" }));
+                                navigator.sendBeacon(
+                                    '/salesperson_tracking/stop',
+                                    new Blob(['{}'], { type: 'application/json' })
+                                );
                             }
                         });
                     })();
@@ -394,27 +511,55 @@
             </body>
         </html>
     </template>
+
+
+    <!-- ══════════════════════════════════════════════════════════
+         TEMPLATE 2: Moving Map View  (manager / admin view)
+         Route: /salesperson_tracking/map/<tracker_id>
+    ══════════════════════════════════════════════════════════ -->
     <template id="moving_map_page" name="Salesperson Moving Map View">
         <html lang="en">
             <head>
                 <meta charset="utf-8"/>
                 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-                <title>Moving Map View</title>
-                <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.css"/>
-                <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.js"></script>
+                <title>Moving Map — <t t-out="tracker.user_id.name"/></title>
+                <link rel="stylesheet"
+                      href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.css"/>
+                <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.js"/>
                 <style>
-                    * { box-sizing: border-box; margin: 0; padding: 0; }
+                    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+                    :root {
+                        --purple:     #4a1942;
+                        --purple-dk:  #3a1233;
+                        --green-600:  #3b6d11;
+                        --red-600:    #dc2626;
+                        --indigo:     #6366f1;
+                        --blue-400:   #3b82f6;
+                        --surface:    #ffffff;
+                        --bg:         #f4f6f8;
+                        --border:     rgba(0,0,0,.08);
+                        --text:       #1a1d23;
+                        --muted:      #6b7280;
+                        --radius-md:  10px;
+                        --radius-lg:  14px;
+                    }
+
                     body {
-                        font-family: "Segoe UI", "Helvetica Neue", sans-serif;
-                        background: #f1f5f9;
+                        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+                        background: var(--bg);
+                        color: var(--text);
+                        height: 100vh;
                         display: flex;
                         flex-direction: column;
-                        height: 100vh;
                         overflow: hidden;
+                        font-size: 14px;
                     }
+
+                    /* ── Top bar ── */
                     .top-bar {
-                        background: #4a1942;
-                        color: white;
+                        background: var(--purple);
+                        color: #fff;
                         padding: 12px 20px;
                         display: flex;
                         align-items: center;
@@ -422,186 +567,313 @@
                         flex-shrink: 0;
                         gap: 12px;
                         flex-wrap: wrap;
+                        border-bottom: 1px solid var(--purple-dk);
                     }
-                    .top-bar h1 {
-                        font-size: 1.1rem;
-                        font-weight: 700;
+
+                    .top-bar-left {
                         display: flex;
                         align-items: center;
-                        gap: 8px;
+                        gap: 10px;
                     }
-                    .top-bar h1 span.icon { font-size: 1.3rem; }
-                    .meta-row {
+
+                    .top-bar-icon {
+                        width: 32px; height: 32px;
+                        background: rgba(255,255,255,.12);
+                        border-radius: 8px;
+                        display: flex; align-items: center; justify-content: center;
+                        flex-shrink: 0;
+                    }
+
+                    .top-bar-icon svg { width: 16px; height: 16px; }
+
+                    .top-bar h1 {
+                        font-size: 14px;
+                        font-weight: 600;
+                        line-height: 1.2;
+                        margin: 0;
+                    }
+
+                    .top-bar-sub {
+                        font-size: 11px;
+                        opacity: .65;
+                        margin-top: 1px;
+                    }
+
+                    .meta-pills {
                         display: flex;
-                        gap: 16px;
-                        font-size: 0.82rem;
-                        opacity: 0.85;
+                        gap: 6px;
                         flex-wrap: wrap;
                     }
-                    .meta-row b { opacity: 1; }
-                    #map { flex: 1; width: 100%; }
+
+                    .meta-pill {
+                        background: rgba(255,255,255,.1);
+                        border: .5px solid rgba(255,255,255,.18);
+                        border-radius: 999px;
+                        padding: 4px 11px;
+                        font-size: 11px;
+                        display: flex;
+                        align-items: center;
+                        gap: 4px;
+                    }
+
+                    .meta-pill b { font-weight: 600; opacity: 1; }
+
+                    /* ── Map wrapper ── */
+                    .map-wrapper {
+                        flex: 1;
+                        position: relative;
+                        overflow: hidden;
+                    }
+
+                    #map { width: 100%; height: 100%; }
+
+                    /* ── Legend overlay ── */
                     .legend {
                         position: absolute;
-                        bottom: 30px;
+                        bottom: 28px;
                         left: 12px;
                         z-index: 1000;
-                        background: white;
-                        border-radius: 10px;
+                        background: var(--surface);
+                        border: .5px solid var(--border);
+                        border-radius: var(--radius-lg);
                         padding: 10px 14px;
-                        font-size: 0.8rem;
-                        box-shadow: 0 2px 12px rgba(0,0,0,0.15);
-                        line-height: 1.8;
+                        font-size: 12px;
+                        color: var(--muted);
+                        line-height: 2;
+                        box-shadow: 0 2px 10px rgba(0,0,0,.1);
                     }
+
+                    .legend-row { display: flex; align-items: center; gap: 7px; }
+
                     .legend-dot {
-                        display: inline-block;
-                        width: 10px; height: 10px;
+                        width: 9px; height: 9px;
                         border-radius: 50%;
-                        margin-right: 5px;
+                        flex-shrink: 0;
                     }
+
+                    .legend-line {
+                        width: 18px; height: 3px;
+                        border-radius: 2px;
+                        flex-shrink: 0;
+                    }
+
+                    /* ── No-data overlay ── */
                     .no-data {
                         position: absolute;
-                        top: 50%; left: 50%;
-                        transform: translate(-50%, -50%);
+                        inset: 0;
                         z-index: 1000;
-                        background: white;
-                        padding: 24px 32px;
-                        border-radius: 16px;
-                        box-shadow: 0 4px 24px rgba(0,0,0,0.12);
-                        text-align: center;
-                        color: #475569;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        background: rgba(244,246,248,.7);
+                        backdrop-filter: blur(4px);
                     }
-                    .no-data .icon { font-size: 2.5rem; margin-bottom: 8px; }
-                    .map-wrapper { position: relative; flex: 1; display: flex; flex-direction: column; }
+
+                    .no-data-card {
+                        background: var(--surface);
+                        border: .5px solid var(--border);
+                        border-radius: var(--radius-lg);
+                        padding: 28px 36px;
+                        text-align: center;
+                        box-shadow: 0 4px 20px rgba(0,0,0,.1);
+                    }
+
+                    .no-data-icon {
+                        width: 48px; height: 48px;
+                        background: #f4f6f8;
+                        border-radius: 50%;
+                        display: flex; align-items: center; justify-content: center;
+                        margin: 0 auto 12px;
+                    }
+
+                    .no-data-icon svg { width: 22px; height: 22px; color: var(--muted); }
+
+                    .no-data-title { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+                    .no-data-sub   { font-size: 13px; color: var(--muted); }
+
+                    @media (max-width: 520px) {
+                        .meta-pills { display: none; }
+                    }
                 </style>
             </head>
             <body>
+
+                <!-- Top bar -->
                 <div class="top-bar">
-                    <h1>
-                        <span class="icon">&#128205;</span>
-                        Moving Map View — <t t-out="tracker.user_id.name"/>
-                    </h1>
-                    <div class="meta-row">
-                        <span>Team: <b><t t-out="tracker.sale_team_id.name or 'N/A'"/></b></span>
-                        <span>Status: <b><t t-out="tracker.tracking_status_label"/></b></span>
-                        <span>Today's Logs: <b><t t-out="total_logs"/></b></span>
-                        <span>Last Seen: <b><t t-out="tracker.last_seen or '--'"/></b></span>
+                    <div class="top-bar-left">
+                        <div class="top-bar-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/>
+                                <circle cx="12" cy="10" r="3"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h1><t t-out="tracker.user_id.name"/> — Moving Map</h1>
+                            <div class="top-bar-sub">
+                                <t t-out="tracker.sale_team_id.name or 'No team assigned'"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="meta-pills">
+                        <div class="meta-pill">
+                            Status: <b><t t-out="tracker.tracking_status_label"/></b>
+                        </div>
+                        <div class="meta-pill">
+                            Logs today: <b><t t-out="total_logs"/></b>
+                        </div>
+                        <div class="meta-pill">
+                            Last seen: <b><t t-out="tracker.last_seen or '—'"/></b>
+                        </div>
                     </div>
                 </div>
+
+                <!-- Map -->
                 <div class="map-wrapper">
                     <div id="map" t-att-data-points="location_points_b64"/>
+
+                    <!-- Legend -->
                     <div class="legend">
-                        <div><span class="legend-dot" style="background:#16a34a;"/> Start Point</div>
-                        <div><span class="legend-dot" style="background:#dc2626;"/> Current/Last Point</div>
-                        <div><span class="legend-dot" style="background:#6366f1;"/> Movement Path</div>
-                        <div><span class="legend-dot" style="background:#3b82f6; opacity:0.4;"/> GPS Accuracy Circle</div>
+                        <div class="legend-row">
+                            <span class="legend-dot" style="background:#3b6d11;"/>
+                            Start point
+                        </div>
+                        <div class="legend-row">
+                            <span class="legend-dot" style="background:#dc2626;"/>
+                            Current / last point
+                        </div>
+                        <div class="legend-row">
+                            <span class="legend-line" style="background:#6366f1;opacity:.85;"/>
+                            Movement path
+                        </div>
+                        <div class="legend-row">
+                            <span class="legend-dot" style="background:#3b82f6;opacity:.4;"/>
+                            GPS accuracy circle
+                        </div>
                     </div>
                 </div>
 
                 <script>
 //<![CDATA[
                     (function () {
-                        var mapEl = document.getElementById('map');
-                        var b64 = mapEl.getAttribute('data-points') || '';
+                        var mapEl  = document.getElementById('map');
+                        var b64    = mapEl.getAttribute('data-points') || '';
                         var points = [];
-                        try {
-                            points = JSON.parse(atob(b64));
-                        } catch(e) {
-                            points = [];
-                        }
 
-                        var defaultCenter = [23.7701, 90.4254];
-                        var map = L.map('map').setView(defaultCenter, 15);
+                        try { points = JSON.parse(atob(b64)); } catch (e) { points = []; }
+
+                        var DEFAULT_CENTER = [23.7701, 90.4254];
+                        var map = L.map('map').setView(DEFAULT_CENTER, 15);
 
                         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                            attribution: '\u00a9 OpenStreetMap contributors',
+                            attribution: '\u00a9 <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
                             maxZoom: 19,
                         }).addTo(map);
 
+                        /* No data state */
                         if (!points || points.length === 0) {
-                            var noDataDiv = document.createElement('div');
-                            noDataDiv.className = 'no-data';
-                            noDataDiv.innerHTML = '<div class="icon" style="font-size:2.5rem;margin-bottom:8px;">&#128205;</div><div>No location data available for today.</div>';
-                            document.querySelector('.map-wrapper').appendChild(noDataDiv);
+                            var nd = document.createElement('div');
+                            nd.className = 'no-data';
+                            nd.innerHTML = [
+                                '<div class="no-data-card">',
+                                '  <div class="no-data-icon">',
+                                '    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">',
+                                '      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/>',
+                                '    </svg>',
+                                '  </div>',
+                                '  <div class="no-data-title">No location data</div>',
+                                '  <div class="no-data-sub">No GPS logs available for today.</div>',
+                                '</div>',
+                            ].join('');
+                            document.querySelector('.map-wrapper').appendChild(nd);
                             return;
                         }
 
-                        // Filter valid points
-                        var validPoints = points.filter(function(p) {
-                            return p.accuracy <= 2000 || p.accuracy === 0;
+                        /* Filter out extreme inaccuracy */
+                        var valid = points.filter(function (p) {
+                            return p.accuracy &lt;= 2000 || p.accuracy === 0;
                         });
-                        if (validPoints.length === 0) validPoints = points;
+                        if (valid.length === 0) valid = points;
 
-                        // Draw path line
-                        var latlngs = validPoints.map(function(p) { return [p.lat, p.lng]; });
+                        /* Path polyline */
+                        var latlngs = valid.map(function (p) { return [p.lat, p.lng]; });
                         L.polyline(latlngs, {
-                            color: '#6366f1',
-                            weight: 3,
-                            opacity: 0.8,
-                            dashArray: '6, 4',
+                            color:     '#6366f1',
+                            weight:    3,
+                            opacity:   0.85,
+                            dashArray: '7 5',
                         }).addTo(map);
 
-                        // Draw accuracy circles and intermediate markers
-                        validPoints.forEach(function(p, i) {
-                            if (p.accuracy > 0 && p.accuracy <= 500) {
+                        /* Accuracy circles + intermediate markers */
+                        valid.forEach(function (p, i) {
+                            if (p.accuracy > 0 &amp;&amp; p.accuracy &lt;= 500) {
                                 L.circle([p.lat, p.lng], {
-                                    radius: p.accuracy,
-                                    color: '#3b82f6',
-                                    fillColor: '#3b82f6',
-                                    fillOpacity: 0.12,
-                                    weight: 1,
-                                    opacity: 0.4,
+                                    radius:      p.accuracy,
+                                    color:       '#3b82f6',
+                                    fillColor:   '#3b82f6',
+                                    fillOpacity: 0.1,
+                                    weight:      1,
+                                    opacity:     0.35,
                                 }).addTo(map);
                             }
 
-                            if (i > 0 && i < validPoints.length - 1) {
-                                var smallIcon = L.circleMarker([p.lat, p.lng], {
-                                    radius: 5,
-                                    color: '#6366f1',
-                                    fillColor: '#a5b4fc',
-                                    fillOpacity: 0.9,
-                                    weight: 2,
+                            if (i > 0 &amp;&amp; i &lt; valid.length - 1) {
+                                var dot = L.circleMarker([p.lat, p.lng], {
+                                    radius:      5,
+                                    color:       '#6366f1',
+                                    fillColor:   '#c7d2fe',
+                                    fillOpacity: 1,
+                                    weight:      2,
                                 });
-                                var timeStr = p.time ? p.time.replace('T', ' ') : '';
+                                var timeStr  = p.time  ? p.time.replace('T', ' ')          : '—';
                                 var speedStr = p.speed ? (p.speed * 3.6).toFixed(1) + ' km/h' : '0 km/h';
-                                var accStr = p.accuracy ? p.accuracy.toFixed(1) + ' m' : '--';
-                                smallIcon.bindPopup(
-                                    '<b>Time:</b> ' + timeStr + '<br>' +
-                                    '<b>Speed:</b> ' + speedStr + '<br>' +
-                                    '<b>Accuracy:</b> ' + accStr +
+                                var accStr   = p.accuracy ? p.accuracy.toFixed(1) + ' m'   : '—';
+                                dot.bindPopup(
+                                    '<b>Time:</b> '     + timeStr  + '<br>' +
+                                    '<b>Speed:</b> '    + speedStr + '<br>' +
+                                    '<b>Accuracy:</b> ' + accStr   +
                                     (p.location_name ? '<br><b>Location:</b> ' + p.location_name : '')
                                 );
-                                smallIcon.addTo(map);
+                                dot.addTo(map);
                             }
                         });
 
-                        // Start marker (green circle)
-                        var startPt = validPoints[0];
-                        L.marker([startPt.lat, startPt.lng], {
+                        /* Start marker */
+                        var sp = valid[0];
+                        L.marker([sp.lat, sp.lng], {
                             icon: L.divIcon({
-                                html: '<div style="background:#16a34a;width:18px;height:18px;border-radius:50%;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.3)"></div>',
-                                iconSize: [18, 18],
+                                html: '<div style="width:18px;height:18px;background:#3b6d11;border-radius:50%;border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.25)"></div>',
+                                iconSize:   [18, 18],
                                 iconAnchor: [9, 9],
-                                className: '',
-                            })
-                        }).addTo(map).bindPopup('<b>Start Point</b><br>Time: ' + (startPt.time || '') + (startPt.location_name ? '<br>' + startPt.location_name : ''));
-
-                        // End marker (red teardrop)
-                        var endPt = validPoints[validPoints.length - 1];
-                        L.marker([endPt.lat, endPt.lng], {
-                            icon: L.divIcon({
-                                html: '<div style="background:#dc2626;width:22px;height:22px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:3px solid white;box-shadow:0 2px 10px rgba(0,0,0,0.35)"></div>',
-                                iconSize: [22, 22],
-                                iconAnchor: [11, 22],
-                                className: '',
-                            })
+                                className:  '',
+                            }),
                         }).addTo(map).bindPopup(
-                            '<b>Current/Last Position</b><br>Time: ' + (endPt.time || '') +
-                            (endPt.location_name ? '<br>' + endPt.location_name : '') +
-                            '<br>Accuracy: ' + (endPt.accuracy ? endPt.accuracy.toFixed(1) + ' m' : '--')
+                            '<b>Start point</b><br>' + (sp.time || '') +
+                            (sp.location_name ? '<br>' + sp.location_name : '')
+                        );
+
+                        /* End / current marker */
+                        var ep = valid[valid.length - 1];
+                        L.marker([ep.lat, ep.lng], {
+                            icon: L.divIcon({
+                                html: '<div style="width:22px;height:22px;background:#dc2626;border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:3px solid #fff;box-shadow:0 2px 10px rgba(0,0,0,.3)"></div>',
+                                iconSize:   [22, 22],
+                                iconAnchor: [11, 22],
+                                className:  '',
+                            }),
+                        }).addTo(map).bindPopup(
+                            '<b>Current / last position</b><br>' +
+                            (ep.time || '') +
+                            (ep.location_name ? '<br>' + ep.location_name : '') +
+                            '<br>Accuracy: ' + (ep.accuracy ? ep.accuracy.toFixed(1) + ' m' : '—')
                         ).openPopup();
 
-                        // Fit map bounds
-                        map.fitBounds(L.latLngBounds(latlngs), { padding: [40, 40] });
+                        /* Fit bounds */
+                        if (latlngs.length > 1) {
+                            map.fitBounds(L.latLngBounds(latlngs), { padding: [50, 50] });
+                        } else {
+                            map.setView(latlngs[0], 16);
+                        }
                     })();
 //]]>
                 </script>

@@ -5,10 +5,7 @@ from odoo import fields, http, _
 from odoo.exceptions import AccessError, ValidationError
 from odoo.http import request
 
-
 class SalespersonTrackingController(http.Controller):
-
-    
     def _check_salesperson_access(self):
         user = request.env.user
         if not user.has_group("sales_team.group_sale_salesman"):

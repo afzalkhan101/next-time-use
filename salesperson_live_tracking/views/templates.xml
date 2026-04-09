@@ -7,6 +7,112 @@
                 <meta name="viewport" content="width=device-width, initial-scale=1"/>
                 <title>Live Tracking — <t t-out="user.name"/></title>
                 <style>
+
+
+                    .cam-wrapper {
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                        gap: 16px;
+                        padding: 1.5rem 0;
+                        }
+
+                        .cam-btn {
+                        display: inline-flex;
+                        align-items: center;
+                        gap: 10px;
+                        padding: 12px 24px;
+                        border-radius: 12px;
+                        background: #e6f1fb;
+                        border: 0.5px solid #85b7eb;
+                        color: #185fa5;
+                        font-size: 15px;
+                        font-weight: 500;
+                        cursor: pointer;
+                        transition: opacity 0.15s, transform 0.1s;
+                        }
+                        .cam-btn:hover { opacity: 0.85; }
+                        .cam-btn:active { transform: scale(0.97); }
+                        .cam-btn svg { width: 18px; height: 18px; flex-shrink: 0; }
+
+                        .cam-preview {
+                        position: relative;
+                        width: 220px;
+                        border-radius: 12px;
+                        overflow: hidden;
+                        border: 0.5px solid #d1d5db;
+                        background: #f9fafb;
+                        display: none;
+                        }
+                        .cam-preview video { width: 100%; display: block; }
+
+                        .cam-preview-overlay {
+                        position: absolute;
+                        bottom: 8px;
+                        right: 8px;
+                        display: flex;
+                        gap: 6px;
+                        align-items: center;
+                        }
+
+                        .cam-action {
+                        width: 34px;
+                        height: 34px;
+                        border-radius: 50%;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        border: 0.5px solid #d1d5db;
+                        background: #ffffff;
+                        color: #111827;
+                        cursor: pointer;
+                        transition: background 0.15s;
+                        }
+                        .cam-action:hover { background: #f3f4f6; }
+                        .cam-action svg { width: 15px; height: 15px; }
+
+                        .cam-shutter {
+                        width: 46px;
+                        height: 46px;
+                        border-radius: 50%;
+                        background: #e6f1fb;
+                        border: 0.5px solid #85b7eb;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        cursor: pointer;
+                        transition: opacity 0.15s, transform 0.1s;
+                        }
+                        .cam-shutter:hover { opacity: 0.85; }
+                        .cam-shutter:active { transform: scale(0.93); }
+                        .cam-shutter svg { width: 18px; height: 18px; color: #185fa5; }
+
+                        .cam-snap {
+                        width: 220px;
+                        border-radius: 12px;
+                        overflow: hidden;
+                        border: 0.5px solid #d1d5db;
+                        display: none;
+                        }
+                        .cam-snap canvas { width: 100%; display: block; }
+
+                        .snap-badge {
+                        display: none;
+                        align-items: center;
+                        gap: 6px;
+                        font-size: 12px;
+                        color: #166534;
+                        background: #dcfce7;
+                        border: 0.5px solid #86efac;
+                        padding: 4px 10px;
+                        border-radius: 8px;
+                        }
+                        .snap-badge svg { width: 13px; height: 13px; }
+
+                        .cam-label {
+                        font-size: 12px;
+                        color: #6b7280;
+                        }
                     /* ── Reset ── */
                     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -413,22 +519,45 @@
                                 Open in map
                             </a>
 
-                             <div class="btn btn-secondary" style="position: relative;">
-                                <button id="openCameraBtn" class="btn btn-info" type="button">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <circle cx="12" cy="12" r="10"/>
-                                        <polygon points="10 8 14 12 10 16 10 8"/>
-                                    </svg>
-                                    Open Camera
-                                </button>
-                                <!-- Video Preview -->
-                                <video id="selfieVideo" autoplay="autoplay" playsinline="playsinline" style="width:150px; height:auto; display:none; margin-top:5px;"></video>
-                                <canvas id="selfieCanvas" style="display:none;"></canvas>
+                             <div class="cam-wrapper">
+                                    <button class="cam-btn" id="openCameraBtn">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                                        <circle cx="12" cy="13" r="4"/>
+                                        </svg>
+                                        Open camera
+                                    </button>
+
+                                    <div class="cam-preview" id="previewBox">
+                                        <video id="selfieVideo" autoplay="autoplay" playsinline="playsinline"></video>
+                                        <div class="cam-preview-overlay">
+                                        <button class="cam-action" id="stopBtn" title="Stop">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <rect x="3" y="3" width="18" height="18" rx="2"/>
+                                            </svg>
+                                        </button>
+                                        <button class="cam-shutter" id="captureBtn" title="Take photo">
+                                            <svg viewBox="0 0 24 24" fill="currentColor" stroke="none">
+                                            <circle cx="12" cy="12" r="7"/>
+                                            </svg>
+                                        </button>
+                                        </div>
+                                    </div>
+
+                                    <div class="cam-snap" id="snapBox">
+                                        <canvas id="selfieCanvas"></canvas>
+                                    </div>
+
+                                    <div class="snap-badge" id="snapBadge">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="20 6 9 17 4 12"/>
+                                        </svg>
+                                        Photo captured
+                                    </div>
+
+                                    <span class="cam-label" id="camLabel">Click to access your camera</span>
                             </div>
                         </div>
-
-
-                       
 
                         <div id="checkinPanel" class="checkin-panel" style="display:none">
                           <div class="checkin-title">&#9989; Checked in</div>
@@ -526,40 +655,56 @@
                             return res.json();
                         };
 
-                        const openCameraBtn = document.getElementById('openCameraBtn');
-                        const selfieVideo = document.getElementById('selfieVideo');
-                        const selfieCanvas = document.getElementById('selfieCanvas');
-                        const selfiePreview = document.getElementById('selfiePreview');
+                        const openBtn = document.getElementById('openCameraBtn');
+                        const video = document.getElementById('selfieVideo');
+                        const canvas = document.getElementById('selfieCanvas');
+                        const previewBox = document.getElementById('previewBox');
+                        const snapBox = document.getElementById('snapBox');
+                        const snapBadge = document.getElementById('snapBadge');
+                        const captureBtn = document.getElementById('captureBtn');
+                        const stopBtn = document.getElementById('stopBtn');
+                        const camLabel = document.getElementById('camLabel');
+                        let stream = null;
 
-                        let cameraStream = null;
-
-                        openCameraBtn.addEventListener('click', async () => {
-                            if (!cameraStream) {
-                                try {
-                                    cameraStream = await navigator.mediaDevices.getUserMedia({ video: true });
-                                    selfieVideo.srcObject = cameraStream;
-                                    selfieVideo.style.display = 'block';
-                                    openCameraBtn.textContent = '📸 Capture';
-                                } catch (err) {
-                                    alert('Camera access denied or not supported: ' + err.message);
-                                }
-                            } else {
-                                // Capture photo
-                                selfieCanvas.width = selfieVideo.videoWidth;
-                                selfieCanvas.height = selfieVideo.videoHeight;
-                                selfieCanvas.getContext('2d').drawImage(selfieVideo, 0, 0);
-                                const dataUrl = selfieCanvas.toDataURL('image/png');
-                                selfiePreview.src = dataUrl;
-                                selfiePreview.style.display = 'block';
-
-                                // Stop camera
-                                cameraStream.getTracks().forEach(track => track.stop());
-                                cameraStream = null;
-                                selfieVideo.style.display = 'none';
-                                openCameraBtn.textContent = '📸 Take Selfie';
-                            }
+                        openBtn.addEventListener('click', async () => {
+                        try {
+                            stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                            video.srcObject = stream;
+                            previewBox.style.display = 'block';
+                            snapBox.style.display = 'none';
+                            snapBadge.style.display = 'none';
+                            camLabel.textContent = 'Live preview — press the button to capture';
+                            openBtn.textContent = 'Switch camera';
+                        } catch (e) {
+                            camLabel.textContent = 'Camera access denied or unavailable.';
+                        }
                         });
 
+                        captureBtn.addEventListener('click', () => {
+                        if (!stream) return;
+                        canvas.width = video.videoWidth;
+                        canvas.height = video.videoHeight;
+                        canvas.getContext('2d').drawImage(video, 0, 0);
+                        snapBox.style.display = 'block';
+                        snapBadge.style.display = 'flex';
+                        camLabel.textContent = 'Photo captured successfully';
+                        });
+
+                        stopBtn.addEventListener('click', () => {
+                        if (stream) {
+                            stream.getTracks().forEach(t => t.stop());
+                            stream = null;
+                        }
+                        previewBox.style.display = 'none';
+                        camLabel.textContent = 'Click to access your camera';
+                        openBtn.innerHTML = `
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;flex-shrink:0">
+                            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                            <circle cx="12" cy="13" r="4"/>
+                            </svg>
+                            Open camera`;
+                        });
                         const refreshMetrics = (payload, resp) => {
                             const lat = payload.latitude?.toFixed  ? payload.latitude.toFixed(6)  : payload.latitude;
                             const lng = payload.longitude?.toFixed ? payload.longitude.toFixed(6) : payload.longitude;

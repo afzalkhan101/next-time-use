@@ -872,14 +872,27 @@
                             renderGallery();
                         });
 
-
-
-
-
-
-                          
-                          
                         
+                        const refreshMetrics = (payload, resp) => {
+                            const lat = payload.latitude?.toFixed  ? payload.latitude.toFixed(6)  : payload.latitude;
+                            const lng = payload.longitude?.toFixed ? payload.longitude.toFixed(6) : payload.longitude;
+                            const acc = payload.accuracy ? Number(payload.accuracy).toFixed(1)    : '—';
+
+                            el.latitudeValue.textContent      = lat || '—';
+                            el.longitudeValue.textContent     = lng || '—';
+                            el.locationNameValue.textContent  = resp.location_name || '—';
+                            el.accuracyValue.textContent      = acc !== '—' ? `${acc} m` : '—';
+                            el.lastSeenValue.textContent      = resp.last_seen || new Date().toLocaleTimeString();
+
+                            if (resp.map_url) el.mapButton.href = resp.map_url;
+                            updateStatus(resp.status, resp.status_label);
+
+                            if (payload.accuracy &amp;&amp; Number(payload.accuracy) > 200) {
+                                setNotice('warning', 'Low GPS accuracy',
+                                    ' Move outdoors or enable high-accuracy mode for a precise location name.');
+                            }
+                        };
+
 
                         /* ── Tracking logic ── */
                         const sendLocation = async (position) => {

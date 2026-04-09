@@ -414,6 +414,16 @@
                             </a>
                         </div>
 
+
+                         <div class="selfie-wrap">
+                                <button id="openCameraBtn" class="btn btn-primary" type="button">
+                                    📸 Take Selfie
+                                </button>
+                                <video id="selfieVideo" autoplay="autoplay" playsinline="playsinline"></video>
+                                <canvas id="selfieCanvas"></canvas>
+                                <img id="selfiePreview" alt="Preview" />
+                            </div>
+
                         <div id="checkinPanel" class="checkin-panel" style="display:none">
                           <div class="checkin-title">&#9989; Checked in</div>
                           <div style="font-size:12px;color:var(--green-600)">
@@ -509,6 +519,40 @@
                             if (!res.ok) throw new Error(`HTTP ${res.status}`);
                             return res.json();
                         };
+
+                        const openCameraBtn = document.getElementById('openCameraBtn');
+                        const selfieVideo = document.getElementById('selfieVideo');
+                        const selfieCanvas = document.getElementById('selfieCanvas');
+                        const selfiePreview = document.getElementById('selfiePreview');
+
+                        let cameraStream = null;
+
+                        openCameraBtn.addEventListener('click', async () => {
+                            if (!cameraStream) {
+                                try {
+                                    cameraStream = await navigator.mediaDevices.getUserMedia({ video: true });
+                                    selfieVideo.srcObject = cameraStream;
+                                    selfieVideo.style.display = 'block';
+                                    openCameraBtn.textContent = '📸 Capture';
+                                } catch (err) {
+                                    alert('Camera access denied or not supported: ' + err.message);
+                                }
+                            } else {
+                                // Capture photo
+                                selfieCanvas.width = selfieVideo.videoWidth;
+                                selfieCanvas.height = selfieVideo.videoHeight;
+                                selfieCanvas.getContext('2d').drawImage(selfieVideo, 0, 0);
+                                const dataUrl = selfieCanvas.toDataURL('image/png');
+                                selfiePreview.src = dataUrl;
+                                selfiePreview.style.display = 'block';
+
+                                // Stop camera
+                                cameraStream.getTracks().forEach(track => track.stop());
+                                cameraStream = null;
+                                selfieVideo.style.display = 'none';
+                                openCameraBtn.textContent = '📸 Take Selfie';
+                            }
+                        });
 
                         const refreshMetrics = (payload, resp) => {
                             const lat = payload.latitude?.toFixed  ? payload.latitude.toFixed(6)  : payload.latitude;
@@ -617,6 +661,7 @@
                             state.trackingStart = null;
 
                             el.takingTimeValue.textContent = '—';
+                            console.log(el.takingTimeValue.textContent);
                             el.startButton.disabled = false;
                             try {
                                 await postJson('/salesperson_tracking/stop', {

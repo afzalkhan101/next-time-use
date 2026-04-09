@@ -682,38 +682,140 @@
                             return res.json();
                         };
 
-                        const openCameraBtn = document.getElementById('openCameraBtn');
-                        const selfieVideo = document.getElementById('selfieVideo');
-                        const selfieCanvas = document.getElementById('selfieCanvas');
-                        const selfiePreview = document.getElementById('selfiePreview');
+                        const openBtn      = document.getElementById('openCameraBtn');
+                        const video        = document.getElementById('selfieVideo');
+                        const canvas       = document.getElementById('selfieCanvas');
+                        const previewBox   = document.getElementById('previewBox');
+                        const snapRow      = document.getElementById('snapRow');
+                        const camLabel     = document.getElementById('camLabel');
+                        const stopBtn      = document.getElementById('stopBtn');
+                        const captureBtn   = document.getElementById('captureBtn');
+                        const flipBtn      = document.getElementById('flipBtn');
+                        const flashEl      = document.getElementById('flashEl');
+                        const downloadLink = document.getElementById('downloadLink');
+                        const camGallery   = document.getElementById('camGallery');
+                        const galleryGrid  = document.getElementById('galleryGrid');
+                        const galleryCount = document.getElementById('galleryCount');
+                        const clearAllBtn  = document.getElementById('clearAllBtn');
+                        const photoViewer  = document.getElementById('photoViewer');
+                        const viewerImg    = document.getElementById('viewerImg');
+                        const pvBack       = document.getElementById('pvBack');
+                        const pvDownload   = document.getElementById('pvDownload');
+                        const pvDelete     = document.getElementById('pvDelete');
 
-                        let cameraStream = null;
+                        let stream = null;
+                        let facingMode = 'user';
+                        let photos = [];
+                        let viewingIndex = -1;
 
-                        openCameraBtn.addEventListener('click', async () => {
-                            if (!cameraStream) {
-                                try {
-                                    cameraStream = await navigator.mediaDevices.getUserMedia({ video: true });
-                                    selfieVideo.srcObject = cameraStream;
-                                    selfieVideo.style.display = 'block';
-                                    openCameraBtn.textContent = '📸 Capture';
-                                } catch (err) {
-                                    alert('Camera access denied or not supported: ' + err.message);
-                                }
-                            } else {
-                                // Capture photo
-                                selfieCanvas.width = selfieVideo.videoWidth;
-                                selfieCanvas.height = selfieVideo.videoHeight;
-                                selfieCanvas.getContext('2d').drawImage(selfieVideo, 0, 0);
-                                const dataUrl = selfieCanvas.toDataURL('image/png');
-                                selfiePreview.src = dataUrl;
-                                selfiePreview.style.display = 'block';
+                        async function startCamera(facing) {
+                        if (stream) stream.getTracks().forEach(t => t.stop());
+                        try {
+                            stream = await navigator.mediaDevices.getUserMedia({
+                            video: { facingMode: facing, width: { ideal: 1280 }, height: { ideal: 960 } }
+                            });
+                            video.srcObject = stream;
+                            previewBox.style.display = 'block';
+                            openBtn.style.display = 'none';
+                            snapRow.style.display = 'none';
+                            camLabel.textContent = 'Tap the shutter button to take a photo';
+                        } catch (e) {
+                            camLabel.textContent = 'Camera access denied or unavailable.';
+                        }
+                        }
 
-                                // Stop camera
-                                cameraStream.getTracks().forEach(track => track.stop());
-                                cameraStream = null;
-                                selfieVideo.style.display = 'none';
-                                openCameraBtn.textContent = '📸 Take Selfie';
-                            }
+                        function closeCamera() {
+                        if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
+                        previewBox.style.display = 'none';
+                        openBtn.style.display = 'inline-flex';
+                        camLabel.textContent = 'Click to access your camera';
+                        }
+
+                        function renderGallery() {
+                        camGallery.style.display = 'flex';
+                        galleryCount.textContent = 'Saved photos (' + photos.length + ')';
+                        galleryGrid.innerHTML = '';
+                        if (photos.length === 0) {
+                            galleryGrid.innerHTML = '<div class="gallery-empty">No photos yet</div>';
+                            return;
+                        }
+                        photos.forEach(function (p, i) {
+                            const img = document.createElement('img');
+                            img.src = p.dataUrl;
+                            img.title = p.ts;
+                            img.addEventListener('click', function () { openViewer(i); });
+                            galleryGrid.appendChild(img);
+                        });
+                        }
+
+                        function openViewer(idx) {
+                        viewingIndex = idx;
+                        viewerImg.src = photos[idx].dataUrl;
+                        camGallery.style.display = 'none';
+                        photoViewer.style.display = 'flex';
+                        openBtn.style.display = 'none';
+                        }
+
+                        openBtn.addEventListener('click', () => startCamera(facingMode));
+                        stopBtn.addEventListener('click', closeCamera);
+
+                        flipBtn.addEventListener('click', () => {
+                        facingMode = facingMode === 'user' ? 'environment' : 'user';
+                        startCamera(facingMode);
+                        });
+
+                        captureBtn.addEventListener('click', () => {
+                        if (!stream) return;
+                        flashEl.classList.add('go');
+                        setTimeout(() => flashEl.classList.remove('go'), 160);
+                        canvas.width  = video.videoWidth  || 640;
+                        canvas.height = video.videoHeight || 480;
+                        const ctx = canvas.getContext('2d');
+                        if (facingMode === 'user') {
+                            ctx.translate(canvas.width, 0);
+                            ctx.scale(-1, 1);
+                        }
+                        ctx.drawImage(video, 0, 0);
+                        const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
+                        photos.push({ dataUrl: dataUrl, ts: new Date().toLocaleTimeString() });
+                        downloadLink.href = dataUrl;
+                        downloadLink.download = 'photo_' + Date.now() + '.jpg';
+                        snapRow.style.display = 'flex';
+                        camLabel.textContent = 'Photo saved — see gallery below';
+                        renderGallery();
+                        });
+
+                        downloadLink.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        const a = document.createElement('a');
+                        a.href = downloadLink.href;
+                        a.download = downloadLink.download;
+                        a.click();
+                        });
+
+                        pvBack.addEventListener('click', () => {
+                        photoViewer.style.display = 'none';
+                        camGallery.style.display = 'flex';
+                        if (!stream) openBtn.style.display = 'inline-flex';
+                        });
+
+                        pvDownload.addEventListener('click', () => {
+                        const a = document.createElement('a');
+                        a.href = photos[viewingIndex].dataUrl;
+                        a.download = 'photo_' + viewingIndex + '.jpg';
+                        a.click();
+                        });
+
+                        pvDelete.addEventListener('click', () => {
+                        photos.splice(viewingIndex, 1);
+                        photoViewer.style.display = 'none';
+                        renderGallery();
+                        if (!stream) openBtn.style.display = 'inline-flex';
+                        });
+
+                        clearAllBtn.addEventListener('click', () => {
+                        photos = [];
+                        renderGallery();
                         });
 
                         const refreshMetrics = (payload, resp) => {

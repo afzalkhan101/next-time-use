@@ -709,134 +709,134 @@
                         let viewingIndex = -1;
 
                         async function startCamera(facing) {
-                        if (stream) stream.getTracks().forEach(t => t.stop());
-                        try {
-                            stream = await navigator.mediaDevices.getUserMedia({
-                            video: { facingMode: facing, width: { ideal: 1280 }, height: { ideal: 960 } }
-                            });
-                            video.srcObject = stream;
-                            previewBox.style.display = 'block';
-                            openBtn.style.display = 'none';
-                            snapRow.style.display = 'none';
-                            camLabel.textContent = 'Tap the shutter button to take a photo';
-                        } catch (e) {
-                            camLabel.textContent = 'Camera access denied or unavailable.';
-                        }
+                            if (stream) stream.getTracks().forEach(t => t.stop());
+                            try {
+                                stream = await navigator.mediaDevices.getUserMedia({
+                                    video: { facingMode: facing, width: { ideal: 1280 }, height: { ideal: 960 } }
+                                });
+                                video.srcObject = stream;
+                                previewBox.style.display = 'block';
+                                openBtn.style.display = 'none';
+                                snapRow.style.display = 'none';
+                                camGallery.style.display = 'none';
+                                photoViewer.style.display = 'none';
+                                camLabel.textContent = 'Tap the shutter button to take a photo';
+                            } catch (e) {
+                                camLabel.textContent = 'Camera access denied or unavailable.';
+                            }
                         }
 
                         function closeCamera() {
-                        if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
-                        previewBox.style.display = 'none';
-                        openBtn.style.display = 'inline-flex';
-                        camLabel.textContent = 'Click to access your camera';
+                            if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
+                            previewBox.style.display = 'none';
+                            openBtn.style.display = 'inline-flex';
+                            camLabel.textContent = 'Click to access your camera';
+                            if (photos.length > 0) renderGallery();
                         }
 
                         function renderGallery() {
-                        camGallery.style.display = 'flex';
-                        galleryCount.textContent = 'Saved photos (' + photos.length + ')';
-                        galleryGrid.innerHTML = '';
-                        if (photos.length === 0) {
-                            galleryGrid.innerHTML = '<div class="gallery-empty">No photos yet</div>';
-                            return;
-                        }
-                        photos.forEach(function (p, i) {
-                            const img = document.createElement('img');
-                            img.src = p.dataUrl;
-                            img.title = p.ts;
-                            img.addEventListener('click', function () { openViewer(i); });
-                            galleryGrid.appendChild(img);
-                        });
+                            camGallery.style.display = 'flex';
+                            galleryCount.textContent = 'Saved photos (' + photos.length + ')';
+                            galleryGrid.innerHTML = '';
+                            if (photos.length === 0) {
+                                galleryGrid.innerHTML = '<div class="gallery-empty">No photos yet</div>';
+                                return;
+                            }
+                            photos.forEach(function (p, i) {
+                                const img = document.createElement('img');
+                                img.src = p.dataUrl;
+                                img.title = p.ts;
+                                img.addEventListener('click', function () { openViewer(i); });
+                                galleryGrid.appendChild(img);
+                            });
                         }
 
                         function openViewer(idx) {
-                        viewingIndex = idx;
-                        viewerImg.src = photos[idx].dataUrl;
-                        camGallery.style.display = 'none';
-                        photoViewer.style.display = 'flex';
-                        openBtn.style.display = 'none';
+                            viewingIndex = idx;
+                            viewerImg.src = photos[idx].dataUrl;
+                            camGallery.style.display = 'none';
+                            photoViewer.style.display = 'flex';
+                            openBtn.style.display = 'none';
                         }
+
+                        /* ── Event listeners ── */
 
                         openBtn.addEventListener('click', () => startCamera(facingMode));
                         stopBtn.addEventListener('click', closeCamera);
 
                         flipBtn.addEventListener('click', () => {
-                        facingMode = facingMode === 'user' ? 'environment' : 'user';
-                        startCamera(facingMode);
+                            facingMode = facingMode === 'user' ? 'environment' : 'user';
+                            startCamera(facingMode);
                         });
 
                         captureBtn.addEventListener('click', () => {
-                        if (!stream) return;
-                        flashEl.classList.add('go');
-                        setTimeout(() => flashEl.classList.remove('go'), 160);
-                        canvas.width  = video.videoWidth  || 640;
-                        canvas.height = video.videoHeight || 480;
-                        const ctx = canvas.getContext('2d');
-                        if (facingMode === 'user') {
-                            ctx.translate(canvas.width, 0);
-                            ctx.scale(-1, 1);
-                        }
-                        ctx.drawImage(video, 0, 0);
-                        const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
-                        photos.push({ dataUrl: dataUrl, ts: new Date().toLocaleTimeString() });
-                        downloadLink.href = dataUrl;
-                        downloadLink.download = 'photo_' + Date.now() + '.jpg';
-                        snapRow.style.display = 'flex';
-                        camLabel.textContent = 'Photo saved — see gallery below';
-                        renderGallery();
+                            if (!stream) return;
+
+                            // Flash effect
+                            flashEl.classList.add('go');
+                            setTimeout(() => flashEl.classList.remove('go'), 160);
+
+                            // Draw frame to canvas
+                            canvas.width  = video.videoWidth  || 640;
+                            canvas.height = video.videoHeight || 480;
+                            const ctx = canvas.getContext('2d');
+                            if (facingMode === 'user') {
+                                ctx.translate(canvas.width, 0);
+                                ctx.scale(-1, 1);
+                            }
+                            ctx.drawImage(video, 0, 0);
+                            const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
+
+                            // Save photo
+                            photos.push({ dataUrl: dataUrl, ts: new Date().toLocaleTimeString() });
+
+                            // Set download link
+                            downloadLink.href = dataUrl;
+                            downloadLink.download = 'photo_' + Date.now() + '.jpg';
+
+                            // Show snap confirmation for 2 seconds then hide
+                            snapRow.style.display = 'flex';
+                            camLabel.textContent = 'Photo saved! Take another or close camera.';
+                            setTimeout(() => { snapRow.style.display = 'none'; }, 2000);
+
+                            // Update gallery in background (camera stays open)
+                            renderGallery();
+                            // Hide gallery while camera is open
+                            camGallery.style.display = 'none';
                         });
 
                         downloadLink.addEventListener('click', (e) => {
-                        e.preventDefault();
-                        const a = document.createElement('a');
-                        a.href = downloadLink.href;
-                        a.download = downloadLink.download;
-                        a.click();
+                            e.preventDefault();
+                            const a = document.createElement('a');
+                            a.href = downloadLink.href;
+                            a.download = downloadLink.download;
+                            a.click();
                         });
 
                         pvBack.addEventListener('click', () => {
-                        photoViewer.style.display = 'none';
-                        camGallery.style.display = 'flex';
-                        if (!stream) openBtn.style.display = 'inline-flex';
+                            photoViewer.style.display = 'none';
+                            camGallery.style.display = 'flex';
+                            if (!stream) openBtn.style.display = 'inline-flex';
                         });
 
                         pvDownload.addEventListener('click', () => {
-                        const a = document.createElement('a');
-                        a.href = photos[viewingIndex].dataUrl;
-                        a.download = 'photo_' + viewingIndex + '.jpg';
-                        a.click();
+                            const a = document.createElement('a');
+                            a.href = photos[viewingIndex].dataUrl;
+                            a.download = 'photo_' + viewingIndex + '.jpg';
+                            a.click();
                         });
 
                         pvDelete.addEventListener('click', () => {
-                        photos.splice(viewingIndex, 1);
-                        photoViewer.style.display = 'none';
-                        renderGallery();
-                        if (!stream) openBtn.style.display = 'inline-flex';
+                            photos.splice(viewingIndex, 1);
+                            photoViewer.style.display = 'none';
+                            renderGallery();
+                            if (!stream) openBtn.style.display = 'inline-flex';
                         });
 
                         clearAllBtn.addEventListener('click', () => {
-                        photos = [];
-                        renderGallery();
+                            photos = [];
+                            renderGallery();
                         });
-
-                        const refreshMetrics = (payload, resp) => {
-                            const lat = payload.latitude?.toFixed  ? payload.latitude.toFixed(6)  : payload.latitude;
-                            const lng = payload.longitude?.toFixed ? payload.longitude.toFixed(6) : payload.longitude;
-                            const acc = payload.accuracy ? Number(payload.accuracy).toFixed(1)    : '—';
-
-                            el.latitudeValue.textContent      = lat || '—';
-                            el.longitudeValue.textContent     = lng || '—';
-                            el.locationNameValue.textContent  = resp.location_name || '—';
-                            el.accuracyValue.textContent      = acc !== '—' ? `${acc} m` : '—';
-                            el.lastSeenValue.textContent      = resp.last_seen || new Date().toLocaleTimeString();
-
-                            if (resp.map_url) el.mapButton.href = resp.map_url;
-                            updateStatus(resp.status, resp.status_label);
-
-                            if (payload.accuracy &amp;&amp; Number(payload.accuracy) > 200) {
-                                setNotice('warning', 'Low GPS accuracy',
-                                    ' Move outdoors or enable high-accuracy mode for a precise location name.');
-                            }
-                        };
 
                         /* ── Tracking logic ── */
                         const sendLocation = async (position) => {

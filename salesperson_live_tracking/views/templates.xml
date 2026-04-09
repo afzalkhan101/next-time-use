@@ -23,13 +23,13 @@
                         .cam-open-btn svg { width: 17px; height: 17px; flex-shrink: 0; }
 
                         .cam-preview {
-                        position: relative; width: 100%; max-width: 340px;
-                        border-radius: 14px; overflow: hidden;
-                        border: 0.5px solid #d1d5db; background: #111;
+                            position: relative; width: 100%; max-width: 340px;
+                            border-radius: 14px; overflow: hidden;
+                            border: 0.5px solid #d1d5db; background: #111;
                         }
                         .cam-preview video {
-                        width: 100%; display: block;
-                        aspect-ratio: 4/3; object-fit: cover;
+                            width: 100%; display: block;
+                            aspect-ratio: 9/16; object-fit: cover;
                         }
                         .cam-flash {
                         position: absolute; inset: 0; background: #fff;

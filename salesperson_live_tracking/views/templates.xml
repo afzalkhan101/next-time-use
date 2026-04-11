@@ -8,16 +8,28 @@
                 <title>Live Tracking — <t t-out="user.name"/></title>
                 <style>
                     .cam-wrapper {
-                        display: flex; flex-direction: column;
-                        align-items: center; gap: 12px; padding: 1rem 0;
+                            display: flex;
+                            flex-direction: column;
+                            align-items: center;
+                            gap: 12px;
+                            padding: 1rem 0;
+                            width: 100%;  /* ADD THIS */
                         }
                         .cam-open-btn {
-                        display: inline-flex; align-items: center; gap: 8px;
-                        padding: 11px 22px; border-radius: 10px;
-                        background: #e6f1fb; border: 0.5px solid #85b7eb;
-                        color: #185fa5; font-size: 14px; font-weight: 500;
-                        cursor: pointer; transition: opacity .15s, transform .1s;
-                        }
+                        display: inline-flex;
+                        align-items: center;
+                        gap: 8px;
+                        padding: 11px 22px;
+                        border-radius: 10px;
+                        background: #e6f1fb;
+                        border: 0.5px solid #85b7eb;
+                        color: #185fa5;
+                        font-size: 14px;
+                        font-weight: 500;
+                        cursor: pointer;
+                        transition: opacity .15s, transform .1s;
+                        /* REMOVE any margin-left or float if present */
+                    }
                         .cam-open-btn:hover { opacity: .85; }
                         .cam-open-btn:active { transform: scale(.97); }
                         .cam-open-btn svg { width: 17px; height: 17px; flex-shrink: 0; }

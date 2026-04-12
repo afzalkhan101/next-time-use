@@ -5,7 +5,7 @@
         <field name="name">salesperson.kpi.tree</field>
         <field name="model">salesperson.kpi</field>
         <field name="arch" type="xml">
-            <list string="KPI Summary" default_order="kpi_date desc">
+            <list string="KPI Summary" default_order="kpi_date desc" class="o_list_compact">
                 <field name="kpi_date"/>
                 <field name="user_id"/>
                 <field name="sale_team_id" optional="show"/>

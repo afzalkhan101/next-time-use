@@ -14,16 +14,19 @@ class SalespersonTracker(models.Model):
     _order = "last_seen desc, id desc"
     _inherit = ['mail.thread', 'mail.activity.mixin']
     _MAX_PRECISE_LOCATION_ACCURACY_METERS = 200.0
+    _rec_name="user_id"
+    
 
+    
     user_id = fields.Many2one("res.users", required=True, ondelete="cascade", index=True)
     partner_id = fields.Many2one("res.partner", related="user_id.partner_id", store=True, readonly=True)
     company_id = fields.Many2one("res.company", related="user_id.company_id", store=True, readonly=True)
     sale_team_id = fields.Many2one("crm.team", related="user_id.sale_team_id", store=True, readonly=True)
-    is_tracking = fields.Boolean(string="Tracking Active", default=False)
+    is_tracking = fields.Boolean(string="Tracking Active", default=False, tracking=True)
     last_seen = fields.Datetime(string="Last Update", index=True)
-    last_accuracy = fields.Float(string="Accuracy (m)", digits=(16, 2))
-    last_speed = fields.Float(string="Speed (m/s)", digits=(16, 2))
-    last_heading = fields.Float(string="Heading", digits=(16, 2))
+    last_accuracy = fields.Float(string="Accuracy (m)", digits=(16, 2),tracking=True)
+    last_speed = fields.Float(string="Speed (m/s)", digits=(16, 2), tracking=True)
+    last_heading = fields.Float(string="Heading", digits=(16, 2), tracking=True)
     tracking_status = fields.Selection(
         [
             ("live", "Live"),
@@ -32,6 +35,7 @@ class SalespersonTracker(models.Model):
         ],
         compute="_compute_tracking_status",
         search="_search_tracking_status",
+        tracking =True,
     )
     tracking_status_label = fields.Char(compute="_compute_tracking_status")
     openstreetmap_url = fields.Char(compute="_compute_map_links")
@@ -42,24 +46,15 @@ class SalespersonTracker(models.Model):
     today_plan_count = fields.Integer(compute="_compute_today_visit_stats")
     today_covered_count = fields.Integer(compute="_compute_today_visit_stats")
     today_visit_summary = fields.Text(compute="_compute_today_visit_stats")
-    # models/salesperson_tracker.py
-
-    # KPI fields
     kpi_visit_completion_rate = fields.Float(
         string="Visit Completion Rate (%)", compute="_compute_today_visit_stats", digits=(16, 2)
     )
-
-    # ── Tracking Duration ──────────────────────────────────────────────────────
     last_tracking_start = fields.Datetime(string="Tracking Started At")
     last_tracking_duration = fields.Integer(string="Last Session Duration (sec)", default=0)
-
-    # Route deviation alert
     route_deviation_alert = fields.Boolean(string="Route Deviation Alert", default=False)
     last_alert_sent = fields.Datetime(string="Last Alert Sent")
 
-    _sql_constraints = [
-        ("salesperson_tracker_user_unique", "unique(user_id)", "A salesperson can only have one live tracker."),
-    ]
+
 
     @api.depends("last_seen", "is_tracking")
     def _compute_tracking_status(self):
@@ -171,6 +166,7 @@ class SalespersonTracker(models.Model):
         location_name = self.location_name
         if not accuracy_value or accuracy_value <= self._MAX_PRECISE_LOCATION_ACCURACY_METERS:
             location_name = self._reverse_geocode_location(latitude, longitude) or self.location_name
+        
         values = {
             "is_tracking": True,
             "last_seen": fields.Datetime.now(),

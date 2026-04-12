@@ -1,0 +1,22 @@
+
+/* Base compact table */
+.o_list_compact th,
+.o_list_compact td {
+    text-align: left;
+    font-size: 16px; /* Slightly bigger than 12px for readability */
+    padding: 5px 8px !important; /* Top-bottom 5px, left-right 8px */
+}
+
+/* Table header */
+.o_list_compact th {
+    background-color: #fafdff !important; /* Light blue */
+    font-weight: 600 !important;
+    text-align: center !important;
+    border-bottom: 2px solid #f8f8f8 !important; /* Clear separation */
+}
+
+/* Table cells */
+.o_list_compact td {
+    padding: 6px 8px !important; /* Consistent with header spacing */
+    vertical-align: middle !important;
+}

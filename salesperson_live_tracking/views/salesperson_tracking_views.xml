@@ -7,7 +7,7 @@
             <list string="Salesperson Tracking"
                   decoration-success="tracking_status == 'live'"
                   decoration-warning="tracking_status == 'idle'"
-                  decoration-muted="tracking_status == 'offline'">
+                  decoration-muted="tracking_status == 'offline'" class="o_list_compact">
                 <field name="user_id"/>
                 <field name="sale_team_id" optional="show"/>
                 <field name="tracking_status"/>
@@ -187,7 +187,7 @@
         <field name="name">salesperson.location.log.tree</field>
         <field name="model">salesperson.location.log</field>
         <field name="arch" type="xml">
-            <list string="Location History">
+            <list string="Location History" class ="o_list_compact">
                 <field name="tracked_at"/>
                 <field name="user_id"/>
                 <field name="location_name"/>

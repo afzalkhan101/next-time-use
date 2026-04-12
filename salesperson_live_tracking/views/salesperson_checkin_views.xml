@@ -7,7 +7,7 @@
         <field name="arch" type="xml">
             <list string="Check-Ins / Check-Outs"
                   decoration-success="state == 'checked_out'"
-                  decoration-info="state == 'checked_in'">
+                  decoration-info="state == 'checked_in'" class="o_list_compact">
                 <field name="name"/>
                 <field name="user_id"/>
                 <field name="location_name"/>
@@ -109,9 +109,7 @@
             </form>
         </field>
     </record>
-
     
-
     <record id="action_salesperson_checkin_my" model="ir.actions.act_window">
         <field name="name">My Check-Ins</field>
         <field name="res_model">salesperson.checkin</field>
@@ -120,22 +118,8 @@
         <field name="context">{'default_user_id': uid, 'search_default_today': 1}</field>
     </record>
 
-   
-    <!-- <menuitem id="menu_salesperson_checkin"
-              name="Check-Ins"
-              parent="salesperson_tracking_views.menu_salesperson_tracking_root"
-              action="action_salesperson_checkin"
-              sequence="6"
-              groups="sales_team.group_sale_manager"/>
 
-    <menuitem id="menu_salesperson_checkin_my"
-              name="My Check-Ins"
-              parent="salesperson_tracking_views.menu_salesperson_tracking_root"
-              action="action_salesperson_checkin_my"
-              sequence="7"
-              groups="sales_team.group_sale_salesman"/> -->
-
-              <menuitem id="menu_salesperson_tracking_root"
+        <menuitem id="menu_salesperson_tracking_root"
           name="Salesperson Tracking"
           sequence="5"/>
 </odoo>

@@ -1,42 +1,32 @@
 import base64
 from datetime import timedelta
-
 from odoo import _, api, fields, models
 from odoo.exceptions import ValidationError
 
-
 class SalespersonCheckin(models.Model):
-    """
-    Req #7: Check-In / Check-Out System
-    Req #3: Geo-Tagged Proof of Visit (Selfie Capture)
-    Req #9: Activity Notes & Customer Interaction Logging
-    Req #12: CRM Integration - links to CRM lead/opportunity/partner
-    """
+    
     _name = "salesperson.checkin"
     _description = "Salesperson Check-In / Check-Out"
     _inherit = ["mail.thread", "mail.activity.mixin"]
     _order = "checkin_time desc, id desc"
+    _rec_name ="user_id"
+
 
     name = fields.Char(string="Visit Reference", required=True, default="New Check-In", copy=False, tracking=True)
     tracker_id = fields.Many2one("salesperson.tracker", required=True, ondelete="cascade", index=True)
     user_id = fields.Many2one("res.users", related="tracker_id.user_id", store=True, readonly=True, index=True)
     company_id = fields.Many2one("res.company", related="tracker_id.company_id", store=True, readonly=True)
     visit_plan_id = fields.Many2one("salesperson.visit.plan", string="Visit Plan", ondelete="set null")
-
-    # Location
     location_name = fields.Char(string="Location Name", required=True)
     checkin_latitude = fields.Float(string="Check-In Latitude", digits=(16, 7))
     checkin_longitude = fields.Float(string="Check-In Longitude", digits=(16, 7))
     checkout_latitude = fields.Float(string="Check-Out Latitude", digits=(16, 7))
     checkout_longitude = fields.Float(string="Check-Out Longitude", digits=(16, 7))
-
-    # Time
     checkin_time = fields.Datetime(string="Check-In Time", required=True, default=fields.Datetime.now, tracking=True)
     checkout_time = fields.Datetime(string="Check-Out Time", tracking=True)
     duration_minutes = fields.Float(string="Duration (min)", compute="_compute_duration", store=True)
     duration_display = fields.Char(string="Time Spent", compute="_compute_duration", store=True)
 
-    # State
     state = fields.Selection(
         [("checked_in", "Checked In"), ("checked_out", "Checked Out")],
         default="checked_in",

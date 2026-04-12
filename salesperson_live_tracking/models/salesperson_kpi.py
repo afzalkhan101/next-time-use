@@ -5,10 +5,7 @@ from odoo import _, api, fields, models
 
 
 class SalespersonKpi(models.Model):
-    """
-    Req #5: Coverage-Based KPI Calculation
-    Req #11: Dashboard & Reporting
-    """
+  
     _name = "salesperson.kpi"
     _description = "Salesperson KPI Summary"
     _order = "kpi_date desc, id desc"
@@ -18,25 +15,20 @@ class SalespersonKpi(models.Model):
     sale_team_id = fields.Many2one("crm.team", related="user_id.sale_team_id", store=True, readonly=True)
     kpi_date = fields.Date(required=True, default=fields.Date.context_today, index=True)
 
-    # Visit KPIs
     planned_visits = fields.Integer(string="Planned Visits")
     completed_visits = fields.Integer(string="Completed Visits")
     visit_completion_rate = fields.Float(string="Visit Completion Rate (%)", digits=(16, 2))
 
-    # Time KPIs
     total_field_minutes = fields.Float(string="Total Field Time (min)", digits=(16, 2))
     avg_visit_duration = fields.Float(string="Avg Visit Duration (min)", digits=(16, 2))
     total_field_display = fields.Char(string="Total Field Time", compute="_compute_display_fields")
 
-    # Check-in KPIs
     checkin_count = fields.Integer(string="Check-Ins")
     selfie_count = fields.Integer(string="Selfies Captured")
 
-    # CRM KPIs
     deals_closed = fields.Integer(string="Deals Closed")
     followups_created = fields.Integer(string="Follow-Ups Needed")
-
-    # Outcome breakdown
+    
     positive_outcomes = fields.Integer(string="Positive Outcomes")
     neutral_outcomes = fields.Integer(string="Neutral Outcomes")
     negative_outcomes = fields.Integer(string="Negative Outcomes")

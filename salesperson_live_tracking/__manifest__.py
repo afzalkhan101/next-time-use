@@ -1,7 +1,7 @@
 {
     "name": "Salesperson Live Tracking",
     "summary": "Full salesperson field tracking: GPS, check-in/out, selfie proof, KPI, alerts, offline sync, CRM integration",
-    'version': '18.0.2.0.0',
+    "version": "19.0.2.0.0",
     "category": "Sales/Sales",
     "depends": ["sale_management", "web_map", "base_geolocalize", "crm", "mail"],
     "data": [

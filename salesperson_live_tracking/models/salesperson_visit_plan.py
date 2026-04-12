@@ -42,7 +42,7 @@ class SalespersonVisitPlan(models.Model):
 
     radius_meters = fields.Float(default=100.0)
 
-    is_covered = fields.Boolean(compute="_compute_visit_metrics")
+    is_covered = fields.Boolean(compute="_compute_visit_metrics",store=True)
     first_arrival = fields.Datetime(compute="_compute_visit_metrics")
     last_departure = fields.Datetime(compute="_compute_visit_metrics")
     stay_duration_minutes = fields.Float(compute="_compute_visit_metrics")

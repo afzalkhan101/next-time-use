@@ -1,22 +1,19 @@
 
-/* Base compact table */
 .o_list_compact th,
 .o_list_compact td {
     text-align: left;
-    font-size: 16px; /* Slightly bigger than 12px for readability */
-    padding: 5px 8px !important; /* Top-bottom 5px, left-right 8px */
+    font-size: 16px; 
+    padding: 5px 8px !important; 
 }
 
-/* Table header */
 .o_list_compact th {
-    background-color: #fafdff !important; /* Light blue */
+    background-color: #fafdff !important; 
     font-weight: 600 !important;
     text-align: center !important;
-    border-bottom: 2px solid #f8f8f8 !important; /* Clear separation */
+    border-bottom: 2px solid #f8f8f8 !important; 
 }
 
-/* Table cells */
 .o_list_compact td {
-    padding: 6px 8px !important; /* Consistent with header spacing */
+    padding: 6px 8px !important; 
     vertical-align: middle !important;
 }

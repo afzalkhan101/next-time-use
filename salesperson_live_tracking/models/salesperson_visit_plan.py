@@ -1,10 +1,8 @@
-# models/salesperson_visit_plan.py
 
 from collections import defaultdict
 from datetime import datetime, time, timedelta
 from math import asin, cos, radians, sin, sqrt
 import pytz
-
 from odoo import api, fields, models
 from odoo.exceptions import ValidationError
 
@@ -16,7 +14,6 @@ def _haversine_distance_meters(lat1, lon1, lat2, lon2):
     a = sin(dlat / 2.0) ** 2 + cos(radians(lat1)) * cos(radians(lat2)) * sin(dlon / 2.0) ** 2
     return 2.0 * radius * asin(sqrt(a))
 
-
 class SalespersonVisitPlan(models.Model):
     _name = "salesperson.visit.plan"
     _description = "Salesperson Planned Visit"
@@ -27,46 +24,41 @@ class SalespersonVisitPlan(models.Model):
     date = fields.Date(default=fields.Date.today)
     sequence = fields.Integer(default=10)
     active = fields.Boolean(default=True)
-
     space_line_ids = fields.One2many(
         "add.space.for.salesperson.line",
         "plan_id",
         string="Space Lines"
     )
-
-    user_id = fields.Many2one("res.users", required=True, ondelete="cascade")
+    user_id = fields.Many2one("res.users", required=True,string="Salesperson" ,ondelete="cascade")
     company_id = fields.Many2one("res.company", related="user_id.company_id", store=True)
     sale_team_id = fields.Many2one("crm.team", related="user_id.sale_team_id", store=True)
-
-    visit_date = fields.Date(required=True, default=fields.Date.context_today)
-
-    partner_id = fields.Many2one("res.partner")
+    visit_date = fields.Date(required=True,tracking=True, default=fields.Date.context_today)
+    partner_ids = fields.Many2many(
+    comodel_name="res.partner",
+    relation="salesperson_visit_plan_partner_rel",
+    column1="plan_id",
+    column2="partner_id",
+    string="Customers",
+     )
     location_name = fields.Char(default="New Location")
-
     manual_latitude = fields.Float(digits=(16, 7))
     manual_longitude = fields.Float(digits=(16, 7))
-
     latitude = fields.Float(store=True, digits=(16, 7))
     longitude = fields.Float(store=True, digits=(16, 7))
-
     radius_meters = fields.Float(default=100.0)
-
     is_covered = fields.Boolean()
     first_arrival = fields.Datetime()
     last_departure = fields.Datetime()
     stay_duration_minutes = fields.Float()
     stay_duration_display = fields.Char()
     openstreetmap_url = fields.Char()
-
     manager_notes = fields.Text()
     priority = fields.Selection([
         ("0", "Normal"),
         ("1", "High"),
         ("2", "Urgent")
     ], default="0")
-
     coverage_color = fields.Integer(compute="_compute_coverage_color")
-
     state = fields.Selection([
         ("draft", "Draft"),
         ("submitted", "Submitted"),
@@ -74,25 +66,22 @@ class SalespersonVisitPlan(models.Model):
         ("rejected", "Rejected"),
         ("done", "Done")
     ], default="draft", tracking=True)
-
-    # ------------------------------------------------------------------
-    # Compute
-    # ------------------------------------------------------------------
-
+    html_note = fields.Html(string="HTML Note", sanitize=True)
+    is_manager = fields.Boolean("res.users",
+    related="user_id.is_manager",
+    store=False
+     )
+    
     def _compute_coverage_color(self):
         for rec in self:
             rec.coverage_color = 10 if rec.is_covered else 1
 
-    # ------------------------------------------------------------------
-    # Push to Dashboard
-    # ------------------------------------------------------------------
-
     def _push_to_dashboard(self):
-        Dashboard = self.env["sales.person.dashboard"]
+        Dashboard = self.env["salesperson.tracker"]
         Line = self.env["sales.person.space.line"]
 
         for rec in self:
-            # Find or create the dashboard record for this salesperson
+            
             dashboard = Dashboard.search([
                 ("sales_person", "=", rec.user_id.name)
             ], limit=1)
@@ -103,17 +92,14 @@ class SalespersonVisitPlan(models.Model):
                     "manager": rec.user_id.parent_id.name if rec.user_id.parent_id else False,
                 })
 
-            # Push every space_line from the plan into the dashboard
             for space_line in rec.space_line_ids:
                 existing_line = Line.search([
-                    ("dashboard_id", "=", dashboard.id),
                     ("partner_id", "=", space_line.partner_id.id),
                     ("visit_date", "=", space_line.visit_date),
                 ], limit=1)
 
                 if not existing_line:
                     Line.create({
-                        "dashboard_id": dashboard.id,
                         "plan_id": rec.id,
                         "partner_id": space_line.partner_id.id,
                         "visit_date": space_line.visit_date,
@@ -123,14 +109,10 @@ class SalespersonVisitPlan(models.Model):
                         "notes": space_line.notes or "",
                     })
 
-    # ------------------------------------------------------------------
-    # State actions
-    # ------------------------------------------------------------------
 
     def action_submit(self):
         for rec in self:
             rec.state = "submitted"
-
     def action_approve(self):
         for rec in self:
             rec.state = "approved"
@@ -148,10 +130,7 @@ class SalespersonVisitPlan(models.Model):
         for rec in self:
             rec.state = "draft"
 
-    # ------------------------------------------------------------------
-    # ORM overrides
-    # ------------------------------------------------------------------
-
+   
     @api.model_create_multi
     def create(self, vals_list):
         for vals in vals_list:
@@ -164,7 +143,7 @@ class SalespersonVisitPlan(models.Model):
                         next_seq = int(last.name.split("-")[-1]) + 1
                     except Exception:
                         next_seq = 1
-                vals["name"] = f"M/D/{today_str}-{str(next_seq).zfill(5)}"
+                vals["name"] = f"{today_str}-{str(next_seq).zfill(5)}"
         return super().create(vals_list)
 
 

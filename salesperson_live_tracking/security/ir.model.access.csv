@@ -13,14 +13,10 @@ access_salesperson_kpi_manager,salesperson.kpi.manager,model_salesperson_kpi,sal
 access_salesperson_visit_plan_user,salesperson.visit.plan.user,model_salesperson_visit_plan,sales_team.group_sale_salesman,1,0,0,0
 access_salesperson_visit_plan_manager,salesperson.visit.plan.manager,model_salesperson_visit_plan,sales_team.group_sale_manager,1,1,1,1
 
-access_sales_person_dashboard_user,sales.person.dashboard user,model_sales_person_dashboard,sales_team.group_sale_salesman,1,1,1,0
-access_sales_person_dashboard_manager,sales.person.dashboard manager,model_sales_person_dashboard,sales_team.group_sale_manager,1,1,1,1
 
 access_sales_person_space_line_user,sales.person.space.line user,model_sales_person_space_line,sales_team.group_sale_salesman,1,1,1,0
 access_sales_person_space_line_manager,sales.person.space.line manager,model_sales_person_space_line,sales_team.group_sale_manager,1,1,1,1
 
-access_salesperson_dashboard_user,sales.person.dashboard user,model_sales_person_dashboard,sales_team.group_sale_salesman,1,1,1,0
-access_salesperson_dashboard_manager,sales.person.dashboard manager,model_sales_person_dashboard,sales_team.group_sale_manager,1,1,1,1
 
 access_salesperson_space_line_user,sales.person.space.line user,model_sales_person_space_line,sales_team.group_sale_salesman,1,1,1,0
 access_salesperson_space_line_manager,sales.person.space.line manager,model_sales_person_space_line,sales_team.group_sale_manager,1,1,1,1

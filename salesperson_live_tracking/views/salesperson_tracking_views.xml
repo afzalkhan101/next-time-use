@@ -12,6 +12,7 @@
                 <field name="user_id"/>
                 <field name="sale_team_id" optional="show"/>
                 <field name="tracking_status"/>
+                <field name="state"/>
                 <field name="last_seen"/>
                 <field name="last_accuracy" optional="show"/>
                 <field name="last_speed" optional="hide"/>
@@ -31,146 +32,166 @@
         <field name="model">salesperson.tracker</field>
         <field name="arch" type="xml">
             <kanban class="o_kanban_mobile">
-            <field name="user_id"/>
-            <field name="sale_team_id"/>
-            <field name="tracking_status"/>
-            <field name="tracking_status_label"/>
-            <field name="last_seen"/>
-            <field name="last_accuracy"/>
-            <field name="latitude"/>
-            <field name="longitude"/>
-            <field name="history_count"/>
-            <field name="today_plan_count"/>
-            <field name="today_covered_count"/>
-            <field name="kpi_visit_completion_rate"/>
-            <field name="location_name"/>
-            <field name="route_deviation_alert"/>
-            <templates>
-                <t t-name="card">
-                    <div t-attf-class="o_kanban_record #{record.route_deviation_alert.raw_value and 'border border-danger' or ''}">
+                <field name="user_id"/>
+                <field name="sale_team_id"/>
+                <field name="tracking_status"/>
+                <field name="tracking_status_label"/>
+                <field name="last_seen"/>
+                <field name="last_accuracy"/>
+                <field name="latitude"/>
+                <field name="longitude"/>
+                <field name="history_count"/>
+                <field name="today_plan_count"/>
+                <field name="today_covered_count"/>
+                <field name="kpi_visit_completion_rate"/>
+                <field name="location_name"/>
+                <field name="route_deviation_alert"/>
+                <field name="state"/>
+                <templates>
+                    <t t-name="card">
+                        <div t-attf-class="o_kanban_record #{record.route_deviation_alert.raw_value and 'border border-danger' or ''}">
 
-                        <!-- Header: Avatar + Name + Badges -->
-                        <div class="d-flex align-items-start justify-content-between mb-3">
+                            <!-- Header: Avatar + Name + Badges -->
+                            <div class="d-flex align-items-start justify-content-between mb-3">
 
-                            <!-- Avatar + Name -->
-                            <div class="d-flex align-items-center gap-2">
-                                <div t-attf-class="rounded-circle d-flex align-items-center justify-content-center fw-500 flex-shrink-0
-                                    #{record.tracking_status.raw_value == 'live' and 'bg-success-subtle text-success' or
-                                    record.tracking_status.raw_value == 'idle' and 'bg-warning-subtle text-warning' or
-                                    'bg-secondary-subtle text-secondary'}"
-                                    style="width:38px;height:38px;font-size:13px;">
-                                    <t t-esc="record.user_id.value[0] + (record.user_id.value.split(' ')[1] and record.user_id.value.split(' ')[1][0] or '')"/>
+                                <!-- Avatar + Name -->
+                                <div class="d-flex align-items-center gap-2">
+                                    <div t-attf-class="rounded-circle d-flex align-items-center justify-content-center fw-500 flex-shrink-0
+                                        #{record.tracking_status.raw_value == 'live' and 'bg-success-subtle text-success' or
+                                        record.tracking_status.raw_value == 'idle' and 'bg-warning-subtle text-warning' or
+                                        'bg-secondary-subtle text-secondary'}"
+                                        style="width:38px;height:38px;font-size:13px;">
+                                        <t t-esc="record.user_id.value[0] + (record.user_id.value.split(' ')[1] and record.user_id.value.split(' ')[1][0] or '')"/>
+                                    </div>
+                                    <div>
+                                        <strong class="d-block" style="font-size:15px;">
+                                            <field name="user_id"/>
+                                        </strong>
+                                        <span class="text-muted" style="font-size:12px;">
+                                            <field name="sale_team_id"/>
+                                        </span>
+                                    </div>
                                 </div>
-                                <div>
-                                    <strong class="d-block" style="font-size:15px;">
-                                        <field name="user_id"/>
-                                    </strong>
-                                    <span class="text-muted" style="font-size:12px;">
-                                        <field name="sale_team_id"/>
+
+                                <!-- Status Badges -->
+                                <div class="d-flex flex-column align-items-end gap-1">
+
+                                    <!-- Tracking Status Badge -->
+                                    <span t-attf-class="badge rounded-pill d-flex align-items-center gap-1
+                                        #{record.tracking_status.raw_value == 'live' and 'text-bg-success' or
+                                        record.tracking_status.raw_value == 'idle' and 'text-bg-warning' or
+                                        'text-bg-secondary'}"
+                                        style="font-size:11px;">
+                                        <span class="rounded-circle"
+                                            style="width:6px;height:6px;background:currentColor;display:inline-block;"/>
+                                        <field name="tracking_status_label"/>
                                     </span>
+
+                                    <!-- State Badge -->
+                                    <span t-attf-class="badge rounded-pill
+                                        #{record.state.raw_value == 'planned'  and 'text-bg-primary'  or
+                                          record.state.raw_value == 'visited'  and 'text-bg-info'     or
+                                          record.state.raw_value == 'accepted' and 'text-bg-success'  or
+                                          record.state.raw_value == 'rejected' and 'text-bg-danger'   or
+                                          'text-bg-secondary'}"
+                                        style="font-size:11px;">
+                                        <t t-if="record.state.raw_value == 'planned'">&#128203; Planned</t>
+                                        <t t-elif="record.state.raw_value == 'visited'">&#10003; Visited</t>
+                                        <t t-elif="record.state.raw_value == 'accepted'">&#9989; Accepted</t>
+                                        <t t-elif="record.state.raw_value == 'rejected'">&#10060; Rejected</t>
+                                    </span>
+
+                                    <!-- Deviation Badge -->
+                                    <span t-if="record.route_deviation_alert.raw_value"
+                                        class="badge rounded-pill text-bg-danger"
+                                        style="font-size:11px;">
+                                        &#9650; Deviation
+                                    </span>
+
                                 </div>
                             </div>
 
-                            <!-- Status Badges -->
-                            <div class="d-flex flex-column align-items-end gap-1">
-                                <span t-attf-class="badge rounded-pill d-flex align-items-center gap-1
-                                    #{record.tracking_status.raw_value == 'live' and 'text-bg-success' or
-                                    record.tracking_status.raw_value == 'idle' and 'text-bg-warning' or
-                                    'text-bg-secondary'}"
-                                    style="font-size:11px;">
-                                    <span class="rounded-circle"
-                                        style="width:6px;height:6px;background:currentColor;display:inline-block;"/>
-                                    <field name="tracking_status_label"/>
+                            <hr class="my-2 opacity-25"/>
+
+                            <!-- Location -->
+                            <div class="d-flex align-items-center gap-1 mb-1 text-muted" style="font-size:12px;">
+                                <i class="fa fa-map-marker me-1"/>
+                                <field name="location_name"/>
+                            </div>
+
+                            <!-- Last Seen + Accuracy -->
+                            <div class="d-flex align-items-center justify-content-between mb-3" style="font-size:12px;">
+                                <span class="text-muted">
+                                    <i class="fa fa-clock-o me-1"/>
+                                    <field name="last_seen"/>
                                 </span>
-                                <span t-if="record.route_deviation_alert.raw_value"
-                                    class="badge rounded-pill text-bg-danger"
-                                    style="font-size:11px;">
-                                    &#9650; Deviation
+                                <span class="badge text-bg-light text-muted border" style="font-size:11px;font-weight:400;">
+                                    &#177;<field name="last_accuracy"/> m
                                 </span>
                             </div>
-                        </div>
 
-                        <hr class="my-2 opacity-25"/>
-
-                        <!-- Location -->
-                        <div class="d-flex align-items-center gap-1 mb-1 text-muted" style="font-size:12px;">
-                            <i class="fa fa-map-marker me-1"/>
-                            <field name="location_name"/>
-                        </div>
-
-                        <!-- Last Seen + Accuracy -->
-                        <div class="d-flex align-items-center justify-content-between mb-3" style="font-size:12px;">
-                            <span class="text-muted">
-                                <i class="fa fa-clock-o me-1"/>
-                                <field name="last_seen"/>
-                            </span>
-                            <span class="badge text-bg-light text-muted border" style="font-size:11px;font-weight:400;">
-                                &#177;<field name="last_accuracy"/> m
-                            </span>
-                        </div>
-
-                        <!-- Stats Row: Planned / Covered / Logs -->
-                        <div class="d-flex justify-content-between text-center mb-3">
-                            <div class="d-flex flex-column">
-                                <span class="text-uppercase text-muted mb-1" style="font-size:10px;letter-spacing:0.04em;">Planned</span>
-                                <strong style="font-size:15px;"><field name="today_plan_count"/></strong>
-                            </div>
-                            <div class="d-flex flex-column">
-                                <span class="text-uppercase text-muted mb-1" style="font-size:10px;letter-spacing:0.04em;">Covered</span>
-                                <strong style="font-size:15px;"><field name="today_covered_count"/></strong>
-                            </div>
-                            <div class="d-flex flex-column">
-                                <span class="text-uppercase text-muted mb-1" style="font-size:10px;letter-spacing:0.04em;">Logs</span>
-                                <strong style="font-size:15px;"><field name="history_count"/></strong>
-                            </div>
-                        </div>
-
-                        <!-- Visit Rate Progress Bar -->
-                        <div class="mb-3">
-                            <div class="d-flex justify-content-between align-items-center mb-1">
-                                <span class="text-uppercase text-muted" style="font-size:10px;letter-spacing:0.04em;">Visit rate</span>
-                                <strong t-attf-class="
-                                    #{record.kpi_visit_completion_rate.raw_value >= 75 and 'text-success' or
-                                    record.kpi_visit_completion_rate.raw_value >= 40 and 'text-warning' or
-                                    'text-danger'}"
-                                    style="font-size:12px;">
-                                    <field name="kpi_visit_completion_rate"/>%
-                                </strong>
-                            </div>
-                            <div class="rounded-pill overflow-hidden" style="height:5px;background:rgba(0,0,0,0.08);">
-                                <div t-attf-class="h-100 rounded-pill
-                                    #{record.kpi_visit_completion_rate.raw_value >= 75 and 'bg-success' or
-                                    record.kpi_visit_completion_rate.raw_value >= 40 and 'bg-warning' or
-                                    'bg-danger'}"
-                                    t-attf-style="width: #{record.kpi_visit_completion_rate.raw_value}%;">
+                            <!-- Stats Row: Planned / Covered / Logs -->
+                            <div class="d-flex justify-content-between text-center mb-3">
+                                <div class="d-flex flex-column">
+                                    <span class="text-uppercase text-muted mb-1" style="font-size:10px;letter-spacing:0.04em;">Planned</span>
+                                    <strong style="font-size:15px;"><field name="today_plan_count"/></strong>
+                                </div>
+                                <div class="d-flex flex-column">
+                                    <span class="text-uppercase text-muted mb-1" style="font-size:10px;letter-spacing:0.04em;">Covered</span>
+                                    <strong style="font-size:15px;"><field name="today_covered_count"/></strong>
+                                </div>
+                                <div class="d-flex flex-column">
+                                    <span class="text-uppercase text-muted mb-1" style="font-size:10px;letter-spacing:0.04em;">Logs</span>
+                                    <strong style="font-size:15px;"><field name="history_count"/></strong>
                                 </div>
                             </div>
-                        </div>
 
-                        <!-- Action Buttons -->
-                        <div class="d-flex gap-2 flex-wrap">
-                            <button type="object" name="action_open_live_tracking_page"
-                                class="btn btn-sm btn-primary flex-grow-1">
-                                Live page
-                            </button>
-                            <button type="object" name="action_open_moving_map_view"
-                                class="btn btn-sm btn-outline-primary">
-                                <i class="fa fa-map-marker me-1"/>Map
-                            </button>
-                            <button type="object" name="action_view_checkins"
-                                class="btn btn-sm btn-outline-secondary">
-                                Check-ins
-                            </button>
-                            <button type="object" name="action_view_kpi"
-                                class="btn btn-sm btn-outline-secondary">
-                                KPI
-                            </button>
-                        </div>
+                            <!-- Visit Rate Progress Bar -->
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <span class="text-uppercase text-muted" style="font-size:10px;letter-spacing:0.04em;">Visit rate</span>
+                                    <strong t-attf-class="
+                                        #{record.kpi_visit_completion_rate.raw_value >= 75 and 'text-success' or
+                                        record.kpi_visit_completion_rate.raw_value >= 40 and 'text-warning' or
+                                        'text-danger'}"
+                                        style="font-size:12px;">
+                                        <field name="kpi_visit_completion_rate"/>%
+                                    </strong>
+                                </div>
+                                <div class="rounded-pill overflow-hidden" style="height:5px;background:rgba(0,0,0,0.08);">
+                                    <div t-attf-class="h-100 rounded-pill
+                                        #{record.kpi_visit_completion_rate.raw_value >= 75 and 'bg-success' or
+                                        record.kpi_visit_completion_rate.raw_value >= 40 and 'bg-warning' or
+                                        'bg-danger'}"
+                                        t-attf-style="width: #{record.kpi_visit_completion_rate.raw_value}%;">
+                                    </div>
+                                </div>
+                            </div>
 
-                    </div>
-                </t>
-            </templates>
-        </kanban>
+                            <!-- Action Buttons -->
+                            <div class="d-flex gap-2 flex-wrap">
+                                <button type="object" name="action_open_live_tracking_page"
+                                    class="btn btn-sm btn-primary flex-grow-1">
+                                    Live page
+                                </button>
+                                <button type="object" name="action_open_moving_map_view"
+                                    class="btn btn-sm btn-outline-primary">
+                                    <i class="fa fa-map-marker me-1"/>Map
+                                </button>
+                                <button type="object" name="action_view_checkins"
+                                    class="btn btn-sm btn-outline-secondary">
+                                    Check-ins
+                                </button>
+                                <button type="object" name="action_view_kpi"
+                                    class="btn btn-sm btn-outline-secondary">
+                                    KPI
+                                </button>
+                            </div>
+
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
         </field>
     </record>
 
@@ -184,7 +205,7 @@
                             string="Mark as Visited"
                             type="object"
                             class="btn-primary"
-                            invisible="state != 'planned' or is_manager !=True" />
+                            invisible="state != 'planned' or is_manager != True"/>
                     <button name="action_set_accepted"
                             string="Accept"
                             type="object"
@@ -256,7 +277,6 @@
                             <field name="longitude" readonly="1"/>
                             <field name="openstreetmap_url" widget="url" string="OpenStreetMap"/>
                         </group>
-                        
                     </group>
 
                     <notebook>
@@ -335,7 +355,6 @@
                             <field name="speed"/>
                             <field name="heading"/>
                             <field name="openstreetmap_url" widget="url" string="OpenStreetMap"/>
-                            
                         </group>
                     </group>
                 </sheet>

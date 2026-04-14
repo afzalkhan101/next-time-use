@@ -9,17 +9,7 @@ access_salesperson_checkin_user,salesperson.checkin.user,model_salesperson_check
 access_salesperson_checkin_manager,salesperson.checkin.manager,model_salesperson_checkin,sales_team.group_sale_manager,1,1,1,1
 access_salesperson_kpi_user,salesperson.kpi.user,model_salesperson_kpi,sales_team.group_sale_salesman,1,0,0,0
 access_salesperson_kpi_manager,salesperson.kpi.manager,model_salesperson_kpi,sales_team.group_sale_manager,1,1,1,1
-
-access_salesperson_visit_plan_user,salesperson.visit.plan.user,model_salesperson_visit_plan,sales_team.group_sale_salesman,1,0,0,0
-access_salesperson_visit_plan_manager,salesperson.visit.plan.manager,model_salesperson_visit_plan,sales_team.group_sale_manager,1,1,1,1
-
-
-access_sales_person_space_line_user,sales.person.space.line user,model_sales_person_space_line,sales_team.group_sale_salesman,1,1,1,0
-access_sales_person_space_line_manager,sales.person.space.line manager,model_sales_person_space_line,sales_team.group_sale_manager,1,1,1,1
-
-
-access_salesperson_space_line_user,sales.person.space.line user,model_sales_person_space_line,sales_team.group_sale_salesman,1,1,1,0
-access_salesperson_space_line_manager,sales.person.space.line manager,model_sales_person_space_line,sales_team.group_sale_manager,1,1,1,1
-
-access_add_space_salesperson_line_manager,add.space.for.salesperson.line.manager,model_add_space_for_salesperson_line,sales_team.group_sale_manager,1,1,1,1
-access_add_space_salesperson_line_salesman,add.space.for.salesperson.line.salesman,model_add_space_for_salesperson_line,sales_team.group_sale_salesman,1,1,1,1
+access_salesperson_space_line_user,salesperson.space.line.user,model_sales_person_space_line,sales_team.group_sale_salesman,1,1,1,0
+access_salesperson_space_line_manager,salesperson.space.line.manager,model_sales_person_space_line,sales_team.group_sale_manager,1,1,1,1
+access_add_space_salesperson_line_manager,add.space.salesperson.line.manager,model_add_space_for_salesperson_line,sales_team.group_sale_manager,1,1,1,1
+access_add_space_salesperson_line_salesman,add.space.salesperson.line.salesman,model_add_space_for_salesperson_line,sales_team.group_sale_salesman,1,1,1,1

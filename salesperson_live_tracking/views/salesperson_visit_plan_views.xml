@@ -7,7 +7,6 @@
             <list string="Planned Visits"
                   decoration-success="is_covered"
                   decoration-danger="not is_covered"
-                  default_order="visit_date desc, sequence"
                   class="o_list_compact">
                 <field name="name"/>
                 <field name="sequence" widget="handle"/>
@@ -157,7 +156,7 @@
                     <notebook>
                         <page string="Visit Lines">
                             <field name="space_line_ids">
-                                <list editable="bottom">
+                                <list editable="bottom" class="o_list_compact">
                                     <field name="sequence" widget="handle"/>
                                     <field name="visit_date"/>
                                    

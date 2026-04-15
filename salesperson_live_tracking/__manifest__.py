@@ -16,7 +16,8 @@
     ],
     'assets': {
     'web.assets_backend': [
-        'salesperson_live_tracking/static/src/scss/style.css'
+        'salesperson_live_tracking/static/src/scss/style.css',
+        'salesperson_live_tracking/static/src/css/style.css'
     ],
     }
     ,

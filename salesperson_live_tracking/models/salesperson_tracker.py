@@ -5,7 +5,6 @@ from odoo.exceptions import UserError
 import requests
 from requests.exceptions import RequestException
 
-
 class SalespersonTracker(models.Model):
     _name = "salesperson.tracker"
     _description = "Salesperson Live Tracker"

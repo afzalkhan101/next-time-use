@@ -9,7 +9,7 @@
             decoration-primary="state == 'accepted'"
             decoration-info="state == 'visited'"
             decoration-danger="state == 'rejected'"
-            decoration-muted="tracking_status == 'offline'">
+            decoration-muted="tracking_status == 'offline'" class="o_list_compact">
                 <field name="user_id"/>
                 <field name="sale_team_id" optional="show"/>
                 <field name="tracking_status"/>
@@ -276,7 +276,7 @@
                         </div>
                     </div>
 
-                    
+
                     <group string="Basic Informations">
                         <group>
                             <field name="user_id"/>

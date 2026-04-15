@@ -1,10 +1,8 @@
-
 from collections import defaultdict
-from datetime import datetime, time, timedelta
+from datetime import datetime
 from math import asin, cos, radians, sin, sqrt
 import pytz
 from odoo import api, fields, models
-from odoo.exceptions import ValidationError
 
 
 def _haversine_distance_meters(lat1, lon1, lat2, lon2):
@@ -13,6 +11,7 @@ def _haversine_distance_meters(lat1, lon1, lat2, lon2):
     dlon = radians(lon2 - lon1)
     a = sin(dlat / 2.0) ** 2 + cos(radians(lat1)) * cos(radians(lat2)) * sin(dlon / 2.0) ** 2
     return 2.0 * radius * asin(sqrt(a))
+
 
 class SalespersonVisitPlan(models.Model):
     _name = "salesperson.visit.plan"
@@ -24,68 +23,43 @@ class SalespersonVisitPlan(models.Model):
     date = fields.Date(default=fields.Date.today)
     sequence = fields.Integer(default=10)
     active = fields.Boolean(default=True)
-    space_line_ids = fields.One2many(
-        "add.space.for.salesperson.line",
-        "plan_id",
-        string="Space Lines"
-    )
-    user_id = fields.Many2one("res.users", required=True,string="Sales person" ,ondelete="cascade")
+
+    user_id = fields.Many2one("res.users", required=True, string="Sales person", ondelete="cascade")
     company_id = fields.Many2one("res.company", related="user_id.company_id", store=True)
     sale_team_id = fields.Many2one("crm.team", related="user_id.sale_team_id", store=True)
-    visit_date = fields.Date(required=True,tracking=True, default=fields.Date.context_today)
+
+    visit_date = fields.Date(required=True, tracking=True, default=fields.Date.context_today)
+
     partner_ids = fields.Many2many(
-    comodel_name="res.partner",
-    relation="salesperson_visit_plan_partner_rel",
-    column1="plan_id",
-    column2="partner_id",
-    string="Customers",
-     )
+        comodel_name="res.partner",
+        relation="salesperson_visit_plan_partner_rel",
+        column1="plan_id",
+        column2="partner_id",
+        string="Customers",
+    )
+
     location_name = fields.Char(default="New Location")
     manual_latitude = fields.Float(digits=(16, 7))
     manual_longitude = fields.Float(digits=(16, 7))
     latitude = fields.Float(store=True, digits=(16, 7))
     longitude = fields.Float(store=True, digits=(16, 7))
     radius_meters = fields.Float(default=100.0)
-    is_covered = fields.Boolean()
-    first_arrival = fields.Datetime()
-    last_departure = fields.Datetime()
-    stay_duration_minutes = fields.Float()
-    stay_duration_display = fields.Char()
-    openstreetmap_url = fields.Char()
-    manager_notes = fields.Text()
-    priority = fields.Selection([
-        ("0", "Normal"),
-        ("1", "High"),
-        ("2", "Urgent")
-    ], default="0")
-    coverage_color = fields.Integer(compute="_compute_coverage_color")
-    state = fields.Selection([
-        ("draft", "Draft"),
-        ("submitted", "Submitted"),
-        ("approved", "Approved"),
-        ("rejected", "Rejected"),
-        ("done", "Done")
-    ], default="draft", tracking=True)
-    purpose = fields.Selection([
-        ('order', 'New Order'),
-        ('payment', 'Payment Collection'),
-        ('complaint', 'Complaint'),
-        ('followup', 'Follow Up'),
-        ('demo', 'Product Demo')
-    ], default='followup', tracking=True)
 
-    #Time related fields
+    openstreetmap_url = fields.Char()
 
     checkin_time = fields.Datetime()
     checkout_time = fields.Datetime()
-    stay_minutes = fields.Float(
-        compute='_compute_stay',
+
+    stay_minutes = fields.Float(compute='_compute_stay', store=True)
+
+    is_covered = fields.Boolean(
+        compute="_compute_is_covered",
         store=True
     )
 
-    #Expense Related fields 
+    coverage_color = fields.Integer(compute="_compute_coverage_color")
 
-
+ 
     expense_transport = fields.Float()
     expense_food = fields.Float()
     expense_other = fields.Float()
@@ -95,33 +69,108 @@ class SalespersonVisitPlan(models.Model):
         store=True
     )
 
-    #other's fields 
-
+  
     next_followup_date = fields.Date()
-    is_covered = fields.Boolean(
-        compute="_compute_is_covered",
-        store=True
+    html_note = fields.Html(string="HTML Note", sanitize=True)
+
+    manager_notes = fields.Text()
+
+    priority = fields.Selection([
+        ("0", "Normal"),
+        ("1", "High"),
+        ("2", "Urgent")
+    ], default="0")
+
+    purpose = fields.Selection([
+        ('order', 'New Order'),
+        ('payment', 'Payment Collection'),
+        ('complaint', 'Complaint'),
+        ('followup', 'Follow Up'),
+        ('demo', 'Product Demo')
+    ], default='followup', tracking=True)
+
+    is_manager = fields.Boolean(
+        related="user_id.is_manager",
+        store=False
     )
 
+ 
+    state = fields.Selection([
+        ("draft", "Draft"),
+        ("submitted", "Submitted"),
+        ("approved", "Approved"),
+        ("planned", "Planned"),
+        ("accepted", "Accepted"),
+        ("visited", "Visited"),
+        ("rejected", "Rejected"),
+        ("done", "Done")
+    ], default="draft", tracking=True)
 
+    space_line_ids = fields.One2many(
+        "add.space.for.salesperson.line",
+        "plan_id",
+        string="Space Lines"
+    )
 
+   
+    @api.depends('checkin_time', 'checkout_time')
+    def _compute_stay(self):
+        for rec in self:
+            if rec.checkin_time and rec.checkout_time:
+                diff = rec.checkout_time - rec.checkin_time
+                rec.stay_minutes = diff.total_seconds() / 60
+            else:
+                rec.stay_minutes = 0
 
-    html_note = fields.Html(string="HTML Note", sanitize=True)
-    is_manager = fields.Boolean("res.users",
-    related="user_id.is_manager",
-    store=False
-     )
-    
+    @api.depends('checkin_time', 'checkout_time')
+    def _compute_is_covered(self):
+        for rec in self:
+            rec.is_covered = bool(rec.checkin_time and rec.checkout_time)
+
     def _compute_coverage_color(self):
         for rec in self:
             rec.coverage_color = 10 if rec.is_covered else 1
+
+    @api.depends('expense_transport', 'expense_food', 'expense_other')
+    def _compute_total_expense(self):
+        for rec in self:
+            rec.total_expense = (
+                rec.expense_transport +
+                rec.expense_food +
+                rec.expense_other
+            )
+
+    def action_submit(self):
+        self.filtered(lambda r: r.state == 'draft').write({'state': 'submitted'})
+
+    def action_approve(self):
+        self.filtered(lambda r: r.state == 'submitted').write({'state': 'approved'})
+        self._push_to_dashboard()
+
+    def action_plan(self):
+        self.filtered(lambda r: r.state == 'approved').write({'state': 'planned'})
+
+    def action_accept(self):
+        self.filtered(lambda r: r.state == 'planned').write({'state': 'accepted'})
+
+    def action_visit(self):
+        self.filtered(lambda r: r.state == 'accepted').write({'state': 'visited'})
+
+    def action_done(self):
+        self.filtered(lambda r: r.state == 'visited').write({'state': 'done'})
+
+    def action_reject(self):
+        self.filtered(lambda r: r.state in ('submitted', 'approved')).write({'state': 'rejected'})
+
+    def action_reset_draft(self):
+        self.write({'state': 'draft'})
+
 
     def _push_to_dashboard(self):
         Dashboard = self.env["salesperson.tracker"]
         Line = self.env["sales.person.space.line"]
 
         for rec in self:
-            
             dashboard = Dashboard.search([
                 ("sales_person", "=", rec.user_id.name)
             ], limit=1)
@@ -148,48 +197,8 @@ class SalespersonVisitPlan(models.Model):
                         "total_cost": space_line.total_cost,
                         "notes": space_line.notes or "",
                     })
-    
-    @api.depends('checkin_time', 'checkout_time')
-    def _compute_stay(self):
-        for rec in self:
-            if rec.checkin_time and rec.checkout_time:
-                diff = rec.checkout_time - rec.checkin_time
-                rec.stay_minutes = diff.total_seconds() / 60
-            else:
-                rec.stay_minutes = 0
 
-    
-    @api.depends('expense_transport', 'expense_food', 'expense_other')
-    def _compute_total_expense(self):
-        for rec in self:
-            rec.total_expense = (
-                rec.expense_transport +
-                rec.expense_food +
-                rec.expense_other
-            )
-
-
-    def action_submit(self):
-        for rec in self:
-            rec.state = "submitted"
-    def action_approve(self):
-        for rec in self:
-            rec.state = "approved"
-            rec._push_to_dashboard()
-
-    def action_reject(self):
-        for rec in self:
-            rec.state = "rejected"
-
-    def action_done(self):
-        for rec in self:
-            rec.state = "done"
-
-    def action_reset_draft(self):
-        for rec in self:
-            rec.state = "draft"
-
-   
+  
     @api.model_create_multi
     def create(self, vals_list):
         for vals in vals_list:
@@ -204,7 +213,7 @@ class SalespersonVisitPlan(models.Model):
                         next_seq = 1
                 vals["name"] = f"{today_str}-{str(next_seq).zfill(5)}"
         return super().create(vals_list)
-    
+
 
 
 class AddSpaceForSalespersonLine(models.Model):

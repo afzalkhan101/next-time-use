@@ -275,24 +275,60 @@
                             <field name="sale_team_id"/>
                         </div>
                     </div>
-                    <group>
-                        <group string="Tracking">
-                            <field name="tracking_status" readonly="1"/>
-                            <field name="is_tracking"/>
-                            <field name="last_seen"/>
-                            <field name="last_accuracy"/>
-                            <field name="last_speed"/>
-                            <field name="last_heading"/>
-                            <field name="route_deviation_alert"/>
+
+                    
+                    <group string="Basic Informations">
+                        <group>
+                            <field name="user_id"/>
+                            <field name="visit_date"/>
                         </group>
-                        <group string="Location">
-                            <field name="partner_id"/>
-                            <field name="location_name" readonly="1"/>
-                            <field name="latitude" readonly="1"/>
-                            <field name="longitude" readonly="1"/>
-                            <field name="openstreetmap_url" widget="url" string="OpenStreetMap"/>
+                        <group>
+
+                            <field name="purpose"/>
+                            <field name="priority"/>
+                        </group>
+                
+                            <field name="partner_ids" widget="many2many_tags" string="Customers"/>
+
+                        </group>
+
+                        <group string="Location and coverage">
+                        
+                        <group>
+                            <field name="location_name" string="Location Name"/>
+                            <field name="latitude" string="Latitude"/>
+                        </group>
+        
+                        <group>
+                            <field name="radius_meters" string="Radius (meters)"/>
+                            <field name="longitude" string="Longitude"/>
+                        </group>
+
+                        </group>
+
+
+                    <group string="Check-in / Check-out">
+                        <group>
+                            <field name="checkin_time"/>
+                            <field name="checkout_time"/>
+                        </group>
+
+                        <group>
+                            <field name="stay_minutes" readonly="1"/>
                         </group>
                     </group>
+
+                    <group string="Expenses">
+                            <group>
+                                <field name="expense_transport" string="Transport Cost"/>
+                                <field name="expense_food" string="Food Cost"/>
+                                <field name="expense_other" string="Other Cost"/>
+                            </group>
+
+                            <group>
+                                <field name="total_expense" string="Total" readonly="1"/>
+                            </group>
+                        </group>
 
                     <notebook>
                         <page string="Visit Lines">

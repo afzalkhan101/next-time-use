@@ -1,9 +1,7 @@
 from collections import defaultdict
 from datetime import timedelta
-
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError
-
 import requests
 from requests.exceptions import RequestException
 
@@ -56,12 +54,13 @@ class SalespersonTracker(models.Model):
     longitude     = fields.Float(related="partner_id.partner_longitude", readonly=True, digits=(16, 7))
     location_name = fields.Char(string="Current Location")
     history_count             = fields.Integer(compute="_compute_history_count")
-    today_plan_count          = fields.Integer(compute="_compute_today_visit_stats")
-    today_covered_count       = fields.Integer(compute="_compute_today_visit_stats")
-    today_visit_summary       = fields.Text(compute="_compute_today_visit_stats")
+    today_plan_count          = fields.Integer()
+    today_covered_count       = fields.Integer()
+    today_visit_summary       = fields.Text()
+
     kpi_visit_completion_rate = fields.Float(
         string="Visit Completion Rate (%)",
-        compute="_compute_today_visit_stats",
+        # compute="_compute_today_visit_stats",
         digits=(16, 2),
     )
     is_manager = fields.Boolean("res.users",
@@ -75,8 +74,54 @@ class SalespersonTracker(models.Model):
     last_alert_sent        = fields.Datetime(string="Last Alert Sent")
 
 
+    priority = fields.Selection([
+        ("0", "Normal"),
+        ("1", "High"),
+        ("2", "Urgent")
+    ], default="0")
+    coverage_color = fields.Integer(compute="_compute_coverage_color")
+   
+    purpose = fields.Selection([
+        ('order', 'New Order'),
+        ('payment', 'Payment Collection'),
+        ('complaint', 'Complaint'),
+        ('followup', 'Follow Up'),
+        ('demo', 'Product Demo')
+    ], default='followup', tracking=True)
+
+    #Time related fields
+
+    checkin_time = fields.Datetime()
+    checkout_time = fields.Datetime()
+    stay_minutes = fields.Float(
+        compute='_compute_stay',
+        store=True
+    )
+    radius_meters = fields.Float(default=100.0)
+    visit_date = fields.Date(required=True,tracking=True, default=fields.Date.context_today)
+    
+    expense_transport = fields.Float()
+    expense_food = fields.Float()
+    expense_other = fields.Float()
+
+    total_expense = fields.Float(
+        compute='_compute_total_expense',
+        store=True
+    )
+
+
+    @api.depends('expense_transport', 'expense_food', 'expense_other')
+    def _compute_total_expense(self):
+        for rec in self:
+            rec.total_expense = (
+                rec.expense_transport +
+                rec.expense_food +
+                rec.expense_other
+            )
+
+
     def action_set_planned(self):
-        # শুধু accepted/visited থেকে reset হবে, rejected/done থেকে নয়
+
         allowed = self.filtered(lambda r: r.state in ('accepted', 'visited'))
         if allowed:
             allowed.write({'state': 'planned'})
@@ -108,6 +153,14 @@ class SalespersonTracker(models.Model):
                 dict(self._fields["tracking_status"].selection).get(status)
             )
 
+    @api.depends('checkin_time', 'checkout_time')
+    def _compute_stay(self):
+        for rec in self:
+            if rec.checkin_time and rec.checkout_time:
+                diff = rec.checkout_time - rec.checkin_time
+                rec.stay_minutes = diff.total_seconds() / 60
+            else:
+                rec.stay_minutes = 0
     def _search_tracking_status(self, operator, value):
         now = fields.Datetime.now()
         live_cutoff    = fields.Datetime.to_string(now - timedelta(minutes=2))
@@ -159,44 +212,44 @@ class SalespersonTracker(models.Model):
         for tracker in self:
             tracker.history_count = mapped.get(tracker.id, 0)
 
-    @api.depends("user_id")
-    def _compute_today_visit_stats(self):
-        plan_model = self.env["salesperson.visit.plan"]
-        today = fields.Date.context_today(self)
-        grouped = defaultdict(list)
+    # @api.depends("user_id")
+    # def _compute_today_visit_stats(self):
+    #     plan_model = self.env["salesperson.visit.plan"]
+    #     today = fields.Date.context_today(self)
+    #     grouped = defaultdict(list)
 
-        for tracker in self:
-            tracker.today_plan_count = 0
-            tracker.today_covered_count = 0
-            tracker.today_visit_summary = False
-            tracker.kpi_visit_completion_rate = 0.0
-            if tracker.user_id:
-                grouped[tracker.user_id.id].append(tracker)
+    #     for tracker in self:
+    #         tracker.today_plan_count = 0
+    #         tracker.today_covered_count = 0
+    #         tracker.today_visit_summary = False
+    #         tracker.kpi_visit_completion_rate = 0.0
+    #         if tracker.user_id:
+    #             grouped[tracker.user_id.id].append(tracker)
 
-        if not grouped:
-            return
+    #     if not grouped:
+    #         return
 
-        plans = plan_model.search(
-            [("user_id", "in", list(grouped.keys())), ("visit_date", "=", today)],
-            order="sequence, id",
-        )
-        plans_by_user = defaultdict(lambda: plan_model)
-        for plan in plans:
-            plans_by_user[plan.user_id.id] |= plan
+    #     plans = plan_model.search(
+    #         [("user_id", "in", list(grouped.keys())), ("visit_date", "=", today)],
+    #         order="sequence, id",
+    #     )
+    #     plans_by_user = defaultdict(lambda: plan_model)
+    #     for plan in plans:
+    #         plans_by_user[plan.user_id.id] |= plan
 
-        for user_id, trackers in grouped.items():
-            user_plans     = plans_by_user[user_id]
-            covered_count  = len(user_plans.filtered("is_covered"))
-            total          = len(user_plans)
-            completion_rate = (covered_count / total * 100.0) if total else 0.0
-            summary = "\n".join(
-                "%s: %s" % (p.location_name, p.stay_duration_display) for p in user_plans
-            )
-            for tracker in trackers:
-                tracker.today_plan_count          = total
-                tracker.today_covered_count       = covered_count
-                tracker.today_visit_summary       = summary or False
-                tracker.kpi_visit_completion_rate = completion_rate
+    #     for user_id, trackers in grouped.items():
+    #         user_plans     = plans_by_user[user_id]
+    #         covered_count  = len(user_plans.filtered("is_covered"))
+    #         total          = len(user_plans)
+    #         completion_rate = (covered_count / total * 100.0) if total else 0.0
+    #         summary = "\n".join(
+    #             "%s: %s" % (p.location_name, p.stay_duration_display) for p in user_plans
+    #         )
+    #         for tracker in trackers:
+    #             tracker.today_plan_count          = total
+    #             tracker.today_covered_count       = covered_count
+    #             tracker.today_visit_summary       = summary or False
+    #             tracker.kpi_visit_completion_rate = completion_rate
                 
     def update_live_location(
         self, latitude, longitude,

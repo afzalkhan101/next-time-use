@@ -830,30 +830,34 @@
                             downloadLink.download = 'photo_' + Date.now() + '.jpg';
 
                             // ✅ SEND TO ODOO (FIXED)
+                            
                             fetch('/salesperson_tracking/save_photo', {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                },
-                                body: JSON.stringify({
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                jsonrpc: '2.0',
+                                method: 'call',
+                                id: Date.now(),
+                                params: {
                                     image_data: dataUrl,
-                                    filename: 'photo_' + Date.now() + '.jpg'
-                                })
-                            })
-                            .then(res => res.json())
-                            .then(data => {
-                                console.log("Odoo response:", data);
-
-                                if (data.success) {
-                                    camLabel.textContent = 'Photo saved in Odoo!';
-                                } else {
-                                    camLabel.textContent = data.message;
+                                    filename: 'photo_' + Date.now() + '.jpg',
                                 }
                             })
-                            .catch(err => {
-                                console.error(err);
-                                camLabel.textContent = 'Upload failed';
-                            });
+                        })
+                        .then(res => res.json())
+                        .then(data => {
+                            const result = data.result;
+                            if (result?.success) {
+                                camLabel.textContent = '✓ Photo saved in Odoo!';
+                                snapRow.style.display = 'flex';
+                            } else {
+                                camLabel.textContent = result?.message || 'Upload failed';
+                            }
+                        })
+                        .catch(err => {
+                            console.error(err);
+                            camLabel.textContent = 'Upload failed — network error';
+                        });
 
                             snapRow.style.display = 'flex';
                             setTimeout(() => {

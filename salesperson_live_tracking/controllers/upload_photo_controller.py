@@ -3,54 +3,50 @@ import base64
 import json
 from odoo import http
 from odoo.http import request
-class SalespersonTrackingPhoto(http.Controller):
 
-    @http.route(
-        '/salesperson_tracking/save_photo',
-        type='json',
-        auth='user',
-        methods=['POST'],
-        csrf=False,
-    )
 
-    def save_photo(self, **kwargs):
-       
-        try:
-            body      = json.loads(request.httprequest.data or '{}')
-            image_data = body.get('image_data', '')
-            filename   = body.get('filename') or f'salesperson_photo_{request.env.uid}.jpg'
+@http.route(
+    '/salesperson_tracking/save_photo',
+    type='json',
+    auth='user',
+    methods=['POST'],
+    csrf=False,
+)
 
-            if not image_data:
-                return {'success': False, 'message': 'No image data received'}
+def save_photo(self, image_data='', filename=None, **kwargs):
+    try:
+        if not image_data:
+            return {'success': False, 'message': 'No image data received'}
 
-            if ',' in image_data:
-                image_b64 = image_data.split(',', 1)[1]
-            else:
-                image_b64 = image_data
+        filename = filename or f'salesperson_photo_{request.env.uid}.jpg'
 
-            tracker = request.env['salesperson.tracker'].sudo().search(
-                [('user_id', '=', request.env.uid)], limit=1
-            )
+        if ',' in image_data:
+            image_b64 = image_data.split(',', 1)[1]
+        else:
+            image_b64 = image_data
 
-            print("##############",tracker)
+        tracker = request.env['salesperson.tracker'].sudo().search(
+            [('user_id', '=', request.env.uid)], limit=1
+        )
 
-            attachment_vals = {
-                'name':         filename,
-                'type':         'binary',
-                'datas':        image_b64,
-                'mimetype':     'image/jpeg',
-                'res_model':    'salesperson.tracker',
-                'res_id':       tracker.id if tracker else False,
-                'description':  f'Salesperson field photo — {request.env.user.name}',
-            }
+        if not tracker:
+            return {'success': False, 'message': 'Tracker record not found for this user'}
 
-            attachment = request.env['ir.attachment'].sudo().create(attachment_vals)
+        attachment = request.env['ir.attachment'].sudo().create({
+            'name':        filename,
+            'type':        'binary',
+            'datas':       image_b64,
+            'mimetype':    'image/jpeg',
+            'res_model':   'salesperson.tracker',
+            'res_id':      tracker.id,
+            'description': f'Field photo — {request.env.user.name}',
+        })
 
-            return {
-                'success':       True,
-                'attachment_id': attachment.id,
-                'message':       'Photo saved to Odoo',
-            }
+        return {
+            'success':       True,
+            'attachment_id': attachment.id,
+            'message':       'Photo saved successfully',
+        }
 
-        except Exception as e:
-            return {'success': False, 'message': str(e)}
+    except Exception as e:
+        return {'success': False, 'message': str(e)}

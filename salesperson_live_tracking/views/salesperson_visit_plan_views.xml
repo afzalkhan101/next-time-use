@@ -131,10 +131,28 @@
                         </group>
 
 
-                        <group string="Check-in / check-out">
-
+                    <group string="Check-in / Check-out">
+                        <group>
+                            <field name="checkin_time"/>
+                            <field name="checkout_time"/>
                         </group>
-                        
+
+                        <group>
+                            <field name="stay_minutes" readonly="1"/>
+                        </group>
+                    </group>
+
+                    <group string="Expenses">
+                            <group>
+                                <field name="expense_transport" string="Transport Cost"/>
+                                <field name="expense_food" string="Food Cost"/>
+                                <field name="expense_other" string="Other Cost"/>
+                            </group>
+
+                            <group>
+                                <field name="total_expense" string="Total" readonly="1"/>
+                            </group>
+                        </group>
 
                     <notebook>
                         <page string="Visit Lines">

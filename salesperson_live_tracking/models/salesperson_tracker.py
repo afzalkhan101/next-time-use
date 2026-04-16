@@ -95,7 +95,7 @@ class SalespersonTracker(models.Model):
         ('demo', 'Product Demo')
     ], default='followup', tracking=True)
 
-    #Time related fields
+   
 
     checkin_time = fields.Datetime()
     checkout_time = fields.Datetime()
@@ -415,7 +415,6 @@ class SalespersonTracker(models.Model):
             return False
         return area
 
-    # ── Smart Buttons / Actions ────────────────────────────────────────────────
     def action_view_history(self):
         self.ensure_one()
         return {
@@ -473,13 +472,12 @@ class SalespersonTracker(models.Model):
         }
 
 
-# ─────────────────────────────────────────────────────────────────────────────
 class SalesPersonSpaceLine(models.Model):
     _name = "sales.person.space.line"
     _description = "Sales Person Space Line"
     _inherit = ['mail.thread', 'mail.activity.mixin']
 
-    salesperson_tracker_id = fields.Many2one(   # ✅ inverse of line_ids above
+    salesperson_tracker_id = fields.Many2one(   
         'salesperson.tracker',
         string="Salesperson Tracker",
         ondelete="cascade",
@@ -507,7 +505,6 @@ class SalesPersonSpaceLine(models.Model):
     )
 
 
-# ─────────────────────────────────────────────────────────────────────────────
 class SalespersonLocationLog(models.Model):
     _name = "salesperson.location.log"
     _description = "Salesperson Location History"
@@ -545,7 +542,6 @@ class SalespersonLocationLog(models.Model):
                 )
             else:
                 log.openstreetmap_url = False
-
 
 
 class RejectReasonWizard(models.TransientModel):

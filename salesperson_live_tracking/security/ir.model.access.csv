@@ -13,3 +13,16 @@ access_salesperson_space_line_user,salesperson.space.line.user,model_sales_perso
 access_salesperson_space_line_manager,salesperson.space.line.manager,model_sales_person_space_line,sales_team.group_sale_manager,1,1,1,1
 access_add_space_salesperson_line_manager,add.space.salesperson.line.manager,model_add_space_for_salesperson_line,sales_team.group_sale_manager,1,1,1,1
 access_add_space_salesperson_line_salesman,add.space.salesperson.line.salesman,model_add_space_for_salesperson_line,sales_team.group_sale_salesman,1,1,1,1
+
+
+
+
+
+
+
+access_tracker_manager,tracker.manager,model_salesperson_tracker,sales_team.group_sale_manager,1,1,1,1
+access_tracker_user,tracker.user,model_salesperson_tracker,base.group_user,1,1,1,0
+access_space_line_manager,space.line.manager,model_sales_person_space_line,sales_team.group_sale_manager,1,1,1,1
+access_space_line_user,space.line.user,model_sales_person_space_line,base.group_user,1,1,1,0
+access_location_log_manager,location.log.manager,model_salesperson_location_log,sales_team.group_sale_manager,1,1,1,1
+access_location_log_user,location.log.user,model_salesperson_location_log,base.group_user,1,1,1,0

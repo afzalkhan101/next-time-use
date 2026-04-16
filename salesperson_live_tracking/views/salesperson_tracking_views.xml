@@ -324,10 +324,15 @@
                             <group>
                                 <field name="total_expense" string="Total" readonly="1"/>
                             </group>
-                        </group>
+                    </group>
+
+                    <group string="Tracking Related informations">
+                         <field name="last_tracking_duration"/>
+                    </group>
+
 
                     <notebook>
-                        <page string="Visit Lines">
+                        <page string="Travel Lines">
                             <field name="line_ids">
                                 <list editable="bottom"
                                       decoration-success="state == 'visited'"
@@ -343,6 +348,9 @@
                                     <field name="notes" string="Notes" optional="show"/>
                                 </list>
                             </field>
+                        </page>
+                        <page string="Related Notes">
+                             <field name="note" widget="html"/>
                         </page>
                     </notebook>
                 </sheet>

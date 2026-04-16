@@ -124,6 +124,11 @@ class SalespersonTracker(models.Model):
                 rec.expense_food +
                 rec.expense_other
             )
+    note = fields.Html(
+    string="Internal Note",
+    sanitize=True,
+    tracking=True
+    )
 
 
     def action_set_planned(self):

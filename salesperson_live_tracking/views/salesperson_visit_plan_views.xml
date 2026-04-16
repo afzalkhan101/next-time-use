@@ -17,8 +17,7 @@
             </list>
         </field>
     </record>
-
-
+    
     <record id="view_users_form_inherit_role" model="ir.ui.view">
         <field name="name">res.users.form.inherit.role</field>
         <field name="model">res.users</field>
@@ -147,12 +146,11 @@
                         </group>
 
                     <notebook>
-                        <page string="Visit Lines">
+                         <page string="Travel Lines">
                             <field name="space_line_ids">
                                 <list editable="bottom" class="o_list_compact">
                                     <field name="sequence" widget="handle"/>
                                     <field name="visit_date"/>
-                                   
                                     <field name="partner_id"/>
                                     <field name="from_location"/>
                                     <field name="to_location"/>

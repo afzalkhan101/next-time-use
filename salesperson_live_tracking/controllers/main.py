@@ -100,15 +100,13 @@ class SalespersonTrackingController(http.Controller):
         user    = self._check_salesperson_access()
         payload = self._json_body()
         tracker = user.sudo()._ensure_salesperson_tracker()
-
         vals = {
             "is_tracking":         False,
             "last_tracking_start": False,
         }
-
+        
         try:
             duration_seconds = int(payload.get("duration_seconds") or 0)   
-            ### Duration of time is Perfectly working you can use it when your need . 
         except (TypeError, ValueError):
             duration_seconds = 0
 
@@ -119,6 +117,7 @@ class SalespersonTrackingController(http.Controller):
         if 0 < duration_seconds < 86400:
             vals["last_tracking_duration"] = duration_seconds
 
+    
         tracker.sudo().write(vals)
 
         return request.make_json_response({

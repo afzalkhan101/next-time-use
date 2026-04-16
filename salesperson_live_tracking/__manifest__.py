@@ -6,6 +6,7 @@
     "depends": ["sale_management", "web_map", "base_geolocalize", "crm", "mail"],
     "data": [
         "security/ir.model.access.csv",
+        'security/ir.rule.xml',
         "views/salesperson_tracking_views.xml",
         "views/salesperson_visit_plan_views.xml",
         "views/salesperson_checkin_views.xml",

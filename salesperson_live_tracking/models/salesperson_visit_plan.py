@@ -125,7 +125,7 @@ class SalespersonVisitPlan(models.Model):
         for rec in self:
             if rec.checkin_time and rec.checkout_time:
                 diff = rec.checkout_time - rec.checkin_time
-                rec.stay_minutes = diff.total_seconds() / 60
+                rec.stay_minutes = (diff.total_seconds() / 60) 
             else:
                 rec.stay_minutes = 0
 

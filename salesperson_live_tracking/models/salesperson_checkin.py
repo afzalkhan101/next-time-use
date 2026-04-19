@@ -10,8 +10,7 @@ class SalespersonCheckin(models.Model):
     _inherit = ["mail.thread", "mail.activity.mixin"]
     _order = "checkin_time desc, id desc"
     _rec_name ="user_id"
-
-
+    
     name = fields.Char(string="Visit Reference", required=True, default="New Check-In", copy=False, tracking=True)
     tracker_id = fields.Many2one("salesperson.tracker", required=True, ondelete="cascade", index=True)
     user_id = fields.Many2one("res.users", related="tracker_id.user_id", store=True, readonly=True, index=True)

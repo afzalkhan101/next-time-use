@@ -12,7 +12,7 @@ class SalespersonTrackingController(http.Controller):
                 return {'success': False, 'message': 'No image data received'}
 
             filename = filename or f'salesperson_photo_{request.env.uid}.jpg'
-            print("#############😟😟😟😟😟😟😟😟😟😟😟😟😟😟",filename)
+         
             image_b64 = image_data.split(',', 1)[1] if ',' in image_data else image_data
 
             tracker = request.env['salesperson.tracker'].sudo().search(

@@ -1,18 +1,8 @@
-/* ══════════════════════════════════════════════
-   moving_map.js
-   Salesperson Moving Map — Leaflet + OSRM routing
-══════════════════════════════════════════════ */
 
 (function () {
     'use strict';
-
-    /* ── Guard: only run on the moving map page ── */
     var mapEl = document.getElementById('map');
     if (!mapEl) return;
-
-    /* ══════════════════════════════════════════════
-       READ DATA  (injected via QWeb data-* attributes)
-    ══════════════════════════════════════════════ */
     var b64     = mapEl.getAttribute('data-points') || '';
     var planB64 = mapEl.getAttribute('data-plans')  || '';
     var points  = [];
@@ -20,22 +10,13 @@
 
     try { points = JSON.parse(atob(b64));     } catch (e) { points = []; }
     try { plans  = JSON.parse(atob(planB64)); } catch (e) { plans  = []; }
-
-    /* ══════════════════════════════════════════════
-       INITIALISE LEAFLET MAP
-    ══════════════════════════════════════════════ */
-    var DEFAULT_CENTER = [23.7701, 90.4254]; /* Dhaka fallback */
-
+    var DEFAULT_CENTER = [23.7701, 90.4254]; 
     var map = L.map('map', { zoomControl: true }).setView(DEFAULT_CENTER, 15);
-
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '\u00a9 <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
         maxZoom: 19,
     }).addTo(map);
 
-    /* ══════════════════════════════════════════════
-       NO DATA — show overlay and bail out
-    ══════════════════════════════════════════════ */
     if (!points || points.length === 0) {
         document.getElementById('routeLoading').style.display = 'none';
 
@@ -58,9 +39,6 @@
         return;
     }
 
-    /* ══════════════════════════════════════════════
-       FILTER — remove poor-accuracy points
-    ══════════════════════════════════════════════ */
     var valid = points.filter(function (p) {
         return typeof p.lat === 'number'
             && typeof p.lng === 'number'
@@ -70,14 +48,6 @@
 
     var latlngs = valid.map(function (p) { return [p.lat, p.lng]; });
 
-    /* ══════════════════════════════════════════════
-       HELPERS
-    ══════════════════════════════════════════════ */
-
-    /**
-     * Reduce an array to at most maxPts entries, keeping first & last.
-     * Used to keep OSRM requests within URL length limits.
-     */
     function downsample(arr, maxPts) {
         if (arr.length <= maxPts) return arr;
         var step = arr.length / maxPts;
@@ -90,11 +60,6 @@
         return out;
     }
 
-    /* ══════════════════════════════════════════════
-       MARKER FACTORIES
-    ══════════════════════════════════════════════ */
-
-    /** Green circle — first GPS point of the day. */
     function addStartMarker(p) {
         return L.marker([p.lat, p.lng], {
             icon: L.divIcon({

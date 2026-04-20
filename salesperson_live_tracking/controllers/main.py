@@ -72,8 +72,6 @@ class SalespersonTrackingController(http.Controller):
         }
         return request.render("salesperson_live_tracking.live_tracking_page", values)
     
-        
-    # ── Haversine helper ──────────────────────────────────────────────────────────
     @staticmethod
     def _haversine_km(lat1, lon1, lat2, lon2):
         R = 6371.0

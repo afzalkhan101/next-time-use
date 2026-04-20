@@ -144,13 +144,7 @@
         }
     };
 
-    /* ══════════════════════════════════════════════
-       TRACKING LOGIC
-    ══════════════════════════════════════════════ */
-
-    /**
-     * Send a single GPS position to the backend.
-     */
+    
     const sendLocation = async (position) => {
         const payload = {
             latitude:  position.coords.latitude,

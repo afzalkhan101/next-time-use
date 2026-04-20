@@ -6,7 +6,6 @@ import requests
 from requests.exceptions import RequestException
 from markupsafe import Markup
 
-
 class SalespersonTracker(models.Model):
     _name = "salesperson.tracker"
     _description = "Salesperson Live Tracker"
@@ -100,8 +99,7 @@ class SalespersonTracker(models.Model):
 
     note = fields.Html(string="Internal Note", sanitize=True, tracking=True)
 
-    # ── Compute: coverage color ───────────────────────────────────────────────
-
+   
     @api.depends("today_plan_count", "today_covered_count")
     def _compute_coverage_color(self):
         for rec in self:
@@ -114,8 +112,7 @@ class SalespersonTracker(models.Model):
             else:
                 rec.coverage_color = 1    # red
 
-    # ── Compute: stay duration ────────────────────────────────────────────────
-
+   
     @api.depends('checkin_time', 'checkout_time')
     def _compute_stay(self):
         for rec in self:
@@ -124,15 +121,12 @@ class SalespersonTracker(models.Model):
             else:
                 rec.stay_minutes = 0
 
-    # ── Compute: total expense ────────────────────────────────────────────────
-
     @api.depends('expense_transport', 'expense_food', 'expense_other')
     def _compute_total_expense(self):
         for rec in self:
             rec.total_expense = rec.expense_transport + rec.expense_food + rec.expense_other
 
-    # ── Compute: tracking status ──────────────────────────────────────────────
-
+  
     @api.depends("last_seen", "is_tracking")
     def _compute_tracking_status(self):
         now = fields.Datetime.now()
@@ -167,8 +161,6 @@ class SalespersonTracker(models.Model):
             return []
         return mapping[value]
 
-    # ── Compute: map links ────────────────────────────────────────────────────
-
     @api.depends("partner_id.partner_latitude", "partner_id.partner_longitude")
     def _compute_map_links(self):
         for tracker in self:
@@ -182,8 +174,7 @@ class SalespersonTracker(models.Model):
             else:
                 tracker.openstreetmap_url = False
 
-    # ── Compute: history count — Odoo 19 _read_group ─────────────────────────
-
+    
     @api.depends("user_id")
     def _compute_history_count(self):
         if not self.ids:
@@ -191,18 +182,17 @@ class SalespersonTracker(models.Model):
                 tracker.history_count = 0
             return
 
-        # Odoo 19: use _read_group instead of deprecated read_group
+      
         groups = self.env["salesperson.location.log"]._read_group(
             domain=[("tracker_id", "in", self.ids)],
             groupby=["tracker_id"],
             aggregates=["__count"],
         )
-        # groups → list of (tracker_record, count)
+        
         count_map = {tracker.id: count for tracker, count in groups}
         for tracker in self:
             tracker.history_count = count_map.get(tracker.id, 0)
 
-    # ── Compute: today visit stats ────────────────────────────────────────────
 
     @api.depends("user_id")
     def _compute_today_visit_stats(self):
@@ -291,8 +281,7 @@ class SalespersonTracker(models.Model):
             plan._apply_tracking_duration(duration_seconds)
         return True
 
-    # ── Live location update ──────────────────────────────────────────────────
-
+   
     def update_live_location(
         self, latitude, longitude,
         accuracy=None, speed=None, heading=None, source="browser"
@@ -336,8 +325,7 @@ class SalespersonTracker(models.Model):
 
         self._check_route_deviation(latitude, longitude)
 
-    # ── Route deviation check ─────────────────────────────────────────────────
-
+   
     def _check_route_deviation(self, latitude, longitude):
         self.ensure_one()
         today = fields.Date.context_today(self)
@@ -376,8 +364,7 @@ class SalespersonTracker(models.Model):
                 partner_ids=[self.env.ref("base.user_admin").partner_id.id],
             )
 
-    # ── Reverse geocode ───────────────────────────────────────────────────────
-
+   
     def _reverse_geocode_location(self, latitude, longitude):
         self.ensure_one()
         try:
@@ -561,8 +548,6 @@ class SalespersonLocationLog(models.Model):
             else:
                 log.openstreetmap_url = False
 
-
-# ══════════════════════════════════════════════════════════════════════════════
 class RejectReasonWizard(models.TransientModel):
     _name        = "reject.reason.wizard"
     _description = "Reject Reason Wizard"

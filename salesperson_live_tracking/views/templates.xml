@@ -13,7 +13,7 @@
                             align-items: center;
                             gap: 12px;
                             padding: 1rem 0;
-                            width: 100%;  /* ADD THIS */
+                            width: 100%;
                         }
                         .cam-open-btn {
                         display: inline-flex;
@@ -28,7 +28,6 @@
                         font-weight: 500;
                         cursor: pointer;
                         transition: opacity .15s, transform .1s;
-                        /* REMOVE any margin-left or float if present */
                     }
                         .cam-open-btn:hover { opacity: .85; }
                         .cam-open-btn:active { transform: scale(.97); }
@@ -139,7 +138,6 @@
                         --shadow-card: 0 1px 4px rgba(0,0,0,.08), 0 0 0 .5px rgba(0,0,0,.06);
                         --shadow-btn:  0 1px 3px rgba(0,0,0,.12);
 
-                        /* Palette */
                         --green-50:  #eaf3de;
                         --green-100: #c0dd97;
                         --green-600: #3b6d11;
@@ -158,7 +156,6 @@
                         --red-600:   #a32d2d;
                         --red-border:#f09595;
 
-                        /* Semantic */
                         --bg:        #f4f6f8;
                         --surface:   #ffffff;
                         --border:    rgba(0,0,0,.08);
@@ -167,7 +164,6 @@
                         --faint:     #9ca3af;
                     }
 
-                    /* ── Base ── */
                     body {
                         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
                         background: var(--bg);
@@ -178,7 +174,6 @@
                         font-size: 14px;
                     }
 
-                    /* ── Shell ── */
                     .shell {
                         max-width: 920px;
                         margin: 0 auto;
@@ -187,7 +182,6 @@
                         gap: 16px;
                     }
 
-                    /* ── Card ── */
                     .card {
                         background: var(--surface);
                         border-radius: var(--radius-xl);
@@ -196,7 +190,6 @@
                         padding: 24px;
                     }
 
-                    /* ── Header row ── */
                     .header-row {
                         display: flex;
                         align-items: flex-start;
@@ -214,7 +207,6 @@
 
                     .page-sub { color: var(--muted); font-size: 13px; }
 
-                    /* ── Status badge ── */
                     .status-badge {
                         display: inline-flex;
                         align-items: center;
@@ -242,7 +234,6 @@
                     .dot-idle    { background: var(--amber-400); }
                     .dot-offline { background: var(--gray-400); }
 
-                    /* ── Metrics grid ── */
                     .metrics-grid {
                         display: grid;
                         grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
@@ -275,7 +266,6 @@
                         text-overflow: ellipsis;
                     }
 
-                    /* ── Action bar ── */
                     .action-bar {
                         display: flex;
                         flex-wrap: wrap;
@@ -321,7 +311,6 @@
 
                     .btn svg { width: 14px; height: 14px; flex-shrink: 0; }
 
-                    /* ── Notice box ── */
                     .notice {
                         margin-top: 18px;
                         padding: 13px 16px;
@@ -338,10 +327,8 @@
                     .notice.notice-warning  { background: var(--amber-50);  border-color: var(--amber-400); color: var(--amber-700); }
                     .notice.notice-danger   { background: var(--red-50);    border-color: var(--red-border); color: var(--red-600); }
 
-                    /* ── Divider ── */
                     .divider { border: none; border-top: .5px solid var(--border); margin: 20px 0; }
 
-                    /* ── Responsive ── */
                     @media (max-width: 520px) {
                         .header-row  { flex-direction: column; }
                         .action-bar .btn { flex: 1 1 calc(50% - 4px); justify-content: center; }
@@ -381,7 +368,7 @@
                   .metric-label{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--faint);margin-bottom:4px;font-weight:500}
                   .metric-value{font-size:13px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
                   .metric-value.mono{font-family:monospace;font-size:14px;color:var(--green-600)}
-                  .kpi-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:18px}
+                  .kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:18px}
                   .kpi-box{background:var(--blue-50);border:.5px solid #b5d4f4;border-radius:var(--radius-md);padding:10px;text-align:center}
                   .kpi-num{font-size:1.4rem;font-weight:500;color:var(--blue-600)}
                   .kpi-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-top:2px}
@@ -418,7 +405,11 @@
                   .form-group{margin-bottom:11px}
                   .form-group label{display:block;font-size:11px;font-weight:500;margin-bottom:4px;color:var(--faint);text-transform:uppercase;letter-spacing:.05em}
                   .form-group textarea,.form-group select{width:100%;border:.5px solid var(--border);border-radius:var(--radius-md);padding:8px 10px;font-size:13px;font-family:inherit;resize:vertical;background:var(--surface);color:var(--text)}
-                  @media(max-width:560px){.action-bar .btn{flex:1 1 calc(50% - 4px);justify-content:center}.header-row{flex-direction:column}}
+                  @media(max-width:560px){
+                    .action-bar .btn{flex:1 1 calc(50% - 4px);justify-content:center}
+                    .header-row{flex-direction:column}
+                    .kpi-row{grid-template-columns:repeat(2,1fr)}
+                  }
                 </style>
             </head>
             <body>
@@ -441,8 +432,8 @@
                                 </span>
                             </div>
                         </div>
-                        <!-- Metrics -->
 
+                        <!-- Metrics -->
                         <div class="metrics-grid">
                             <div class="metric-card">
                                 <div class="metric-label">Location</div>
@@ -450,7 +441,6 @@
                                     <t t-out="tracker.location_name or '—'"/>
                                 </div>
                             </div>
-
                             <div class="metric-card">
                                 <div class="metric-label">Last update</div>
                                 <div class="metric-value" id="lastSeenValue">
@@ -469,7 +459,6 @@
                                     <t t-out="tracker.longitude or '—'"/>
                                 </div>
                             </div>
-                            
                             <div class="metric-card">
                                 <div class="metric-label">Accuracy</div>
                                 <div class="metric-value" id="accuracyValue">
@@ -479,30 +468,39 @@
                                     <t t-else="">—</t>
                                 </div>
                             </div>
-
                             <div class="metric-card">
                                 <div class="metric-label">Taking Time</div>
                                 <div class="metric-value" id="takingTimeValue">—</div>
                             </div>
                         </div>
 
-                      <div class="kpi-row">
-                        <div class="kpi-box">
-                          <div class="kpi-num" id="kpiPlan"><t t-out="today_plan_count"/></div>
-                          <div class="kpi-lbl">Planned</div>
+                        <!-- KPI Row — 4 columns including distance -->
+                        <div class="kpi-row">
+                            <div class="kpi-box">
+                                <div class="kpi-num" id="kpiPlan"><t t-out="today_plan_count"/></div>
+                                <div class="kpi-lbl">Planned</div>
+                            </div>
+                            <div class="kpi-box">
+                                <div class="kpi-num" id="kpiCovered"><t t-out="today_covered_count"/></div>
+                                <div class="kpi-lbl">Covered</div>
+                            </div>
+                            <div class="kpi-box">
+                                <div class="kpi-num" id="kpiRate">
+                                    <t t-if="today_plan_count">
+                                        <t t-out="'%d' % (today_covered_count * 100 // today_plan_count)"/>%
+                                    </t>
+                                    <t t-else="">0%</t>
+                                </div>
+                                <div class="kpi-lbl">Rate</div>
+                            </div>
+                            <!-- Distance KPI — live updated via JS -->
+                            <div class="kpi-box">
+                                <div class="kpi-num" id="kpiDistance">
+                                    <t t-out="'%.1f' % total_distance_km"/>
+                                </div>
+                                <div class="kpi-lbl">Km today</div>
+                            </div>
                         </div>
-                        <div class="kpi-box">
-                          <div class="kpi-num" id="kpiCovered"><t t-out="today_covered_count"/></div>
-                          <div class="kpi-lbl">Covered</div>
-                        </div>
-                        <div class="kpi-box">
-                          <div class="kpi-num" id="kpiRate">
-                            <t t-if="today_plan_count"><t t-out="'%d' % (today_covered_count * 100 // today_plan_count)"/>%</t>
-                            <t t-else="">0%</t>
-                          </div>
-                          <div class="kpi-lbl">Rate</div>
-                        </div>
-                      </div>
 
                         <!-- Actions -->
                         <div class="action-bar">
@@ -532,13 +530,12 @@
                                 </svg>
                                 Open in map
                             </a>
-                             
-                            <div class="cam-wrapper" id="camRoot">
 
+                            <div class="cam-wrapper" id="camRoot">
                                 <button class="cam-open-btn" id="openCameraBtn">
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
-                                    <circle cx="12" cy="13" r="4"/>
+                                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                                        <circle cx="12" cy="13" r="4"/>
                                     </svg>
                                     Open camera
                                 </button>
@@ -547,20 +544,20 @@
                                     <video id="selfieVideo" autoplay="autoplay" playsinline="playsinline" muted="muted"></video>
                                     <div class="cam-flash" id="flashEl"></div>
                                     <div class="cam-bar">
-                                    <button class="cb-stop" id="stopBtn" title="Close">
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-                                        </svg>
-                                    </button>
-                                    <button class="cb-shutter" id="captureBtn" title="Take photo">
-                                        <div class="cb-shutter-inner"></div>
-                                    </button>
-                                    <button class="cb-flip" id="flipBtn" title="Flip camera">
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <path d="M1 4v6h6"/><path d="M23 20v-6h-6"/>
-                                        <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/>
-                                        </svg>
-                                    </button>
+                                        <button class="cb-stop" id="stopBtn" title="Close">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                                            </svg>
+                                        </button>
+                                        <button class="cb-shutter" id="captureBtn" title="Take photo">
+                                            <div class="cb-shutter-inner"></div>
+                                        </button>
+                                        <button class="cb-flip" id="flipBtn" title="Flip camera">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M1 4v6h6"/><path d="M23 20v-6h-6"/>
+                                                <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/>
+                                            </svg>
+                                        </button>
                                     </div>
                                 </div>
 
@@ -568,7 +565,7 @@
 
                                 <div class="snap-row" id="snapRow" style="display:none">
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                    <polyline points="20 6 9 17 4 12"/>
+                                        <polyline points="20 6 9 17 4 12"/>
                                     </svg>
                                     <span>Photo captured</span>
                                     <a id="downloadLink">Save</a>
@@ -578,8 +575,8 @@
 
                                 <div class="cam-gallery" id="camGallery" style="display:none">
                                     <div class="gallery-title">
-                                    <span id="galleryCount">Saved photos (0)</span>
-                                    <button id="clearAllBtn" type="button">Clear all</button>
+                                        <span id="galleryCount">Saved photos (0)</span>
+                                        <button id="clearAllBtn" type="button">Clear all</button>
                                     </div>
                                     <div class="gallery-grid" id="galleryGrid"></div>
                                 </div>
@@ -587,16 +584,12 @@
                                 <div class="photo-viewer" id="photoViewer" style="display:none">
                                     <img id="viewerImg" src="" alt="Photo"/>
                                     <div class="viewer-bar">
-                                    <button class="pv-btn" id="pvBack" type="button">Back</button>
-                                    <button class="pv-btn" id="pvDownload" type="button">Download</button>
-                                    <button class="pv-btn pv-del" id="pvDelete" type="button">Delete</button>
+                                        <button class="pv-btn" id="pvBack" type="button">Back</button>
+                                        <button class="pv-btn" id="pvDownload" type="button">Download</button>
+                                        <button class="pv-btn pv-del" id="pvDelete" type="button">Delete</button>
                                     </div>
                                 </div>
-
-                                </div>
                             </div>
-
-                           
                         </div>
 
                         <!-- Notice -->
@@ -606,18 +599,17 @@
                             updates into Odoo. For best results on mobile, use HTTPS and keep this page active.
                         </div>
 
-
-                            <div id="checkinPanel" class="checkin-panel" style="display:none">
+                        <div id="checkinPanel" class="checkin-panel" style="display:none">
                             <div class="checkin-title">&#9989; Checked in</div>
                             <div style="font-size:12px;color:var(--green-600)">
                                 <strong id="checkinLocation">—</strong> · <span id="checkinTime">—</span>
                             </div>
                             <div style="margin-top:8px">
                                 <button id="addNotesBtn" class="btn" type="button" style="font-size:12px;padding:5px 10px">&#128221; Add notes</button>
+                            </div>
                         </div>
 
                     </div><!-- /.card -->
-
                 </main>
 
                 <script>
@@ -650,6 +642,7 @@
                             accuracyValue:     $('accuracyValue'),
                             takingTimeValue:   $('takingTimeValue'),
                             mapButton:         $('mapButton'),
+                            kpiDistance:       $('kpiDistance'),
                         };
 
                         /* ── Helpers ── */
@@ -661,7 +654,6 @@
                         };
 
                         const setNotice = (type, title, message) => {
-                            // type: '' | 'success' | 'warning' | 'danger'
                             el.noticeBox.className = `notice${type ? ' notice-' + type : ''}`;
                             el.noticeBox.innerHTML = `<strong>${title}</strong>${message}`;
                         };
@@ -695,66 +687,56 @@
                             return res.json();
                         };
 
-                        /*- Js code for camera and check-in features -*/
-
-                        const openBtn      = document.getElementById('openCameraBtn');
-                        const video        = document.getElementById('selfieVideo');
-                        const canvas       = document.getElementById('selfieCanvas');
-                        const previewBox   = document.getElementById('previewBox');
-                        const snapRow      = document.getElementById('snapRow');
-                        const camLabel     = document.getElementById('camLabel');
-                        const stopBtn      = document.getElementById('stopBtn');
-                        const captureBtn   = document.getElementById('captureBtn');
-                        const flipBtn      = document.getElementById('flipBtn');
-                        const flashEl      = document.getElementById('flashEl');
-                        const downloadLink = document.getElementById('downloadLink');
-                        const camGallery   = document.getElementById('camGallery');
-                        const galleryGrid  = document.getElementById('galleryGrid');
-                        const galleryCount = document.getElementById('galleryCount');
-                        const clearAllBtn  = document.getElementById('clearAllBtn');
-                        const photoViewer  = document.getElementById('photoViewer');
-                        const viewerImg    = document.getElementById('viewerImg');
-                        const pvBack       = document.getElementById('pvBack');
-                        const pvDownload   = document.getElementById('pvDownload');
-                        const pvDelete     = document.getElementById('pvDelete');
+                        /* ── Camera ── */
+                        const openBtn      = $('openCameraBtn');
+                        const video        = $('selfieVideo');
+                        const canvas       = $('selfieCanvas');
+                        const previewBox   = $('previewBox');
+                        const snapRow      = $('snapRow');
+                        const camLabel     = $('camLabel');
+                        const stopBtn      = $('stopBtn');
+                        const captureBtn   = $('captureBtn');
+                        const flipBtn      = $('flipBtn');
+                        const flashEl      = $('flashEl');
+                        const downloadLink = $('downloadLink');
+                        const camGallery   = $('camGallery');
+                        const galleryGrid  = $('galleryGrid');
+                        const galleryCount = $('galleryCount');
+                        const clearAllBtn  = $('clearAllBtn');
+                        const photoViewer  = $('photoViewer');
+                        const viewerImg    = $('viewerImg');
+                        const pvBack       = $('pvBack');
+                        const pvDownload   = $('pvDownload');
+                        const pvDelete     = $('pvDelete');
 
                         let stream       = null;
-                        let facingMode   = 'environment'; // default: back camera on mobile
+                        let facingMode   = 'environment';
                         let photos       = [];
                         let viewingIndex = -1;
 
-                        /* ── Start Camera ── */
                         async function startCamera(facing) {
                             if (stream) stream.getTracks().forEach(t => t.stop());
                             try {
                                 stream = await navigator.mediaDevices.getUserMedia({
-                                    video: {
-                                        facingMode: { ideal: facing },
-                                        width:  { ideal: 1280 },
-                                        height: { ideal: 960 }
-                                    }
+                                    video: { facingMode: { ideal: facing }, width: { ideal: 1280 }, height: { ideal: 960 } }
                                 });
                                 video.srcObject = stream;
-                                video.style.display = 'block';         // ✅ video দেখাও
-                                previewBox.style.display = 'block';     // ✅ preview box দেখাও
+                                video.style.display      = 'block';
+                                previewBox.style.display = 'block';
                                 openBtn.style.display    = 'none';
                                 snapRow.style.display    = 'none';
                                 camGallery.style.display = 'none';
                                 photoViewer.style.display = 'none';
                                 camLabel.textContent = 'Tap the shutter button to take a photo';
                             } catch (e) {
-                                camLabel.textContent = 'Camera access denied or unavailable. Please allow camera permission.';
+                                camLabel.textContent = 'Camera access denied or unavailable.';
                                 console.error('Camera error:', e);
                             }
                         }
 
-                        /* ── Close Camera ── */
                         function closeCamera() {
-                            if (stream) {
-                                stream.getTracks().forEach(t => t.stop());
-                                stream = null;
-                            }
-                            video.style.display      = 'none';         // ✅ video লুকাও
+                            if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
+                            video.style.display      = 'none';
                             video.srcObject          = null;
                             previewBox.style.display = 'none';
                             openBtn.style.display    = 'inline-flex';
@@ -763,7 +745,6 @@
                             if (photos.length > 0) renderGallery();
                         }
 
-                        /* ── Render Gallery ── */
                         function renderGallery() {
                             camGallery.style.display = 'flex';
                             galleryCount.textContent = 'Saved photos (' + photos.length + ')';
@@ -781,156 +762,112 @@
                             });
                         }
 
-                        /* ── Open Photo Viewer ── */
                         function openViewer(idx) {
-                            viewingIndex             = idx;
-                            viewerImg.src            = photos[idx].dataUrl;
-                            camGallery.style.display = 'none';
+                            viewingIndex              = idx;
+                            viewerImg.src             = photos[idx].dataUrl;
+                            camGallery.style.display  = 'none';
                             photoViewer.style.display = 'flex';
-                            openBtn.style.display    = 'none';
+                            openBtn.style.display     = 'none';
                         }
 
-                        /* ── Event: Open Camera Button ── */
                         openBtn.addEventListener('click', () => startCamera(facingMode));
-
-                        /* ── Event: Close/Stop Camera ── */
                         stopBtn.addEventListener('click', closeCamera);
-
-                        /* ── Event: Flip Camera ── */
                         flipBtn.addEventListener('click', () => {
                             facingMode = facingMode === 'user' ? 'environment' : 'user';
                             startCamera(facingMode);
                         });
 
-                        /* ── Event: Take Photo (Shutter) ── */
                         captureBtn.addEventListener('click', () => {
                             if (!stream) return;
-
                             flashEl.classList.add('go');
                             setTimeout(() => flashEl.classList.remove('go'), 160);
-
                             canvas.width  = video.videoWidth  || 640;
                             canvas.height = video.videoHeight || 480;
-
                             const ctx = canvas.getContext('2d');
-
-                            // Mirror front camera
-                            if (facingMode === 'user') {
-                                ctx.translate(canvas.width, 0);
-                                ctx.scale(-1, 1);
-                            }
-
+                            if (facingMode === 'user') { ctx.translate(canvas.width, 0); ctx.scale(-1, 1); }
                             ctx.drawImage(video, 0, 0);
-
                             const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
-
                             photos.push({ dataUrl, ts: new Date().toLocaleTimeString() });
-
-                            downloadLink.href = dataUrl;
+                            downloadLink.href     = dataUrl;
                             downloadLink.download = 'photo_' + Date.now() + '.jpg';
 
-                            // ✅ SEND TO ODOO (FIXED)
-                            
                             fetch('/salesperson_tracking/save_photo', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                jsonrpc: '2.0',
-                                method: 'call',
-                                id: Date.now(),
-                                params: {
-                                    image_data: dataUrl,
-                                    filename: 'photo_' + Date.now() + '.jpg',
-                                }
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    jsonrpc: '2.0', method: 'call', id: Date.now(),
+                                    params: { image_data: dataUrl, filename: 'photo_' + Date.now() + '.jpg' }
+                                })
                             })
-                        })
-                        .then(res => res.json())
-                        .then(data => {
-                            const result = data.result;
-                            if (result?.success) {
-                                camLabel.textContent = '✓ Photo saved in Odoo!';
-                                snapRow.style.display = 'flex';
-                            } else {
-                                camLabel.textContent = result?.message || 'Upload failed';
-                            }
-                        })
-                        .catch(err => {
-                            console.error(err);
-                            camLabel.textContent = 'Upload failed — network error';
-                        });
+                            .then(res => res.json())
+                            .then(data => {
+                                const result = data.result;
+                                camLabel.textContent = result?.success ? '✓ Photo saved in Odoo!' : (result?.message || 'Upload failed');
+                                if (result?.success) snapRow.style.display = 'flex';
+                            })
+                            .catch(err => {
+                                console.error(err);
+                                camLabel.textContent = 'Upload failed — network error';
+                            });
 
                             snapRow.style.display = 'flex';
-                            setTimeout(() => {
-                                if (stream) snapRow.style.display = 'none';
-                            }, 2000);
-
+                            setTimeout(() => { if (stream) snapRow.style.display = 'none'; }, 2000);
                             renderGallery();
                             camGallery.style.display = 'none';
                         });
 
-                        /* ── Event: Download from snap row ── */
                         downloadLink.addEventListener('click', (e) => {
                             e.preventDefault();
-                            const a    = document.createElement('a');
-                            a.href     = downloadLink.href;
-                            a.download = downloadLink.download;
-                            a.click();
+                            const a = document.createElement('a');
+                            a.href = downloadLink.href; a.download = downloadLink.download; a.click();
                         });
 
-                        /* ── Event: Back from viewer to gallery ── */
                         pvBack.addEventListener('click', () => {
                             photoViewer.style.display = 'none';
                             renderGallery();
                             if (!stream) openBtn.style.display = 'inline-flex';
                         });
 
-                        /* ── Event: Download from viewer ── */
                         pvDownload.addEventListener('click', () => {
-                            const a    = document.createElement('a');
-                            a.href     = photos[viewingIndex].dataUrl;
-                            a.download = 'photo_' + Date.now() + '.jpg';
-                            a.click();
+                            const a = document.createElement('a');
+                            a.href = photos[viewingIndex].dataUrl;
+                            a.download = 'photo_' + Date.now() + '.jpg'; a.click();
                         });
 
-                        /* ── Event: Delete photo from viewer ── */
                         pvDelete.addEventListener('click', () => {
                             photos.splice(viewingIndex, 1);
                             photoViewer.style.display = 'none';
-                            if (photos.length > 0) {
-                                renderGallery();
-                            } else {
-                                camGallery.style.display = 'none';
-                            }
+                            if (photos.length > 0) renderGallery(); else camGallery.style.display = 'none';
                             if (!stream) openBtn.style.display = 'inline-flex';
                         });
 
-                        /* ── Event: Clear all photos ── */
-                        clearAllBtn.addEventListener('click', () => {
-                            photos = [];
-                            renderGallery();
-                        });
+                        clearAllBtn.addEventListener('click', () => { photos = []; renderGallery(); });
 
-
+                        /* ── Metrics refresh ── */
                         const refreshMetrics = (payload, resp) => {
                             const lat = payload.latitude?.toFixed  ? payload.latitude.toFixed(6)  : payload.latitude;
                             const lng = payload.longitude?.toFixed ? payload.longitude.toFixed(6) : payload.longitude;
-                            const acc = payload.accuracy ? Number(payload.accuracy).toFixed(1)    : '—';
+                            const acc = payload.accuracy ? Number(payload.accuracy).toFixed(1) : '—';
 
-                            el.latitudeValue.textContent      = lat || '—';
-                            el.longitudeValue.textContent     = lng || '—';
-                            el.locationNameValue.textContent  = resp.location_name || '—';
-                            el.accuracyValue.textContent      = acc !== '—' ? `${acc} m` : '—';
-                            el.lastSeenValue.textContent      = resp.last_seen || new Date().toLocaleTimeString();
+                            el.latitudeValue.textContent     = lat || '—';
+                            el.longitudeValue.textContent    = lng || '—';
+                            el.locationNameValue.textContent = resp.location_name || '—';
+                            el.accuracyValue.textContent     = acc !== '—' ? `${acc} m` : '—';
+                            el.lastSeenValue.textContent     = resp.last_seen || new Date().toLocaleTimeString();
 
                             if (resp.map_url) el.mapButton.href = resp.map_url;
                             updateStatus(resp.status, resp.status_label);
+
+                            /* Live distance update from backend response */
+                            if (el.kpiDistance &amp;&amp; resp.total_distance_km != null) {
+                                el.kpiDistance.textContent = parseFloat(resp.total_distance_km).toFixed(1);
+                            }
 
                             if (payload.accuracy &amp;&amp; Number(payload.accuracy) > 200) {
                                 setNotice('warning', 'Low GPS accuracy',
                                     ' Move outdoors or enable high-accuracy mode for a precise location name.');
                             }
                         };
-
 
                         /* ── Tracking logic ── */
                         const sendLocation = async (position) => {
@@ -953,20 +890,16 @@
 
                         const startTracking = async () => {
                             if (!navigator.geolocation) {
-                                setNotice('danger', 'Not supported',
-                                    ' This browser does not support geolocation.');
+                                setNotice('danger', 'Not supported', ' This browser does not support geolocation.');
                                 return;
                             }
                             if (state.tracking) return;
                             state.tracking = true;
-
                             el.startButton.disabled = true;
                             updateStatus('live', 'Starting…');
-
                             state.trackingStart = Date.now();
                             el.takingTimeValue.textContent = '00:00';
                             state.timerId = setInterval(tickTimer, 1000);
-
                             const opts = { enableHighAccuracy: true, maximumAge: 5000, timeout: 15000 };
 
                             navigator.geolocation.getCurrentPosition(
@@ -978,8 +911,7 @@
                                     state.trackingStart = null;
                                     el.takingTimeValue.textContent = '—';
                                     updateStatus('offline', 'Offline');
-                                    setNotice('danger', 'Permission needed',
-                                        ' ' + (err.message || 'GPS access was denied.'));
+                                    setNotice('danger', 'Permission needed', ' ' + (err.message || 'GPS access was denied.'));
                                 },
                                 opts
                             );
@@ -1000,41 +932,22 @@
 
                         const stopTracking = async () => {
                             state.tracking = false;
-                            if (state.watchId !== null) {
-                                navigator.geolocation.clearWatch(state.watchId);
-                                state.watchId = null;
-                            }
-                            if (state.heartbeatId !== null) {
-                                clearInterval(state.heartbeatId);
-                                state.heartbeatId = null;
-                            }
-                            if (state.timerId !== null) {
-                                clearInterval(state.timerId);
-                                state.timerId = null;
-                            }
-
-                            const durationSeconds = state.trackingStart
-                                ? Math.floor((Date.now() - state.trackingStart) / 1000)
-                                : 0;
+                            if (state.watchId !== null) { navigator.geolocation.clearWatch(state.watchId); state.watchId = null; }
+                            if (state.heartbeatId !== null) { clearInterval(state.heartbeatId); state.heartbeatId = null; }
+                            if (state.timerId !== null) { clearInterval(state.timerId); state.timerId = null; }
+                            const durationSeconds = state.trackingStart ? Math.floor((Date.now() - state.trackingStart) / 1000) : 0;
                             state.trackingStart = null;
-
                             el.takingTimeValue.textContent = '—';
-                            console.log(el.takingTimeValue.textContent);
                             el.startButton.disabled = false;
                             try {
-                                await postJson('/salesperson_tracking/stop', {
-                                    duration_seconds: durationSeconds,
-                                });
+                                await postJson('/salesperson_tracking/stop', { duration_seconds: durationSeconds });
                             } catch (e) {
                                 setNotice('warning', 'Stop warning', ' ' + e.message);
                             }
                             updateStatus('offline', 'Offline');
-                            setNotice('', 'Tracking stopped',
-                                ' This device is no longer sending live position updates.');
+                            setNotice('', 'Tracking stopped', ' This device is no longer sending live position updates.');
                         };
 
-
-                        /* ── Event listeners ── */
                         el.startButton.addEventListener('click', () =>
                             startTracking().catch((e) => setNotice('danger', 'Start failed', ' ' + e.message)));
 
@@ -1043,19 +956,19 @@
 
                         window.addEventListener('pagehide', () => {
                             if (state.tracking) {
-                                navigator.sendBeacon(
-                                    '/salesperson_tracking/stop',
-                                    new Blob(['{}'], { type: 'application/json' })
-                                );
+                                navigator.sendBeacon('/salesperson_tracking/stop',
+                                    new Blob(['{}'], { type: 'application/json' }));
                             }
                         });
                     })();
-
-                    
                 </script>
             </body>
         </html>
     </template>
+
+    <!-- ════════════════════════════════════════════════════
+         MOVING MAP PAGE  —  OSRM Road Routing
+    ════════════════════════════════════════════════════ -->
     <template id="moving_map_page" name="Salesperson Moving Map View">
         <html lang="en">
             <head>
@@ -1068,19 +981,19 @@
                     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
                     :root {
-                        --purple:     #4a1942;
-                        --purple-dk:  #3a1233;
-                        --green-600:  #3b6d11;
-                        --red-600:    #dc2626;
-                        --indigo:     #6366f1;
-                        --blue-400:   #3b82f6;
-                        --surface:    #ffffff;
-                        --bg:         #f4f6f8;
-                        --border:     rgba(0,0,0,.08);
-                        --text:       #1a1d23;
-                        --muted:      #6b7280;
-                        --radius-md:  10px;
-                        --radius-lg:  14px;
+                        --purple:    #4a1942;
+                        --purple-dk: #3a1233;
+                        --green-600: #3b6d11;
+                        --red-600:   #dc2626;
+                        --indigo:    #6366f1;
+                        --blue-route:#1a73e8;
+                        --surface:   #ffffff;
+                        --bg:        #f4f6f8;
+                        --border:    rgba(0,0,0,.08);
+                        --text:      #1a1d23;
+                        --muted:     #6b7280;
+                        --radius-md: 10px;
+                        --radius-lg: 14px;
                     }
 
                     body {
@@ -1131,17 +1044,9 @@
                         margin: 0;
                     }
 
-                    .top-bar-sub {
-                        font-size: 11px;
-                        opacity: .65;
-                        margin-top: 1px;
-                    }
+                    .top-bar-sub { font-size: 11px; opacity: .65; margin-top: 1px; }
 
-                    .meta-pills {
-                        display: flex;
-                        gap: 6px;
-                        flex-wrap: wrap;
-                    }
+                    .meta-pills { display: flex; gap: 6px; flex-wrap: wrap; }
 
                     .meta-pill {
                         background: rgba(255,255,255,.1);
@@ -1157,15 +1062,78 @@
                     .meta-pill b { font-weight: 600; opacity: 1; }
 
                     /* ── Map wrapper ── */
-                    .map-wrapper {
-                        flex: 1;
-                        position: relative;
-                        overflow: hidden;
-                    }
-
+                    .map-wrapper { flex: 1; position: relative; overflow: hidden; }
                     #map { width: 100%; height: 100%; }
 
-                    /* ── Legend overlay ── */
+                    /* ── Route info box (Google Maps style) ── */
+                    .route-info-box {
+                        position: absolute;
+                        top: 12px;
+                        right: 12px;
+                        z-index: 1000;
+                        background: var(--surface);
+                        border-radius: var(--radius-lg);
+                        padding: 12px 16px;
+                        box-shadow: 0 2px 14px rgba(0,0,0,.18);
+                        border: .5px solid rgba(0,0,0,.1);
+                        font-family: inherit;
+                        min-width: 120px;
+                        display: none;
+                    }
+
+                    .route-info-box .rib-dur {
+                        font-size: 22px;
+                        font-weight: 600;
+                        color: var(--text);
+                        line-height: 1.1;
+                    }
+
+                    .route-info-box .rib-dist {
+                        font-size: 12px;
+                        color: var(--muted);
+                        margin-top: 3px;
+                    }
+
+                    .route-info-box .rib-badge {
+                        display: inline-block;
+                        margin-top: 6px;
+                        background: #e8f5e9;
+                        color: var(--green-600);
+                        border-radius: 4px;
+                        font-size: 10px;
+                        font-weight: 500;
+                        padding: 2px 6px;
+                    }
+
+                    /* ── Spinner for OSRM loading ── */
+                    .route-loading {
+                        position: absolute;
+                        top: 12px;
+                        right: 12px;
+                        z-index: 1000;
+                        background: var(--surface);
+                        border-radius: var(--radius-lg);
+                        padding: 10px 14px;
+                        box-shadow: 0 2px 10px rgba(0,0,0,.12);
+                        border: .5px solid rgba(0,0,0,.08);
+                        font-size: 12px;
+                        color: var(--muted);
+                        display: flex;
+                        align-items: center;
+                        gap: 8px;
+                    }
+
+                    @keyframes spin { to { transform: rotate(360deg); } }
+                    .spinner {
+                        width: 14px; height: 14px;
+                        border: 2px solid #e2e8f0;
+                        border-top-color: var(--blue-route);
+                        border-radius: 50%;
+                        animation: spin .7s linear infinite;
+                        flex-shrink: 0;
+                    }
+
+                    /* ── Legend ── */
                     .legend {
                         position: absolute;
                         bottom: 28px;
@@ -1197,12 +1165,8 @@
 
                     /* ── No-data overlay ── */
                     .no-data {
-                        position: absolute;
-                        inset: 0;
-                        z-index: 1000;
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
+                        position: absolute; inset: 0; z-index: 1000;
+                        display: flex; align-items: center; justify-content: center;
                         background: rgba(244,246,248,.7);
                         backdrop-filter: blur(4px);
                     }
@@ -1225,12 +1189,12 @@
                     }
 
                     .no-data-icon svg { width: 22px; height: 22px; color: var(--muted); }
-
                     .no-data-title { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
                     .no-data-sub   { font-size: 13px; color: var(--muted); }
 
                     @media (max-width: 520px) {
                         .meta-pills { display: none; }
+                        .route-info-box { top: 8px; right: 8px; padding: 10px 12px; }
                     }
                 </style>
             </head>
@@ -1263,188 +1227,290 @@
                         <div class="meta-pill">
                             Last seen: <b><t t-out="tracker.last_seen or '—'"/></b>
                         </div>
+                        <!-- Distance pill — populated by JS after OSRM loads -->
+                        <div class="meta-pill" id="routeDistancePill" style="display:none">
+                            🛣 Distance: <b id="routeDistVal">—</b>
+                        </div>
+                        <!-- Duration pill — populated by JS after OSRM loads -->
+                        <div class="meta-pill" id="routeDurationPill" style="display:none">
+                            ⏱ Duration: <b id="routeDurVal">—</b>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Map -->
-                 <div class="map-wrapper">
-                      <div id="map"
-                          t-att-data-points="location_points_b64"
-                          t-att-data-plans="plan_markers_b64"/>
+                <div class="map-wrapper">
+                    <div id="map"
+                         t-att-data-points="location_points_b64"
+                         t-att-data-plans="plan_markers_b64"/>
 
-                      <div class="legend">
-                        <div class="legend-row"><span class="legend-dot" style="background:#3b6d11"/> Start point</div>
-                        <div class="legend-row"><span class="legend-dot" style="background:#dc2626"/> Current / last point</div>
-                        <div class="legend-row"><span class="legend-line" style="background:#6366f1;opacity:.85"/> Movement path</div>
-                        <div class="legend-row"><span class="legend-dot" style="background:#3b6d11;opacity:.4"/> Visited location</div>
-                        <div class="legend-row"><span class="legend-dot" style="background:#dc2626;opacity:.4"/> Unvisited location</div>
-                      </div>
+                    <!-- Route info overlay (Google Maps card style) -->
+                    <div class="route-info-box" id="routeInfoBox">
+                        <div class="rib-dur" id="ribDur">— min</div>
+                        <div class="rib-dist" id="ribDist">— km</div>
+                        <span class="rib-badge">Road distance</span>
                     </div>
 
+                    <!-- OSRM loading spinner -->
+                    <div class="route-loading" id="routeLoading">
+                        <div class="spinner"></div>
+                        Loading road route…
+                    </div>
 
-            <script>
-              //<![CDATA[
-              (function () {
-                  var mapEl  = document.getElementById('map');
-                  var b64    = mapEl.getAttribute('data-points') || '';
-                  var planB64 = mapEl.getAttribute('data-plans') || '';
-                  var points = [];
-                  var plans  = [];
+                    <div class="legend">
+                        <div class="legend-row"><span class="legend-dot" style="background:#3b6d11"/> Start point</div>
+                        <div class="legend-row"><span class="legend-dot" style="background:#dc2626"/> Current / last point</div>
+                        <div class="legend-row"><span class="legend-line" style="background:#1a73e8"/> Road route (OSRM)</div>
+                        <div class="legend-row"><span class="legend-dot" style="background:#3b6d11;opacity:.4"/> Visited location</div>
+                        <div class="legend-row"><span class="legend-dot" style="background:#dc2626;opacity:.4"/> Unvisited location</div>
+                    </div>
+                </div>
 
-                  try { points = JSON.parse(atob(b64));     } catch (e) { points = []; }
-                  try { plans  = JSON.parse(atob(planB64)); } catch (e) { plans  = []; }
+                <script>
+                //<![CDATA[
+                (function () {
 
-                  var DEFAULT_CENTER = [23.7701, 90.4254];
-                  var map = L.map('map', { zoomControl: true }).setView(DEFAULT_CENTER, 15);
+                    /* ── Read data ── */
+                    var mapEl   = document.getElementById('map');
+                    var b64     = mapEl.getAttribute('data-points') || '';
+                    var planB64 = mapEl.getAttribute('data-plans')  || '';
+                    var points  = [];
+                    var plans   = [];
 
-                  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                      attribution: '\u00a9 <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-                      maxZoom: 19,
-                  }).addTo(map);
+                    try { points = JSON.parse(atob(b64));     } catch (e) { points = []; }
+                    try { plans  = JSON.parse(atob(planB64)); } catch (e) { plans  = []; }
 
-                  /* ── No data state ── */
-                  if (!points || points.length === 0) {
-                      var nd = document.createElement('div');
-                      nd.className = 'no-data';
-                      nd.innerHTML = [
-                          '<div class="no-data-card">',
-                          '  <div class="no-data-icon">',
-                          '    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">',
-                          '      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/>',
-                          '    </svg>',
-                          '  </div>',
-                          '  <div class="no-data-title">No location data</div>',
-                          '  <div class="no-data-sub">No GPS logs available for today.</div>',
-                          '</div>',
-                      ].join('');
-                      document.querySelector('.map-wrapper').appendChild(nd);
-                      return;
-                  }
+                    /* ── Init Leaflet ── */
+                    var DEFAULT_CENTER = [23.7701, 90.4254];
+                    var map = L.map('map', { zoomControl: true }).setView(DEFAULT_CENTER, 15);
 
-                  /* ── Filter extreme inaccuracy ── */
-                  var valid = points.filter(function (p) {
-                      return typeof p.lat === 'number' && typeof p.lng === 'number'
-                            && (p.accuracy <= 2000 || p.accuracy === 0);
-                  });
-                  if (valid.length === 0) valid = points;
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        attribution: '\u00a9 <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                        maxZoom: 19,
+                    }).addTo(map);
 
-                  /* ── Path polyline ── */
-                  var latlngs = valid.map(function (p) { return [p.lat, p.lng]; });
-                  L.polyline(latlngs, {
-                      color:     '#6366f1',
-                      weight:    3,
-                      opacity:   0.85,
-                      dashArray: '7 5',
-                  }).addTo(map);
+                    /* ── No data ── */
+                    if (!points || points.length === 0) {
+                        document.getElementById('routeLoading').style.display = 'none';
+                        var nd = document.createElement('div');
+                        nd.className = 'no-data';
+                        nd.innerHTML = [
+                            '<div class="no-data-card">',
+                            '  <div class="no-data-icon">',
+                            '    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">',
+                            '      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/>',
+                            '    </svg>',
+                            '  </div>',
+                            '  <div class="no-data-title">No location data</div>',
+                            '  <div class="no-data-sub">No GPS logs available for today.</div>',
+                            '</div>',
+                        ].join('');
+                        document.querySelector('.map-wrapper').appendChild(nd);
+                        return;
+                    }
 
-                  /* ── Accuracy circles + intermediate markers ── */
-                  valid.forEach(function (p, i) {
-                      if (p.accuracy > 0 && p.accuracy <= 500) {
-                          L.circle([p.lat, p.lng], {
-                              radius:      p.accuracy,
-                              color:       '#3b82f6',
-                              fillColor:   '#3b82f6',
-                              fillOpacity: 0.1,
-                              weight:      1,
-                              opacity:     0.35,
-                          }).addTo(map);
-                      }
+                    /* ── Filter poor accuracy ── */
+                    var valid = points.filter(function (p) {
+                        return typeof p.lat === 'number' && typeof p.lng === 'number'
+                               && (p.accuracy <= 200 || p.accuracy === 0);
+                    });
+                    if (valid.length === 0) valid = points;
 
-                      if (i > 0 && i < valid.length - 1) {
-                          var dot = L.circleMarker([p.lat, p.lng], {
-                              radius:      5,
-                              color:       '#6366f1',
-                              fillColor:   '#c7d2fe',
-                              fillOpacity: 1,
-                              weight:      2,
-                          });
-                          var timeStr  = p.time  ? p.time.replace('T', ' ') : '—';
-                          var speedStr = p.speed ? (p.speed * 3.6).toFixed(1) + ' km/h' : '0 km/h';
-                          var accStr   = p.accuracy ? p.accuracy.toFixed(1) + ' m' : '—';
-                          dot.bindPopup(
-                              '<b>Time:</b> '     + timeStr  + '<br>' +
-                              '<b>Speed:</b> '    + speedStr + '<br>' +
-                              '<b>Accuracy:</b> ' + accStr   +
-                              (p.location_name ? '<br><b>Location:</b> ' + p.location_name : '')
-                          );
-                          dot.addTo(map);
-                      }
-                  });
+                    var latlngs = valid.map(function (p) { return [p.lat, p.lng]; });
 
-                  /* ── Start marker ── */
-                  var sp = valid[0];
-                  L.marker([sp.lat, sp.lng], {
-                      icon: L.divIcon({
-                          html: '<div style="width:18px;height:18px;background:#3b6d11;border-radius:50%;border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.25)"></div>',
-                          iconSize:   [18, 18],
-                          iconAnchor: [9, 9],
-                          className:  '',
-                      }),
-                  }).addTo(map).bindPopup(
-                      '<b>Start point</b><br>' + (sp.time || '') +
-                      (sp.location_name ? '<br>' + sp.location_name : '')
-                  );
+                    /* ── Helpers ── */
+                    function downsample(arr, maxPts) {
+                        if (arr.length <= maxPts) return arr;
+                        var step = arr.length / maxPts;
+                        var out  = [];
+                        for (var i = 0; i < arr.length; i += step) {
+                            out.push(arr[Math.floor(i)]);
+                        }
+                        var last = arr[arr.length - 1];
+                        if (out[out.length - 1] !== last) out.push(last);
+                        return out;
+                    }
 
-                  /* ── End / current marker ── */
-                  var ep = valid[valid.length - 1];
-                  L.marker([ep.lat, ep.lng], {
-                      icon: L.divIcon({
-                          html: '<div style="width:22px;height:22px;background:#dc2626;border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:3px solid #fff;box-shadow:0 2px 10px rgba(0,0,0,.3)"></div>',
-                          iconSize:   [22, 22],
-                          iconAnchor: [11, 22],
-                          className:  '',
-                      }),
-                  }).addTo(map).bindPopup(
-                      '<b>Current / last position</b><br>' +
-                      (ep.time || '') +
-                      (ep.location_name ? '<br>' + ep.location_name : '') +
-                      '<br>Accuracy: ' + (ep.accuracy ? ep.accuracy.toFixed(1) + ' m' : '—')
-                  ).openPopup();
+                    /* ── Start & end markers ── */
+                    function addStartMarker(p) {
+                        return L.marker([p.lat, p.lng], {
+                            icon: L.divIcon({
+                                html: '<div style="width:16px;height:16px;background:#3b6d11;border-radius:50%;border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.3)"></div>',
+                                iconSize: [16, 16], iconAnchor: [8, 8], className: '',
+                            }),
+                        }).addTo(map).bindPopup(
+                            '<b>Start point</b><br>' + (p.time || '') +
+                            (p.location_name ? '<br>' + p.location_name : '')
+                        );
+                    }
 
-                  /* ── Plan markers ── */
-                  if (plans && plans.length > 0) {
-                      plans.forEach(function (pl) {
-                          if (typeof pl.lat !== 'number' || typeof pl.lng !== 'number') return;
-                          var visited = !!pl.visited;
-                          var color   = visited ? '#3b6d11' : '#dc2626';
-                          var opacity = visited ? 0.55 : 0.45;
-                          var dot = L.circleMarker([pl.lat, pl.lng], {
-                              radius:      7,
-                              color:       color,
-                              fillColor:   color,
-                              fillOpacity: opacity,
-                              weight:      2,
-                          });
-                          dot.bindPopup(
-                              '<b>' + (pl.name || 'Planned location') + '</b><br>' +
-                              (visited ? '&#10003; Visited' : '&#8226; Not visited yet') +
-                              (pl.address ? '<br>' + pl.address : '')
-                          );
-                          dot.addTo(map);
-                      });
-                  }
+                    function addEndMarker(p) {
+                        return L.marker([p.lat, p.lng], {
+                            icon: L.divIcon({
+                                html: '<div style="width:22px;height:22px;background:#dc2626;border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:3px solid #fff;box-shadow:0 2px 10px rgba(0,0,0,.3)"></div>',
+                                iconSize: [22, 22], iconAnchor: [11, 22], className: '',
+                            }),
+                        }).addTo(map).bindPopup(
+                            '<b>Current / last position</b><br>' + (p.time || '') +
+                            (p.location_name ? '<br>' + p.location_name : '') +
+                            '<br>Accuracy: ' + (p.accuracy ? p.accuracy.toFixed(1) + ' m' : '—')
+                        ).openPopup();
+                    }
 
-                  /* ── Fit bounds ── */
-                  var allLatLngs = latlngs.slice();
-                  if (plans) {
-                      plans.forEach(function (pl) {
-                          if (typeof pl.lat === 'number' && typeof pl.lng === 'number') {
-                              allLatLngs.push([pl.lat, pl.lng]);
-                          }
-                      });
-                  }
+                    /* ── Intermediate dot markers ── */
+                    function addIntermediateMarkers(pts) {
+                        pts.forEach(function (p, i) {
+                            if (i === 0 || i === pts.length - 1) return;
+                            if (p.accuracy > 0 && p.accuracy <= 500) {
+                                L.circle([p.lat, p.lng], {
+                                    radius: p.accuracy, color: '#3b82f6',
+                                    fillColor: '#3b82f6', fillOpacity: 0.08, weight: 1, opacity: 0.3,
+                                }).addTo(map);
+                            }
+                            var dot = L.circleMarker([p.lat, p.lng], {
+                                radius: 4, color: '#1a73e8',
+                                fillColor: '#bfdbfe', fillOpacity: 1, weight: 2,
+                            });
+                            var timeStr  = p.time  ? p.time.replace('T', ' ') : '—';
+                            var speedStr = p.speed ? (p.speed * 3.6).toFixed(1) + ' km/h' : '0 km/h';
+                            var accStr   = p.accuracy ? p.accuracy.toFixed(1) + ' m' : '—';
+                            dot.bindPopup(
+                                '<b>Time:</b> '     + timeStr  + '<br>' +
+                                '<b>Speed:</b> '    + speedStr + '<br>' +
+                                '<b>Accuracy:</b> ' + accStr   +
+                                (p.location_name ? '<br><b>Location:</b> ' + p.location_name : '')
+                            );
+                            dot.addTo(map);
+                        });
+                    }
 
-                  if (allLatLngs.length > 1) {
-                      map.fitBounds(L.latLngBounds(allLatLngs), { padding: [50, 50] });
-                  } else {
-                      map.setView(latlngs[0], 16);
-                  }
+                    /* ── Plan markers ── */
+                    function addPlanMarkers(planList) {
+                        if (!planList || planList.length === 0) return;
+                        planList.forEach(function (pl) {
+                            if (typeof pl.lat !== 'number' || typeof pl.lng !== 'number') return;
+                            var visited = !!pl.visited;
+                            var color   = visited ? '#3b6d11' : '#dc2626';
+                            L.circleMarker([pl.lat, pl.lng], {
+                                radius: 7, color: color, fillColor: color,
+                                fillOpacity: visited ? 0.55 : 0.45, weight: 2,
+                            }).bindPopup(
+                                '<b>' + (pl.name || 'Planned location') + '</b><br>' +
+                                (visited ? '&#10003; Visited' : '&#8226; Not visited yet') +
+                                (pl.address ? '<br>' + pl.address : '')
+                            ).addTo(map);
+                        });
+                    }
 
-                  setTimeout(function () { map.invalidateSize(); }, 300);
-              })();
-              //]]>
-              </script>
+                    /* ── Fit bounds ── */
+                    function fitAll(routeBounds) {
+                        var allLatLngs = latlngs.slice();
+                        if (plans) {
+                            plans.forEach(function (pl) {
+                                if (typeof pl.lat === 'number') allLatLngs.push([pl.lat, pl.lng]);
+                            });
+                        }
+                        if (routeBounds) {
+                            map.fitBounds(routeBounds, { padding: [50, 50] });
+                        } else if (allLatLngs.length > 1) {
+                            map.fitBounds(L.latLngBounds(allLatLngs), { padding: [50, 50] });
+                        } else {
+                            map.setView(latlngs[0], 16);
+                        }
+                        setTimeout(function () { map.invalidateSize(); }, 300);
+                    }
 
+                    /* ── Show route info card ── */
+                    function showRouteInfo(distKm, durMin) {
+                        var box    = document.getElementById('routeInfoBox');
+                        var ribDur = document.getElementById('ribDur');
+                        var ribDist= document.getElementById('ribDist');
+                        var dp     = document.getElementById('routeDistancePill');
+                        var tp     = document.getElementById('routeDurationPill');
+                        var dv     = document.getElementById('routeDistVal');
+                        var tv     = document.getElementById('routeDurVal');
+
+                        ribDur.textContent  = durMin + ' min';
+                        ribDist.textContent = distKm + ' km';
+                        box.style.display   = 'block';
+
+                        if (dp) { dp.style.display = 'flex'; dv.textContent = distKm + ' km'; }
+                        if (tp) { tp.style.display = 'flex'; tv.textContent = durMin + ' min'; }
+                    }
+
+                    /* ── GPS fallback polyline ── */
+                    function drawGpsFallback() {
+                        L.polyline(latlngs, {
+                            color: '#6366f1', weight: 3, opacity: 0.85, dashArray: '7 5',
+                        }).addTo(map);
+                    }
+
+                    /* ── OSRM route fetch ── */
+                    function fetchRoadRoute(callback) {
+                        var sampled  = downsample(valid, 80);
+                        var coordStr = sampled.map(function (p) { return p.lng + ',' + p.lat; }).join(';');
+                        var url      = 'https://router.project-osrm.org/route/v1/driving/' + coordStr
+                                       + '?overview=full&geometries=geojson&steps=false';
+
+                        fetch(url)
+                            .then(function (r) { return r.json(); })
+                            .then(function (data) {
+                                if (data.routes && data.routes.length > 0) {
+                                    callback(null, data.routes[0]);
+                                } else {
+                                    callback(new Error('No route'), null);
+                                }
+                            })
+                            .catch(function (e) { callback(e, null); });
+                    }
+
+                    /* ── Main draw ── */
+                    fetchRoadRoute(function (err, route) {
+                        var loadingEl = document.getElementById('routeLoading');
+                        if (loadingEl) loadingEl.style.display = 'none';
+
+                        if (!err && route) {
+                            /* Road-snapped coordinates from GeoJSON */
+                            var roadCoords = route.geometry.coordinates.map(function (c) {
+                                return [c[1], c[0]];
+                            });
+
+                            /* White outline for road feel */
+                            L.polyline(roadCoords, {
+                                color: '#ffffff', weight: 11, opacity: 0.55,
+                            }).addTo(map);
+
+                            /* Blue road polyline */
+                            var roadLine = L.polyline(roadCoords, {
+                                color: '#1a73e8', weight: 6, opacity: 0.9,
+                            }).addTo(map);
+
+                            /* Distance & duration */
+                            var distKm = (route.distance / 1000).toFixed(1);
+                            var durMin = Math.round(route.duration / 60);
+                            showRouteInfo(distKm, durMin);
+
+                            addIntermediateMarkers(valid);
+                            addStartMarker(valid[0]);
+                            addEndMarker(valid[valid.length - 1]);
+                            addPlanMarkers(plans);
+                            fitAll(roadLine.getBounds());
+
+                        } else {
+                            /* Fallback: dashed GPS path */
+                            console.warn('OSRM failed — using GPS fallback:', err);
+                            drawGpsFallback();
+                            addIntermediateMarkers(valid);
+                            addStartMarker(valid[0]);
+                            addEndMarker(valid[valid.length - 1]);
+                            addPlanMarkers(plans);
+                            fitAll(null);
+                        }
+                    });
+
+                })();
+                //]]>
+                </script>
 
             </body>
         </html>

@@ -1,6 +1,7 @@
 import base64
 import json
-
+from datetime import date
+import math
 from odoo import fields, http, _
 from odoo.exceptions import AccessError, ValidationError
 from odoo.http import request
@@ -18,52 +19,93 @@ class SalespersonTrackingController(http.Controller):
 
     @http.route("/salesperson_tracking/live", type="http", auth="user", website=False)
     def salesperson_tracking_live_page(self, **kwargs):
-        user = self._check_salesperson_access()
+        user    = self._check_salesperson_access()
         tracker = user.sudo()._ensure_salesperson_tracker()
-        today = fields.Date.context_today(request.env.user)
-        # Today's planned visits for map markers
+        today   = fields.Date.context_today(request.env.user)
+
+        # Today's planned visits
         plans = request.env["salesperson.visit.plan"].sudo().search(
             [("user_id", "=", user.id), ("visit_date", "=", today)]
         )
         plan_data = [
             {
-                "id": p.id,
-                "name": p.location_name,
-                "lat": p.latitude,
-                "lng": p.longitude,
+                "id":      p.id,
+                "name":    p.location_name,
+                "lat":     p.latitude,
+                "lng":     p.longitude,
                 "covered": p.is_covered,
-                "stay": p.stay_duration_display,
-                "radius": p.radius_meters,
+                "stay":    p.stay_duration_display,
+                "radius":  p.radius_meters,
             }
             for p in plans
             if p.latitude or p.longitude
         ]
-        # Active check-in if any
+
         active_checkin = request.env["salesperson.checkin"].sudo().search(
             [("user_id", "=", user.id), ("state", "=", "checked_in")], limit=1
         )
-        my_tracking_action = request.env.ref("salesperson_live_tracking.action_salesperson_tracker_my")
+        
+        today_start = fields.Datetime.to_datetime(today)
+        today_logs  = request.env["salesperson.location.log"].sudo().search(
+            [
+                ("tracker_id", "=", tracker.id),
+                ("create_date", ">=", today_start),
+            ],
+            order="create_date asc",
+        )
+        total_distance_km = self._compute_total_distance_km(today_logs)  # always float
+
         import json as json_lib, base64 as b64_lib
         plan_b64 = b64_lib.b64encode(json_lib.dumps(plan_data).encode()).decode()
+
+        my_tracking_action = request.env.ref("salesperson_live_tracking.action_salesperson_tracker_my")
+
         values = {
-            "tracker": tracker,
-            "user": user,
-            "my_tracking_url": "/web#action=%s&model=salesperson.tracker&view_type=list" % my_tracking_action.id,
-            "plan_points_b64": plan_b64,
-            "active_checkin": active_checkin,
-            "today_plan_count": len(plans),
+            "tracker":             tracker,
+            "user":                user,
+            "my_tracking_url":     "/web#action=%s&model=salesperson.tracker&view_type=list" % my_tracking_action.id,
+            "plan_points_b64":     plan_b64,
+            "active_checkin":      active_checkin,
+            "today_plan_count":    len(plans),
             "today_covered_count": len(plans.filtered("is_covered")),
+            "total_distance_km":   total_distance_km,   # ← fix
         }
         return request.render("salesperson_live_tracking.live_tracking_page", values)
+    
+        
+    # ── Haversine helper ──────────────────────────────────────────────────────────
+    @staticmethod
+    def _haversine_km(lat1, lon1, lat2, lon2):
+        R = 6371.0
+        phi1, phi2 = math.radians(lat1), math.radians(lat2)
+        dphi = math.radians(lat2 - lat1)
+        dlam = math.radians(lon2 - lon1)
+        a = math.sin(dphi / 2) ** 2 + math.cos(phi1) * math.cos(phi2) * math.sin(dlam / 2) ** 2
+        return R * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
 
-    # ── location update ────────────────────────────────────────────────────────
 
+    def _compute_total_distance_km(self, logs):
+        """Sum haversine distance over ordered GPS log records (accuracy <= 200 m filtered)."""
+        total, prev = 0.0, None
+        for log in logs:
+            if not (log.latitude and log.longitude):
+                continue
+            if log.accuracy and log.accuracy > 200:   # skip poor-accuracy points
+                continue
+            if prev:
+                total += self._haversine_km(prev[0], prev[1], log.latitude, log.longitude)
+            prev = (log.latitude, log.longitude)
+        return round(total, 3)
+
+
+    # ── Controller ───────────────────────────────────────────────────────────────
     @http.route("/salesperson_tracking/update", type="http", auth="user", methods=["POST"], csrf=False)
     def salesperson_tracking_update(self, **kwargs):
-        user = self._check_salesperson_access()
+        user    = self._check_salesperson_access()
         payload = self._json_body()
+
         try:
-            latitude = float(payload["latitude"])
+            latitude  = float(payload["latitude"])
             longitude = float(payload["longitude"])
         except (KeyError, TypeError, ValueError) as error:
             raise ValidationError(_("Latitude and longitude are required.")) from error
@@ -82,16 +124,29 @@ class SalespersonTrackingController(http.Controller):
             heading=payload.get("heading"),
             source=payload.get("source") or "browser",
         )
+
+        # ── Today's distance ──────────────────────────────────────────────────
+        today_start = fields.Datetime.to_datetime(date.today())
+        today_logs  = request.env["salesperson.location.log"].sudo().search(
+            [
+                ("tracker_id", "=", tracker.id),
+                ("create_date", ">=", today_start),
+            ],
+            order="create_date asc",
+        )
+        total_distance_km = self._compute_total_distance_km(today_logs)
+
         return request.make_json_response({
-            "ok": True,
-            "tracker_id": tracker.id,
-            "status": tracker.tracking_status,
-            "status_label": tracker.tracking_status_label,
-            "last_seen": fields.Datetime.to_string(tracker.last_seen),
-            "latitude": tracker.partner_id.partner_latitude,
-            "longitude": tracker.partner_id.partner_longitude,
-            "location_name": tracker.location_name,
-            "map_url": tracker.openstreetmap_url,
+            "ok":               True,
+            "tracker_id":       tracker.id,
+            "status":           tracker.tracking_status,
+            "status_label":     tracker.tracking_status_label,
+            "last_seen":        fields.Datetime.to_string(tracker.last_seen),
+            "latitude":         tracker.partner_id.partner_latitude,
+            "longitude":        tracker.partner_id.partner_longitude,
+            "location_name":    tracker.location_name,
+            "map_url":          tracker.openstreetmap_url,
+            "total_distance_km": total_distance_km,   # ← new
         })
 
   

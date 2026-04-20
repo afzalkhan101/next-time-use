@@ -6,6 +6,7 @@ import requests
 from requests.exceptions import RequestException
 from markupsafe import Markup
 
+
 class SalespersonTracker(models.Model):
     _name = "salesperson.tracker"
     _description = "Salesperson Live Tracker"
@@ -15,33 +16,32 @@ class SalespersonTracker(models.Model):
     _rec_name = "user_id"
 
     sales_person = fields.Char(string="Sales Person", tracking=True)
-    manager = fields.Char(string="Manager")
+    manager      = fields.Char(string="Manager")
 
-    partner_ids = fields.Many2many(
-        'res.partner',
-        string="Partners",
+    partner_ids = fields.Many2many('res.partner', string="Partners")
+    line_ids    = fields.One2many(
+        'sales.person.space.line', 'salesperson_tracker_id', string="Visit Lines"
     )
-    line_ids = fields.One2many(
-        'sales.person.space.line',
-        'salesperson_tracker_id',      
-        string="Visit Lines",
-    )
+
     state = fields.Selection([
-    ('planned',  'Planned'),
-    ('accepted', 'Accepted'),
-    ('rejected', 'Rejected'),
-    ('visited',  'Visited'),
-    ('done',     'Done'),
+        ('planned',  'Planned'),
+        ('accepted', 'Accepted'),
+        ('rejected', 'Rejected'),
+        ('visited',  'Visited'),
+        ('done',     'Done'),
     ], string='Stage', default='planned', tracking=True, index=True)
-    user_id    = fields.Many2one("res.users",   required=True, ondelete="cascade", index=True)
-    partner_id = fields.Many2one("res.partner", related="user_id.partner_id",  store=True, readonly=True)
-    company_id = fields.Many2one("res.company", related="user_id.company_id",  store=True, readonly=True)
-    sale_team_id = fields.Many2one("crm.team",  related="user_id.sale_team_id", store=True, readonly=True)
+
+    user_id      = fields.Many2one("res.users",   required=True, ondelete="cascade", index=True)
+    partner_id   = fields.Many2one("res.partner", related="user_id.partner_id",   store=True, readonly=True)
+    company_id   = fields.Many2one("res.company", related="user_id.company_id",   store=True, readonly=True)
+    sale_team_id = fields.Many2one("crm.team",    related="user_id.sale_team_id", store=True, readonly=True)
+
     is_tracking   = fields.Boolean(string="Tracking Active", default=False, tracking=True)
     last_seen     = fields.Datetime(string="Last Update", index=True)
     last_accuracy = fields.Float(string="Accuracy (m)",  digits=(16, 2), tracking=True)
     last_speed    = fields.Float(string="Speed (m/s)",   digits=(16, 2), tracking=True)
     last_heading  = fields.Float(string="Heading",       digits=(16, 2), tracking=True)
+
     tracking_status = fields.Selection(
         [("live", "Live"), ("idle", "Idle"), ("offline", "Offline")],
         compute="_compute_tracking_status",
@@ -50,186 +50,124 @@ class SalespersonTracker(models.Model):
     )
     tracking_status_label = fields.Char(compute="_compute_tracking_status")
     openstreetmap_url     = fields.Char(compute="_compute_map_links")
+
     latitude      = fields.Float(related="partner_id.partner_latitude",  readonly=True, digits=(16, 7))
     longitude     = fields.Float(related="partner_id.partner_longitude", readonly=True, digits=(16, 7))
     location_name = fields.Char(string="Current Location")
+
     history_count             = fields.Integer(compute="_compute_history_count")
     today_plan_count          = fields.Integer()
     today_covered_count       = fields.Integer()
     today_visit_summary       = fields.Text()
+    kpi_visit_completion_rate = fields.Float(string="Visit Completion Rate (%)", digits=(16, 2))
 
-    kpi_visit_completion_rate = fields.Float(
-        string="Visit Completion Rate (%)",
-        # compute="_compute_today_visit_stats",
-        digits=(16, 2),
+    is_manager = fields.Boolean(
+        "res.users", related="user_id.is_manager", store=False
     )
-    is_manager = fields.Boolean("res.users",
-    related="user_id.is_manager",
-    store=False
-     )
     is_salesperson = fields.Boolean(
-    string="Is Salesperson",
-    related="user_id.is_salesperson",
-    store=False
+        string="Is Salesperson", related="user_id.is_salesperson", store=False
     )
 
     last_tracking_start    = fields.Datetime(string="Tracking Started At")
-    # Duration value of the sales Tracking . 
     last_tracking_duration = fields.Integer(string="Last Session Duration (sec)", default=0)
     route_deviation_alert  = fields.Boolean(string="Route Deviation Alert", default=False)
     last_alert_sent        = fields.Datetime(string="Last Alert Sent")
+
     priority = fields.Selection([
-        ("0", "Normal"),
-        ("1", "High"),
-        ("2", "Urgent")
+        ("0", "Normal"), ("1", "High"), ("2", "Urgent")
     ], default="0")
+
     coverage_color = fields.Integer(compute="_compute_coverage_color")
+
     purpose = fields.Selection([
-        ('order', 'New Order'),
-        ('payment', 'Payment Collection'),
-        ('complaint', 'Complaint'),
+        ('order',    'New Order'),
+        ('payment',  'Payment Collection'),
+        ('complaint','Complaint'),
         ('followup', 'Follow Up'),
-        ('demo', 'Product Demo')
+        ('demo',     'Product Demo'),
     ], default='followup', tracking=True)
-    checkin_time = fields.Datetime()
+
+    checkin_time  = fields.Datetime()
     checkout_time = fields.Datetime()
-    stay_minutes = fields.Float(
-        compute='_compute_stay',
-        store=True
-    )
+    stay_minutes  = fields.Float(compute='_compute_stay', store=True)
     radius_meters = fields.Float(default=100.0)
-    visit_date = fields.Date(required=True,tracking=True, default=fields.Date.context_today)
+    visit_date    = fields.Date(required=True, tracking=True, default=fields.Date.context_today)
+
     expense_transport = fields.Float()
-    expense_food = fields.Float()
-    expense_other = fields.Float()
-    total_expense = fields.Float(
-        compute='_compute_total_expense',
-        store=True
-    )
+    expense_food      = fields.Float()
+    expense_other     = fields.Float()
+    total_expense     = fields.Float(compute='_compute_total_expense', store=True)
 
-    #Traking Duration value is Done 
+    note = fields.Html(string="Internal Note", sanitize=True, tracking=True)
 
-    def action_stop_tracking(self, duration_seconds):
-        self.ensure_one()
+    # ── Compute: coverage color ───────────────────────────────────────────────
 
-        if duration_seconds < 0:
-            duration_seconds = 0
-
-        self.write({
-            "is_tracking": False,
-            "last_tracking_start": False,
-            "last_tracking_duration": duration_seconds,
-        })
-
-        today = fields.Date.context_today(self)
-
-        plan = self.env["salesperson.visit.plan"].sudo().search([
-            ("user_id", "=", self.user_id.id),
-            ("visit_date", "=", today),
-        ], limit=1)
-
-        print("################################",plan)
-        if plan:
-            plan._apply_tracking_duration(duration_seconds)
-        return True
-    
-
-    @api.depends('expense_transport', 'expense_food', 'expense_other')
-    def _compute_total_expense(self):
+    @api.depends("today_plan_count", "today_covered_count")
+    def _compute_coverage_color(self):
         for rec in self:
-            rec.total_expense = (
-                rec.expense_transport +
-                rec.expense_food +
-                rec.expense_other
-            )
-    
-    note = fields.Html(
-    string="Internal Note",
-    sanitize=True,
-    tracking=True
-    )
+            if not rec.today_plan_count:
+                rec.coverage_color = 0
+            elif rec.today_covered_count >= rec.today_plan_count:
+                rec.coverage_color = 10   # green
+            elif rec.today_covered_count >= rec.today_plan_count * 0.5:
+                rec.coverage_color = 3    # yellow
+            else:
+                rec.coverage_color = 1    # red
 
-    def action_set_planned(self):
-
-        allowed = self.filtered(lambda r: r.state in ('accepted', 'visited'))
-        if allowed:
-            allowed.write({'state': 'planned'})
-
-    def action_set_accepted(self):
-        self.filtered(lambda r: r.state == 'planned').write({'state': 'accepted'})
-
-    def action_set_rejected(self):
-        self.ensure_one()
-        return {
-            'type': 'ir.actions.act_window',
-            'name': 'Reject Application',
-            'res_model': 'reject.reason.wizard',
-            'view_mode': 'form',
-            'target': 'new',
-            'context': {
-                'default_tracker_id': self.id,
-                'dialog_size': 'medium',
-            }
-        }
-
-
-    def action_set_visited(self):
-        self.filtered(lambda r: r.state == 'accepted').write({'state': 'visited'})
-
-    def action_set_done(self):
-        self.filtered(lambda r: r.state == 'visited').write({'state': 'done'})
-
-    @api.depends("last_seen", "is_tracking")
-    def _compute_tracking_status(self):
-        now = fields.Datetime.now()
-        for tracker in self:
-            status = "offline"
-            if tracker.last_seen:
-                if tracker.is_tracking and tracker.last_seen >= now - timedelta(minutes=2):
-                    status = "live"
-                elif tracker.last_seen >= now - timedelta(minutes=30):
-                    status = "idle"
-            tracker.tracking_status = status
-            tracker.tracking_status_label = (
-                dict(self._fields["tracking_status"].selection).get(status)
-            )
+    # ── Compute: stay duration ────────────────────────────────────────────────
 
     @api.depends('checkin_time', 'checkout_time')
     def _compute_stay(self):
         for rec in self:
             if rec.checkin_time and rec.checkout_time:
-                diff = rec.checkout_time - rec.checkin_time
-                rec.stay_minutes = diff.total_seconds() / 60
+                rec.stay_minutes = (rec.checkout_time - rec.checkin_time).total_seconds() / 60
             else:
                 rec.stay_minutes = 0
 
-    def _search_tracking_status(self, operator, value):
+    # ── Compute: total expense ────────────────────────────────────────────────
+
+    @api.depends('expense_transport', 'expense_food', 'expense_other')
+    def _compute_total_expense(self):
+        for rec in self:
+            rec.total_expense = rec.expense_transport + rec.expense_food + rec.expense_other
+
+    # ── Compute: tracking status ──────────────────────────────────────────────
+
+    @api.depends("last_seen", "is_tracking")
+    def _compute_tracking_status(self):
         now = fields.Datetime.now()
+        for tracker in self:
+            if tracker.last_seen:
+                if tracker.is_tracking and tracker.last_seen >= now - timedelta(minutes=2):
+                    status = "live"
+                elif tracker.last_seen >= now - timedelta(minutes=30):
+                    status = "idle"
+                else:
+                    status = "offline"
+            else:
+                status = "offline"
+            tracker.tracking_status       = status
+            tracker.tracking_status_label = dict(
+                self._fields["tracking_status"].selection
+            ).get(status)
+
+    def _search_tracking_status(self, operator, value):
+        now            = fields.Datetime.now()
         live_cutoff    = fields.Datetime.to_string(now - timedelta(minutes=2))
         idle_cutoff    = fields.Datetime.to_string(now - timedelta(minutes=30))
-
         mapping = {
-            "live": [
-                ("is_tracking", "=", True),
-                ("last_seen", ">=", live_cutoff),
-            ],
+            "live": [("is_tracking", "=", True), ("last_seen", ">=", live_cutoff)],
             "idle": [
-                "&",
-                ("last_seen", ">=", idle_cutoff),
-                "|",
-                ("is_tracking", "=", False),
-                ("last_seen", "<", live_cutoff),
+                "&", ("last_seen", ">=", idle_cutoff),
+                "|", ("is_tracking", "=", False), ("last_seen", "<", live_cutoff),
             ],
-            "offline": [
-                "|",
-                ("last_seen", "=", False),
-                ("last_seen", "<", idle_cutoff),
-            ],
+            "offline": ["|", ("last_seen", "=", False), ("last_seen", "<", idle_cutoff)],
         }
         if operator != "=" or value not in mapping:
             return []
         return mapping[value]
-    
+
+    # ── Compute: map links ────────────────────────────────────────────────────
 
     @api.depends("partner_id.partner_latitude", "partner_id.partner_longitude")
     def _compute_map_links(self):
@@ -244,27 +182,38 @@ class SalespersonTracker(models.Model):
             else:
                 tracker.openstreetmap_url = False
 
+    # ── Compute: history count — Odoo 19 _read_group ─────────────────────────
+
     @api.depends("user_id")
     def _compute_history_count(self):
-        counts = self.env["salesperson.location.log"].read_group(
-            [("tracker_id", "in", self.ids)],
-            ["tracker_id"],
-            ["tracker_id"],
+        if not self.ids:
+            for tracker in self:
+                tracker.history_count = 0
+            return
+
+        # Odoo 19: use _read_group instead of deprecated read_group
+        groups = self.env["salesperson.location.log"]._read_group(
+            domain=[("tracker_id", "in", self.ids)],
+            groupby=["tracker_id"],
+            aggregates=["__count"],
         )
-        mapped = {item["tracker_id"][0]: item["tracker_id_count"] for item in counts}
+        # groups → list of (tracker_record, count)
+        count_map = {tracker.id: count for tracker, count in groups}
         for tracker in self:
-            tracker.history_count = mapped.get(tracker.id, 0)
+            tracker.history_count = count_map.get(tracker.id, 0)
+
+    # ── Compute: today visit stats ────────────────────────────────────────────
 
     @api.depends("user_id")
     def _compute_today_visit_stats(self):
         plan_model = self.env["salesperson.visit.plan"]
-        today = fields.Date.context_today(self)
-        grouped = defaultdict(list)
+        today      = fields.Date.context_today(self)
+        grouped    = defaultdict(list)
 
         for tracker in self:
-            tracker.today_plan_count = 0
-            tracker.today_covered_count = 0
-            tracker.today_visit_summary = False
+            tracker.today_plan_count          = 0
+            tracker.today_covered_count       = 0
+            tracker.today_visit_summary       = False
             tracker.kpi_visit_completion_rate = 0.0
             if tracker.user_id:
                 grouped[tracker.user_id.id].append(tracker)
@@ -281,11 +230,11 @@ class SalespersonTracker(models.Model):
             plans_by_user[plan.user_id.id] |= plan
 
         for user_id, trackers in grouped.items():
-            user_plans     = plans_by_user[user_id]
-            covered_count  = len(user_plans.filtered("is_covered"))
-            total          = len(user_plans)
+            user_plans      = plans_by_user[user_id]
+            covered_count   = len(user_plans.filtered("is_covered"))
+            total           = len(user_plans)
             completion_rate = (covered_count / total * 100.0) if total else 0.0
-            summary = "\n".join(
+            summary         = "\n".join(
                 "%s: %s" % (p.location_name, p.stay_duration_display) for p in user_plans
             )
             for tracker in trackers:
@@ -293,7 +242,57 @@ class SalespersonTracker(models.Model):
                 tracker.today_covered_count       = covered_count
                 tracker.today_visit_summary       = summary or False
                 tracker.kpi_visit_completion_rate = completion_rate
-                
+
+    # ── State actions ─────────────────────────────────────────────────────────
+
+    def action_set_planned(self):
+        self.filtered(lambda r: r.state in ('accepted', 'visited')).write({'state': 'planned'})
+
+    def action_set_accepted(self):
+        self.filtered(lambda r: r.state == 'planned').write({'state': 'accepted'})
+
+    def action_set_rejected(self):
+        self.ensure_one()
+        return {
+            'type':       'ir.actions.act_window',
+            'name':       'Reject Application',
+            'res_model':  'reject.reason.wizard',
+            'view_mode':  'form',
+            'target':     'new',
+            'context':    {'default_tracker_id': self.id, 'dialog_size': 'medium'},
+        }
+
+    def action_set_visited(self):
+        self.filtered(lambda r: r.state == 'accepted').write({'state': 'visited'})
+
+    def action_set_done(self):
+        self.filtered(lambda r: r.state == 'visited').write({'state': 'done'})
+
+    # ── Stop tracking ─────────────────────────────────────────────────────────
+
+    def action_stop_tracking(self, duration_seconds):
+        self.ensure_one()
+        if duration_seconds < 0:
+            duration_seconds = 0
+
+        self.write({
+            "is_tracking":            False,
+            "last_tracking_start":    False,
+            "last_tracking_duration": duration_seconds,
+        })
+
+        today = fields.Date.context_today(self)
+        plan  = self.env["salesperson.visit.plan"].sudo().search([
+            ("user_id",    "=", self.user_id.id),
+            ("visit_date", "=", today),
+        ], limit=1)
+
+        if plan:
+            plan._apply_tracking_duration(duration_seconds)
+        return True
+
+    # ── Live location update ──────────────────────────────────────────────────
+
     def update_live_location(
         self, latitude, longitude,
         accuracy=None, speed=None, heading=None, source="browser"
@@ -308,11 +307,11 @@ class SalespersonTracker(models.Model):
             )
 
         self.write({
-            "is_tracking":  True,
-            "last_seen":    fields.Datetime.now(),
+            "is_tracking":   True,
+            "last_seen":     fields.Datetime.now(),
             "last_accuracy": accuracy_value,
-            "last_speed":   speed or 0.0,
-            "last_heading": heading or 0.0,
+            "last_speed":    speed   or 0.0,
+            "last_heading":  heading or 0.0,
             "location_name": location_name,
         })
 
@@ -329,14 +328,15 @@ class SalespersonTracker(models.Model):
             "latitude":      latitude,
             "longitude":     longitude,
             "accuracy":      accuracy_value,
-            "speed":         speed or 0.0,
+            "speed":         speed   or 0.0,
             "heading":       heading or 0.0,
             "source":        source,
             "location_name": location_name,
         })
+
         self._check_route_deviation(latitude, longitude)
 
-    
+    # ── Route deviation check ─────────────────────────────────────────────────
 
     def _check_route_deviation(self, latitude, longitude):
         self.ensure_one()
@@ -352,18 +352,18 @@ class SalespersonTracker(models.Model):
         from math import asin, cos, radians, sin, sqrt
 
         def haversine(lat1, lon1, lat2, lon2):
-            R = 6_371_000.0
+            R    = 6_371_000.0
             dlat = radians(lat2 - lat1)
             dlon = radians(lon2 - lon1)
-            a = sin(dlat / 2) ** 2 + cos(radians(lat1)) * cos(radians(lat2)) * sin(dlon / 2) ** 2
+            a    = sin(dlat / 2) ** 2 + cos(radians(lat1)) * cos(radians(lat2)) * sin(dlon / 2) ** 2
             return 2.0 * R * asin(sqrt(a))
 
         valid_plans = [p for p in plans if p.latitude and p.longitude]
         if not valid_plans:
             return
 
-        min_dist = min(haversine(latitude, longitude, p.latitude, p.longitude) for p in valid_plans)
-        now = fields.Datetime.now()
+        min_dist       = min(haversine(latitude, longitude, p.latitude, p.longitude) for p in valid_plans)
+        now            = fields.Datetime.now()
         alert_threshold = now - timedelta(minutes=30)
 
         if min_dist > 2000 and (not self.last_alert_sent or self.last_alert_sent < alert_threshold):
@@ -376,6 +376,8 @@ class SalespersonTracker(models.Model):
                 partner_ids=[self.env.ref("base.user_admin").partner_id.id],
             )
 
+    # ── Reverse geocode ───────────────────────────────────────────────────────
+
     def _reverse_geocode_location(self, latitude, longitude):
         self.ensure_one()
         try:
@@ -383,11 +385,11 @@ class SalespersonTracker(models.Model):
                 "https://nominatim.openstreetmap.org/reverse",
                 headers={"User-Agent": "Odoo (http://www.odoo.com/contactus)"},
                 params={
-                    "format":         "jsonv2",
-                    "lat":            latitude,
-                    "lon":            longitude,
-                    "zoom":           18,
-                    "addressdetails": 1,
+                    "format":          "jsonv2",
+                    "lat":             latitude,
+                    "lon":             longitude,
+                    "zoom":            18,
+                    "addressdetails":  1,
                     "accept-language": "en",
                 },
                 timeout=10,
@@ -421,7 +423,7 @@ class SalespersonTracker(models.Model):
             or address.get("village")
         )
         postcode = address.get("postcode")
-        parts = []
+        parts    = []
         if area:
             parts.append(area)
         city_postcode = " ".join(p for p in (city, postcode) if p)
@@ -429,7 +431,7 @@ class SalespersonTracker(models.Model):
             parts.append(city_postcode)
         if not parts and result.get("display_name"):
             fallback = [p.strip() for p in result["display_name"].split(",") if p.strip()]
-            parts = fallback[1:3] if len(fallback) >= 3 else fallback[:2]
+            parts    = fallback[1:3] if len(fallback) >= 3 else fallback[:2]
         return ", ".join(parts)
 
     def _clean_location_area(self, area):
@@ -439,6 +441,8 @@ class SalespersonTracker(models.Model):
         if any(token in area.lower() for token in generic_tokens):
             return False
         return area
+
+    # ── Smart buttons / actions ───────────────────────────────────────────────
 
     def action_view_history(self):
         self.ensure_one()
@@ -469,8 +473,8 @@ class SalespersonTracker(models.Model):
         action = self.env.ref("salesperson_live_tracking.action_salesperson_visit_plan").read()[0]
         action["domain"]  = [("user_id", "=", self.user_id.id), ("visit_date", "=", today)]
         action["context"] = {
-            "default_user_id":    self.user_id.id,
-            "default_visit_date": today,
+            "default_user_id":      self.user_id.id,
+            "default_visit_date":   today,
             "search_default_today": 1,
         }
         return action
@@ -497,43 +501,31 @@ class SalespersonTracker(models.Model):
         }
 
 
+# ══════════════════════════════════════════════════════════════════════════════
 class SalesPersonSpaceLine(models.Model):
-    _name = "sales.person.space.line"
+    _name        = "sales.person.space.line"
     _description = "Sales Person Space Line"
-    _inherit = ['mail.thread', 'mail.activity.mixin']
+    _inherit     = ['mail.thread', 'mail.activity.mixin']
 
-    salesperson_tracker_id = fields.Many2one(   
-        'salesperson.tracker',
-        string="Salesperson Tracker",
-        ondelete="cascade",
-        index=True,
+    salesperson_tracker_id = fields.Many2one(
+        'salesperson.tracker', string="Salesperson Tracker",
+        ondelete="cascade", index=True,
     )
-    plan_id = fields.Many2one(
-        'salesperson.visit.plan',
-        string="Plan",
-        ondelete="set null",
-    )
-    partner_id = fields.Many2one(
-        "res.partner",
-        string="Customer",
-        required=True,
-    )
-    visit_date    = fields.Date(string="Visit Date", required=True ,tracking=True)
+    plan_id    = fields.Many2one('salesperson.visit.plan', string="Plan", ondelete="set null")
+    partner_id = fields.Many2one("res.partner", string="Customer", required=True)
+    visit_date    = fields.Date(string="Visit Date", required=True, tracking=True)
     from_location = fields.Char(string="From")
     to_location   = fields.Char(string="To")
     total_cost    = fields.Char(string="Total Cost")
     notes         = fields.Text(string="Notes")
-    state = fields.Selection(
-        related="plan_id.state",
-        string="Status",
-        store=True,
-    )
+    state         = fields.Selection(related="plan_id.state", string="Status", store=True)
 
 
+# ══════════════════════════════════════════════════════════════════════════════
 class SalespersonLocationLog(models.Model):
-    _name = "salesperson.location.log"
+    _name        = "salesperson.location.log"
     _description = "Salesperson Location History"
-    _order = "tracked_at desc, id desc"
+    _order       = "tracked_at desc, id desc"
 
     tracker_id = fields.Many2one(
         "salesperson.tracker", required=True, ondelete="cascade", index=True
@@ -547,6 +539,7 @@ class SalespersonLocationLog(models.Model):
     company_id = fields.Many2one(
         "res.company", related="tracker_id.company_id", store=True, readonly=True
     )
+
     tracked_at    = fields.Datetime(required=True, default=fields.Datetime.now, index=True)
     latitude      = fields.Float(required=True, digits=(16, 7))
     longitude     = fields.Float(required=True, digits=(16, 7))
@@ -569,50 +562,46 @@ class SalespersonLocationLog(models.Model):
                 log.openstreetmap_url = False
 
 
+# ══════════════════════════════════════════════════════════════════════════════
 class RejectReasonWizard(models.TransientModel):
-    _name = "reject.reason.wizard"
+    _name        = "reject.reason.wizard"
     _description = "Reject Reason Wizard"
 
     tracker_id = fields.Many2one("salesperson.tracker", required=True)
-    reason = fields.Text(string="Reject Reason", required=True)
+    reason     = fields.Text(string="Reject Reason", required=True)
 
     def action_confirm_reject(self):
         self.ensure_one()
-
         self.tracker_id.write({"state": "rejected"})
 
-        reason = self.reason
+        reason      = self.reason
         rejected_by = self.env.user.name
 
         body = (
-        '<div style="border:1px solid #F7C1C1; border-radius:8px; overflow:hidden;'
-        ' max-width:720px; font-family:sans-serif;">'
-            '<div style="background:#FCEBEB; border-bottom:1px solid #F7C1C1;'
-            ' padding:10px 16px; display:flex; align-items:center; gap:10px;">'
-                '<div style="width:20px; height:20px; background:#A32D2D; border-radius:50%;'
-                ' display:flex; align-items:center; justify-content:center; flex-shrink:0;">'
-                    '<span style="color:#fff; font-size:13px; font-weight:700;">&#x2715;</span>'
+            '<div style="border:1px solid #F7C1C1;border-radius:8px;overflow:hidden;'
+            'max-width:720px;font-family:sans-serif;">'
+              '<div style="background:#FCEBEB;border-bottom:1px solid #F7C1C1;'
+              'padding:10px 16px;display:flex;align-items:center;gap:10px;">'
+                '<div style="width:20px;height:20px;background:#A32D2D;border-radius:50%;'
+                'display:flex;align-items:center;justify-content:center;flex-shrink:0;">'
+                  '<span style="color:#fff;font-size:13px;font-weight:700;">&#x2715;</span>'
                 '</div>'
-                '<span style="font-size:13px; font-weight:600; color:#791F1F;">'
-                    'Application Rejected'
-                '</span>'
-            '</div>'
-            '<div style="padding:12px 16px; background:#fff8f8;">'
-                '<p style="margin:0 0 4px; font-size:11px; font-weight:600;'
-                ' color:#A32D2D; text-transform:uppercase; letter-spacing:0.5px;">Reason</p>'
-                '<p style="margin:0; font-size:13px; color:#333; line-height:1.7;">'
+                '<span style="font-size:13px;font-weight:600;color:#791F1F;">Application Rejected</span>'
+              '</div>'
+              '<div style="padding:12px 16px;background:#fff8f8;">'
+                '<p style="margin:0 0 4px;font-size:11px;font-weight:600;'
+                'color:#A32D2D;text-transform:uppercase;letter-spacing:0.5px;">Reason</p>'
+                '<p style="margin:0;font-size:13px;color:#333;line-height:1.7;">'
                 + reason +
                 '</p>'
-            '</div>'
-            '<div style="padding:8px 16px; background:#fff; border-top:1px solid #F7C1C1;">'
-                '<p style="margin:0; font-size:11px; color:#999;">'
-                    'Rejected by <strong style="color:#555;">'
-                + rejected_by +
-                    '</strong>'
+              '</div>'
+              '<div style="padding:8px 16px;background:#fff;border-top:1px solid #F7C1C1;">'
+                '<p style="margin:0;font-size:11px;color:#999;">'
+                  'Rejected by <strong style="color:#555;">' + rejected_by + '</strong>'
                 '</p>'
+              '</div>'
             '</div>'
-        '</div>'
-       )
+        )
 
         self.tracker_id.message_post(
             body=Markup(body),
@@ -620,9 +609,9 @@ class RejectReasonWizard(models.TransientModel):
         )
 
         return {
-            'type': 'ir.actions.act_window',
+            'type':      'ir.actions.act_window',
             'res_model': 'salesperson.tracker',
-            'res_id': self.tracker_id.id,
+            'res_id':    self.tracker_id.id,
             'view_mode': 'form',
-            'target': 'current',
+            'target':    'current',
         }

@@ -244,9 +244,7 @@
             .catch(function (e) { callback(e, null); });
     }
 
-    /* ══════════════════════════════════════════════
-       MAIN DRAW SEQUENCE
-    ══════════════════════════════════════════════ */
+  
     fetchRoadRoute(function (err, route) {
         var loadingEl = document.getElementById('routeLoading');
         if (loadingEl) loadingEl.style.display = 'none';

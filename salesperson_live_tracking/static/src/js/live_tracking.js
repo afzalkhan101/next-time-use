@@ -175,13 +175,13 @@
         state.tracking          = true;
         el.startButton.disabled = true;
         updateStatus('live', 'Starting…');
-        state.trackingStart                = Date.now();
-        el.takingTimeValue.textContent     = '00:00';
-        state.timerId                      = setInterval(tickTimer, 1000);
+        state.trackingStart            = Date.now();
+        el.takingTimeValue.textContent = '00:00';
+        state.timerId = setInterval(tickTimer, 1000);
 
-        const opts = { enableHighAccuracy: true, maximumAge: 5000, timeout: 15000 };
+        const opts = { enableHighAccuracy: true, maximumAge: 0, timeout: 15000 };
 
-        /* One-shot first fix */
+        // প্রথম fix — সাথে সাথে একবার
         navigator.geolocation.getCurrentPosition(
             (pos) => sendLocation(pos).catch((e) => setNotice('danger', 'Update failed', ' ' + e.message)),
             (err) => {
@@ -196,21 +196,15 @@
             opts
         );
 
-        /* Continuous watch */
-        state.watchId = navigator.geolocation.watchPosition(
-            (pos) => sendLocation(pos).catch((e) => setNotice('warning', 'Update failed', ' ' + e.message)),
-            (err) => setNotice('warning', 'Tracking error', ' ' + (err.message || 'Could not read device location.')),
-            opts
-        );
-
-        /* Heartbeat every 20 s — keeps the record alive even when device is stationary */
+        // প্রতি 3 মিনিট পরপর
         state.heartbeatId = setInterval(() => {
-            if (!state.lastPayload) return;
-            postJson('/salesperson_tracking/update', state.lastPayload)
-                .then((r)  => refreshMetrics(state.lastPayload, r))
-                .catch((e) => setNotice('warning', 'Heartbeat failed', ' ' + e.message));
-        }, 20000);
-    };
+            navigator.geolocation.getCurrentPosition(
+                (pos) => sendLocation(pos).catch((e) => setNotice('warning', 'Update failed', ' ' + e.message)),
+                (err) => setNotice('warning', 'Tracking error', ' ' + err.message),
+                opts
+            );
+        }, 180000);
+       };
 
     /** Stop GPS watch, heartbeat, and notify backend. */
     const stopTracking = async () => {

@@ -282,16 +282,35 @@
         <field name="context">{'default_user_id': uid}</field>
     </record>
 
+
+     <record id="action_salesperson_dashboard" model="ir.actions.act_url">
+        <field name="name">Live Tracking Dashboard</field>
+        <field name="url">/salesperson/dashboard</field>
+        <field name="target">self</field> 
+    </record>
+
+
     <!-- MENU -->
+    
+   
     <menuitem id="menu_salesperson_tracking_root"
-              name="Salesperson Tracking"
-              sequence="1"/>
+          name="Salesperson Tracking"
+          sequence="1"/>
+
+    <menuitem id="menu_salesperson_dashboard"
+            name="Live Dashboard"
+            parent="menu_salesperson_tracking_root"
+            action="action_salesperson_dashboard"
+            sequence="1"
+            groups="sales_team.group_sale_manager"/>
 
     <menuitem id="menu_salesperson_visit_plan_my"
-              name="My Planned Visits"
-              parent="menu_salesperson_tracking_root"
-              action="action_salesperson_visit_plan_my"
-              sequence="8"
-              groups="sales_team.group_sale_salesman"/>
+            name="My Planned Visits"
+            parent="menu_salesperson_tracking_root"
+            action="action_salesperson_visit_plan_my"
+            sequence="8"
+            groups="sales_team.group_sale_salesman"/>
+
+   
 
 </odoo>

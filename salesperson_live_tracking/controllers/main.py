@@ -93,9 +93,7 @@ class SalespersonTrackingController(http.Controller):
                 total += self._haversine_km(prev[0], prev[1], log.latitude, log.longitude)
             prev = (log.latitude, log.longitude)
         return round(total, 3)
-
-
-    # ── Controller ───────────────────────────────────────────────────────────────
+    
     @http.route("/salesperson_tracking/update", type="http", auth="user", methods=["POST"], csrf=False)
     def salesperson_tracking_update(self, **kwargs):
         user    = self._check_salesperson_access()
@@ -122,7 +120,6 @@ class SalespersonTrackingController(http.Controller):
             source=payload.get("source") or "browser",
         )
 
-        # ── Today's distance ──────────────────────────────────────────────────
         today_start = fields.Datetime.to_datetime(date.today())
         today_logs  = request.env["salesperson.location.log"].sudo().search(
             [
@@ -451,7 +448,6 @@ class SalespersonTrackingController(http.Controller):
 
 
 class SalespersonDashboard(http.Controller):
-
     @http.route('/salesperson/dashboard', type='http', auth='user', website=False)
     def dashboard(self, **kwargs):
         return request.render('salesperson_live_tracking.salesperson_dashboard', {})

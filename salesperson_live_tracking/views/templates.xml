@@ -140,7 +140,7 @@
                                 Open in map
                             </a>
 
-                            <!-- Camera widget -->
+                        
                             <div class="cam-wrapper" id="camRoot">
                                 <button class="cam-open-btn" id="openCameraBtn">
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

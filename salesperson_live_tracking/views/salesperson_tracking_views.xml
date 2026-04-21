@@ -52,10 +52,8 @@
                     <t t-name="card">
                         <div t-attf-class="o_kanban_record #{record.route_deviation_alert.raw_value and 'border border-danger' or ''}">
 
-                            <!-- Header: Avatar + Name + Badges -->
                             <div class="d-flex align-items-start justify-content-between mb-3">
 
-                                <!-- Avatar + Name -->
                                 <div class="d-flex align-items-center gap-2">
                                     <div t-attf-class="rounded-circle d-flex align-items-center justify-content-center fw-500 flex-shrink-0
                                         #{record.tracking_status.raw_value == 'live' and 'bg-success-subtle text-success' or

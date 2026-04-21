@@ -1,35 +1,21 @@
-/* ══════════════════════════════════════════════
-   live_tracking.js
-   Salesperson Live Tracking — GPS + Camera logic
-   Tracking interval: every 3 minutes (fixed)
-══════════════════════════════════════════════ */
 
 (function () {
     'use strict';
 
-    /* ── Guard: only run on the live tracking page ── */
     if (!document.getElementById('startButton')) return;
 
-    /* ══════════════════════════════════════════════
-       READ SERVER DATA
-    ══════════════════════════════════════════════ */
+   
     const root        = document.getElementById('trackingRoot');
     const initialDist = root ? parseFloat(root.dataset.distance || '0') : 0;
 
-    /* ══════════════════════════════════════════════
-       STATE
-    ══════════════════════════════════════════════ */
+
     const state = {
         tracking:      false,
-        intervalId:    null,   /* 3-min interval — replaces watchId + heartbeatId */
-        timerId:       null,
+        intervalId:    null,   
         lastPayload:   null,
         trackingStart: null,
     };
 
-    /* ══════════════════════════════════════════════
-       DOM REFS
-    ══════════════════════════════════════════════ */
     const $ = (id) => document.getElementById(id);
 
     const el = {
@@ -49,9 +35,6 @@
         kpiDistance:       $('kpiDistance'),
     };
 
-    /* ══════════════════════════════════════════════
-       HELPERS
-    ══════════════════════════════════════════════ */
 
     const updateStatus = (status, label) => {
         const s = status || 'offline';
@@ -93,9 +76,6 @@
         return res.json();
     };
 
-    /* ══════════════════════════════════════════════
-       METRICS REFRESH
-    ══════════════════════════════════════════════ */
     const refreshMetrics = (payload, resp) => {
         const lat = payload.latitude?.toFixed  ? payload.latitude.toFixed(6)  : payload.latitude;
         const lng = payload.longitude?.toFixed ? payload.longitude.toFixed(6) : payload.longitude;
@@ -120,14 +100,9 @@
         }
     };
 
-    /* ══════════════════════════════════════════════
-       SEND LOCATION
-       Gets fresh GPS fix then POSTs to backend.
-       Called once immediately on start, then every 3 minutes.
-       Device নড়লেও না নড়লেও — শুধু interval এ call হবে।
-    ══════════════════════════════════════════════ */
+   
     const GPS_OPTS = { enableHighAccuracy: true, maximumAge: 0, timeout: 15000 };
-    const INTERVAL_MS = 3 * 60 * 1000; /* 3 minutes = 180,000 ms */
+    const INTERVAL_MS = 3 * 60 * 1000; 
 
     const fetchAndSend = () => {
         navigator.geolocation.getCurrentPosition(
@@ -161,9 +136,7 @@
         );
     };
 
-    /* ══════════════════════════════════════════════
-       START TRACKING
-    ══════════════════════════════════════════════ */
+   
     const startTracking = async () => {
         if (!navigator.geolocation) {
             setNotice('danger', 'Not supported', ' This browser does not support geolocation.');
@@ -178,7 +151,7 @@
         el.takingTimeValue.textContent = '00:00';
         state.timerId                  = setInterval(tickTimer, 1000);
 
-        /* ── First fix immediately ── */
+       
         navigator.geolocation.getCurrentPosition(
             async (position) => {
                 const payload = {
@@ -201,7 +174,7 @@
                 }
             },
             (err) => {
-                /* GPS permission denied on first try — abort */
+               
                 state.tracking          = false;
                 el.startButton.disabled = false;
                 if (state.timerId !== null) { clearInterval(state.timerId); state.timerId = null; }
@@ -212,14 +185,9 @@
             },
             GPS_OPTS
         );
-
-        /* ── Repeat every 3 minutes — device নড়ুক বা না নড়ুক ── */
         state.intervalId = setInterval(fetchAndSend, INTERVAL_MS);
     };
 
-    /* ══════════════════════════════════════════════
-       STOP TRACKING
-    ══════════════════════════════════════════════ */
     const stopTracking = async () => {
         state.tracking = false;
 
@@ -244,14 +212,12 @@
         setNotice('', 'Tracking stopped', ' This device is no longer sending live position updates.');
     };
 
-    /* ── Button listeners ── */
     el.startButton.addEventListener('click', () =>
         startTracking().catch((e) => setNotice('danger', 'Start failed', ' ' + e.message)));
 
     el.stopButton.addEventListener('click', () =>
         stopTracking().catch((e) => setNotice('danger', 'Stop failed', ' ' + e.message)));
 
-    /* ── Send beacon on tab close / navigation ── */
     window.addEventListener('pagehide', () => {
         if (state.tracking) {
             navigator.sendBeacon('/salesperson_tracking/stop',
@@ -259,9 +225,6 @@
         }
     });
 
-    /* ══════════════════════════════════════════════
-       CAMERA WIDGET
-    ══════════════════════════════════════════════ */
     const openBtn      = $('openCameraBtn');
     const video        = $('selfieVideo');
     const canvas       = $('selfieCanvas');

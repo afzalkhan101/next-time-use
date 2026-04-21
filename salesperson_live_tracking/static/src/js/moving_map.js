@@ -211,9 +211,6 @@
         }).addTo(map);
     }
 
-    /* ══════════════════════════════════════════════
-       RENDER — common finish for both paths
-    ══════════════════════════════════════════════ */
 
     function finishRender(bounds) {
         addIntermediateMarkers(valid);
@@ -222,35 +219,25 @@
         addPlanMarkers(plans);
         fitAll(bounds || null);
     }
-
-    /* ══════════════════════════════════════════════
-       MAIN LOGIC
-       - Less than 3 points → skip OSRM, show dashed GPS line
-       - 3+ points          → attempt OSRM road route
-    ══════════════════════════════════════════════ */
-
+    
     var loadingEl = document.getElementById('routeLoading');
 
-    /* ── Not enough points for a meaningful road route ── */
     if (valid.length < 3) {
         if (loadingEl) loadingEl.style.display = 'none';
 
-        /* Show a notice if exactly 1 point (only current position) */
         if (valid.length === 1) {
-            /* Just drop the end marker, no line */
+
             addEndMarker(valid[0]);
             addPlanMarkers(plans);
             map.setView([valid[0].lat, valid[0].lng], 16);
             setTimeout(function () { map.invalidateSize(); }, 300);
         } else {
-            /* 2 points — dashed line, no OSRM */
             drawGpsFallback();
             finishRender(null);
         }
         return;
     }
 
-    /* ── 3+ points: fetch road-snapped route from OSRM ── */
     function fetchRoadRoute(callback) {
         var sampled  = downsample(valid, 80);
         var coordStr = sampled.map(function (p) { return p.lng + ',' + p.lat; }).join(';');
@@ -277,14 +264,12 @@
                 return [c[1], c[0]];
             });
 
-            /* White outline */
             L.polyline(roadCoords, {
                 color:   '#ffffff',
                 weight:  11,
                 opacity: 0.55,
             }).addTo(map);
 
-            /* Blue road line */
             var roadLine = L.polyline(roadCoords, {
                 color:   '#1a73e8',
                 weight:  6,
@@ -298,7 +283,6 @@
             finishRender(roadLine.getBounds());
 
         } else {
-            /* OSRM failed — fall back to dashed GPS line */
             console.warn('OSRM unavailable — using GPS fallback:', err);
             drawGpsFallback();
             finishRender(null);

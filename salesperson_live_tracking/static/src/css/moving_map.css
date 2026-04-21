@@ -1,16 +1,11 @@
-/* ══════════════════════════════════════════════
-   moving_map.css
-   Salesperson Moving Map Page Styles
-══════════════════════════════════════════════ */
 
-/* ── Reset ── */
 *, *::before, *::after {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
 }
 
-/* ── Design Tokens ── */
+
 :root {
     --purple:    #4a1942;
     --purple-dk: #3a1233;
@@ -27,7 +22,6 @@
     --radius-lg: 14px;
 }
 
-/* ── Base ── */
 body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     background: var(--bg);
@@ -39,9 +33,6 @@ body {
     font-size: 14px;
 }
 
-/* ══════════════════════════════════════════════
-   TOP BAR
-══════════════════════════════════════════════ */
 .top-bar {
     background: var(--purple);
     color: #fff;
@@ -83,7 +74,6 @@ body {
     margin-top: 1px;
 }
 
-/* ── Meta Pills ── */
 .meta-pills {
     display: flex;
     gap: 6px;
@@ -102,9 +92,7 @@ body {
 }
 .meta-pill b { font-weight: 600; opacity: 1; }
 
-/* ══════════════════════════════════════════════
-   MAP
-══════════════════════════════════════════════ */
+
 .map-wrapper {
     flex: 1;
     position: relative;
@@ -116,7 +104,6 @@ body {
     height: 100%;
 }
 
-/* ── Route Info Box (Google Maps card style) ── */
 .route-info-box {
     position: absolute;
     top: 12px; right: 12px;
@@ -155,7 +142,6 @@ body {
     padding: 2px 6px;
 }
 
-/* ── Route Loading Spinner ── */
 .route-loading {
     position: absolute;
     top: 12px; right: 12px;
@@ -216,7 +202,6 @@ body {
     flex-shrink: 0;
 }
 
-/* ── No-Data Overlay ── */
 .no-data {
     position: absolute; inset: 0;
     z-index: 1000;
@@ -254,7 +239,7 @@ body {
     color: var(--muted);
 }
 
-/* ── Responsive ── */
+
 @media (max-width: 520px) {
     .meta-pills { display: none; }
     .route-info-box { top: 8px; right: 8px; padding: 10px 12px; }

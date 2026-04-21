@@ -172,7 +172,8 @@
                             <!-- Action Buttons -->
                             <div class="d-flex gap-2 flex-wrap">
                                 <button type="object" name="action_open_live_tracking_page"
-                                    class="btn btn-sm btn-primary flex-grow-1">
+                                        class="btn btn-sm btn-primary flex-grow-1"
+                                        invisible="state in ('done', 'visited')">
                                     Live page
                                 </button>
                                 <button type="object" name="action_open_moving_map_view"
@@ -462,7 +463,7 @@
     </record>
 
     <menuitem id="menu_salesperson_tracking_root"
-              name="Salesperson Tracking"
+              name="Tracker"
               action="action_salesperson_tracker_dashboard"
               sequence="10"
               web_icon="salesperson_live_tracking,static/description/icon.png"/>

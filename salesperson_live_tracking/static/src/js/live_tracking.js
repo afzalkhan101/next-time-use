@@ -54,7 +54,7 @@
             ? `${pad(h)}:${pad(m)}:${pad(s)}`
             : `${pad(m)}:${pad(s)}`;
     };
-    
+
     const tickTimer = () => {
         if (!state.trackingStart) return;
         el.takingTimeValue.textContent = formatDuration(Date.now() - state.trackingStart);

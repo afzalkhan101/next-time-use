@@ -55,13 +55,13 @@
         async function startCamera(facing) {
             // Secure context check
             if (!isSecureContext()) {
-                camLabel.textContent = '⚠️ Camera requires HTTPS or localhost. Please use a secure connection.';
+                camLabel.textContent = ' Camera requires HTTPS or localhost. Please use a secure connection.';
                 return;
             }
 
             // getUserMedia support check
             if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                camLabel.textContent = '⚠️ Your browser does not support camera access.';
+                camLabel.textContent = ' Your browser does not support camera access.';
                 return;
             }
 
@@ -99,11 +99,11 @@
                 console.error('Camera error:', e);
 
                 if (e.name === 'NotAllowedError' || e.name === 'PermissionDeniedError') {
-                    camLabel.textContent = '⚠️ Camera permission denied. Please allow camera access in your browser settings.';
+                    camLabel.textContent = ' Camera permission denied. Please allow camera access in your browser settings.';
                 } else if (e.name === 'NotFoundError' || e.name === 'DevicesNotFoundError') {
-                    camLabel.textContent = '⚠️ No camera found on this device.';
+                    camLabel.textContent = ' No camera found on this device.';
                 } else if (e.name === 'NotReadableError' || e.name === 'TrackStartError') {
-                    camLabel.textContent = '⚠️ Camera is in use by another app. Please close it and try again.';
+                    camLabel.textContent = ' Camera is in use by another app. Please close it and try again.';
                 } else if (e.name === 'OverconstrainedError') {
                     // Retry with minimal constraints
                     try {
@@ -116,10 +116,10 @@
                         camLabel.textContent     = 'Tap the shutter button to take a photo';
                         video.play().catch(() => {});
                     } catch (e2) {
-                        camLabel.textContent = '⚠️ Could not start camera: ' + e2.message;
+                        camLabel.textContent = ' Could not start camera: ' + e2.message;
                     }
                 } else {
-                    camLabel.textContent = '⚠️ Camera error: ' + (e.message || e.name);
+                    camLabel.textContent = ' Camera error: ' + (e.message || e.name);
                 }
             }
         }

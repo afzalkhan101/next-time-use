@@ -1,225 +1,298 @@
-
-
 (function () {
     'use strict';
 
-    /* ── Guard: only run on the live tracking page ── */
-    if (!document.getElementById('openCameraBtn')) return;
-
     /* ══════════════════════════════════════════════
-       DOM REFS
+       INIT — wait for DOM to be ready
+       Works on both HTTP (localhost) and HTTPS
     ══════════════════════════════════════════════ */
-    const $ = (id) => document.getElementById(id);
+    function init() {
+        const openBtn      = document.getElementById('openCameraBtn');
+        if (!openBtn) return;   // element nai, exit
 
-    const openBtn      = $('openCameraBtn');
-    const video        = $('selfieVideo');
-    const canvas       = $('selfieCanvas');
-    const previewBox   = $('previewBox');
-    const snapRow      = $('snapRow');
-    const camLabel     = $('camLabel');
-    const stopBtn      = $('stopBtn');
-    const captureBtn   = $('captureBtn');
-    const flipBtn      = $('flipBtn');
-    const flashEl      = $('flashEl');
-    const downloadLink = $('downloadLink');
-    const camGallery   = $('camGallery');
-    const galleryGrid  = $('galleryGrid');
-    const galleryCount = $('galleryCount');
-    const clearAllBtn  = $('clearAllBtn');
-    const photoViewer  = $('photoViewer');
-    const viewerImg    = $('viewerImg');
-    const pvBack       = $('pvBack');
-    const pvDownload   = $('pvDownload');
-    const pvDelete     = $('pvDelete');
+        const video        = document.getElementById('selfieVideo');
+        const canvas       = document.getElementById('selfieCanvas');
+        const previewBox   = document.getElementById('previewBox');
+        const snapRow      = document.getElementById('snapRow');
+        const camLabel     = document.getElementById('camLabel');
+        const stopBtn      = document.getElementById('stopBtn');
+        const captureBtn   = document.getElementById('captureBtn');
+        const flipBtn      = document.getElementById('flipBtn');
+        const flashEl      = document.getElementById('flashEl');
+        const downloadLink = document.getElementById('downloadLink');
+        const camGallery   = document.getElementById('camGallery');
+        const galleryGrid  = document.getElementById('galleryGrid');
+        const galleryCount = document.getElementById('galleryCount');
+        const clearAllBtn  = document.getElementById('clearAllBtn');
+        const photoViewer  = document.getElementById('photoViewer');
+        const viewerImg    = document.getElementById('viewerImg');
+        const pvBack       = document.getElementById('pvBack');
+        const pvDownload   = document.getElementById('pvDownload');
+        const pvDelete     = document.getElementById('pvDelete');
 
-    let stream       = null;
-    let facingMode   = 'environment';   
-    let photos       = [];             
-    let viewingIndex = -1;           
+        let stream       = null;
+        let facingMode   = 'environment';
+        let photos       = [];
+        let viewingIndex = -1;
 
+        /* ══════════════════════════════════════════════
+           HTTPS / localhost CHECK
+           Camera API requires secure context.
+           localhost is always treated as secure by browsers.
+        ══════════════════════════════════════════════ */
+        function isSecureContext() {
+            return (
+                window.isSecureContext === true ||               // modern browsers
+                location.protocol === 'https:' ||
+                location.hostname === 'localhost' ||
+                location.hostname === '127.0.0.1' ||
+                location.hostname === '[::1]'                   // IPv6 localhost
+            );
+        }
 
+        /* ══════════════════════════════════════════════
+           CAMERA — start
+        ══════════════════════════════════════════════ */
+        async function startCamera(facing) {
+            // Secure context check
+            if (!isSecureContext()) {
+                camLabel.textContent = '⚠️ Camera requires HTTPS or localhost. Please use a secure connection.';
+                return;
+            }
 
-    /**
-     * Request camera access and start streaming into the <video> element.
-     * @param {string} facing - 'user' | 'environment'
-     */
-    async function startCamera(facing) {
-        if (stream) stream.getTracks().forEach((t) => t.stop());
-        try {
-            stream = await navigator.mediaDevices.getUserMedia({
-                video: {
-                    facingMode: { ideal: facing },
-                    width:      { ideal: 1280 },
-                    height:     { ideal: 960 },
-                },
+            // getUserMedia support check
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                camLabel.textContent = '⚠️ Your browser does not support camera access.';
+                return;
+            }
+
+            // Stop previous stream if any
+            if (stream) {
+                stream.getTracks().forEach((t) => t.stop());
+                stream = null;
+            }
+
+            camLabel.textContent = 'Opening camera…';
+
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({
+                    video: {
+                        facingMode: { ideal: facing },
+                        width:      { ideal: 1280 },
+                        height:     { ideal: 960 },
+                    },
+                    audio: false,
+                });
+
+                video.srcObject           = stream;
+                video.style.display       = 'block';
+                previewBox.style.display  = 'block';
+                openBtn.style.display     = 'none';
+                snapRow.style.display     = 'none';
+                camGallery.style.display  = 'none';
+                photoViewer.style.display = 'none';
+                camLabel.textContent      = 'Tap the shutter button to take a photo';
+
+                // Some browsers need a manual play() call
+                video.play().catch(() => {});
+
+            } catch (e) {
+                console.error('Camera error:', e);
+
+                if (e.name === 'NotAllowedError' || e.name === 'PermissionDeniedError') {
+                    camLabel.textContent = '⚠️ Camera permission denied. Please allow camera access in your browser settings.';
+                } else if (e.name === 'NotFoundError' || e.name === 'DevicesNotFoundError') {
+                    camLabel.textContent = '⚠️ No camera found on this device.';
+                } else if (e.name === 'NotReadableError' || e.name === 'TrackStartError') {
+                    camLabel.textContent = '⚠️ Camera is in use by another app. Please close it and try again.';
+                } else if (e.name === 'OverconstrainedError') {
+                    // Retry with minimal constraints
+                    try {
+                        stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+                        video.srcObject          = stream;
+                        video.style.display      = 'block';
+                        previewBox.style.display = 'block';
+                        openBtn.style.display    = 'none';
+                        snapRow.style.display    = 'none';
+                        camLabel.textContent     = 'Tap the shutter button to take a photo';
+                        video.play().catch(() => {});
+                    } catch (e2) {
+                        camLabel.textContent = '⚠️ Could not start camera: ' + e2.message;
+                    }
+                } else {
+                    camLabel.textContent = '⚠️ Camera error: ' + (e.message || e.name);
+                }
+            }
+        }
+
+        /* ══════════════════════════════════════════════
+           CAMERA — close
+        ══════════════════════════════════════════════ */
+        function closeCamera() {
+            if (stream) {
+                stream.getTracks().forEach((t) => t.stop());
+                stream = null;
+            }
+            video.srcObject          = null;
+            video.style.display      = 'none';
+            previewBox.style.display = 'none';
+            openBtn.style.display    = 'inline-flex';
+            camLabel.textContent     = 'Click to access your camera';
+            snapRow.style.display    = 'none';
+            if (photos.length > 0) renderGallery();
+        }
+
+        /* ══════════════════════════════════════════════
+           GALLERY
+        ══════════════════════════════════════════════ */
+        function renderGallery() {
+            camGallery.style.display = 'flex';
+            galleryCount.textContent = 'Saved photos (' + photos.length + ')';
+            galleryGrid.innerHTML    = '';
+
+            if (photos.length === 0) {
+                galleryGrid.innerHTML = '<div class="gallery-empty">No photos yet</div>';
+                return;
+            }
+
+            photos.forEach(function (p, i) {
+                const img = document.createElement('img');
+                img.src   = p.dataUrl;
+                img.title = p.ts;
+                img.addEventListener('click', function () { openViewer(i); });
+                galleryGrid.appendChild(img);
             });
-            video.srcObject           = stream;
-            video.style.display       = 'block';
-            previewBox.style.display  = 'block';
-            openBtn.style.display     = 'none';
-            snapRow.style.display     = 'none';
+        }
+
+        /* ══════════════════════════════════════════════
+           VIEWER
+        ══════════════════════════════════════════════ */
+        function openViewer(idx) {
+            viewingIndex              = idx;
+            viewerImg.src             = photos[idx].dataUrl;
             camGallery.style.display  = 'none';
-            photoViewer.style.display = 'none';
-            camLabel.textContent      = 'Tap the shutter button to take a photo';
-        } catch (e) {
-            camLabel.textContent = 'Camera access denied or unavailable.';
-            console.error('Camera error:', e);
-        }
-    }
-
-    function closeCamera() {
-        if (stream) { stream.getTracks().forEach((t) => t.stop()); stream = null; }
-        video.style.display      = 'none';
-        video.srcObject          = null;
-        previewBox.style.display = 'none';
-        openBtn.style.display    = 'inline-flex';
-        camLabel.textContent     = 'Click to access your camera';
-        snapRow.style.display    = 'none';
-        if (photos.length > 0) renderGallery();
-    }
-    
-    function renderGallery() {
-        camGallery.style.display = 'flex';
-        galleryCount.textContent = `Saved photos (${photos.length})`;
-        galleryGrid.innerHTML    = '';
-
-        if (photos.length === 0) {
-            galleryGrid.innerHTML = '<div class="gallery-empty">No photos yet</div>';
-            return;
+            photoViewer.style.display = 'flex';
+            openBtn.style.display     = 'none';
         }
 
-        photos.forEach(function (p, i) {
-            const img = document.createElement('img');
-            img.src   = p.dataUrl;
-            img.title = p.ts;
-            img.addEventListener('click', () => openViewer(i));
-            galleryGrid.appendChild(img);
+        /* ══════════════════════════════════════════════
+           CAPTURE
+        ══════════════════════════════════════════════ */
+        function capturePhoto() {
+            if (!stream) return;
+
+            // Flash effect
+            flashEl.classList.add('go');
+            setTimeout(function () { flashEl.classList.remove('go'); }, 160);
+
+            // Draw frame to hidden canvas
+            canvas.width  = video.videoWidth  || 640;
+            canvas.height = video.videoHeight || 480;
+            const ctx = canvas.getContext('2d');
+
+            // Mirror front camera so selfies look natural
+            if (facingMode === 'user') {
+                ctx.translate(canvas.width, 0);
+                ctx.scale(-1, 1);
+            }
+            ctx.drawImage(video, 0, 0);
+
+            const dataUrl  = canvas.toDataURL('image/jpeg', 0.92);
+            const filename = 'photo_' + Date.now() + '.jpg';
+
+            // Add to local gallery immediately
+            photos.push({ dataUrl: dataUrl, ts: new Date().toLocaleTimeString() });
+            downloadLink.href     = dataUrl;
+            downloadLink.download = filename;
+
+            // Upload to Odoo backend
+            fetch('/salesperson_tracking/save_photo', {
+                method:  'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    jsonrpc: '2.0',
+                    method:  'call',
+                    id:      Date.now(),
+                    params:  { image_data: dataUrl, filename: filename },
+                }),
+            })
+            .then(function (res) { return res.json(); })
+            .then(function (data) {
+                var result = data.result;
+                camLabel.textContent = result && result.success
+                    ? '✓ Photo saved in Odoo!'
+                    : (result && result.message ? result.message : 'Upload failed');
+                if (result && result.success) snapRow.style.display = 'flex';
+            })
+            .catch(function (err) {
+                console.error('Photo upload error:', err);
+                camLabel.textContent = 'Upload failed — network error';
+            });
+
+            // Show snap confirmation row briefly
+            snapRow.style.display = 'flex';
+            setTimeout(function () {
+                if (stream) snapRow.style.display = 'none';
+            }, 2000);
+
+            renderGallery();
+            camGallery.style.display = 'none';
+        }
+
+        /* ══════════════════════════════════════════════
+           EVENT LISTENERS
+        ══════════════════════════════════════════════ */
+        openBtn.addEventListener('click',    function () { startCamera(facingMode); });
+        stopBtn.addEventListener('click',    closeCamera);
+        captureBtn.addEventListener('click', capturePhoto);
+
+        flipBtn.addEventListener('click', function () {
+            facingMode = facingMode === 'user' ? 'environment' : 'user';
+            startCamera(facingMode);
         });
-    }
 
+        downloadLink.addEventListener('click', function (e) {
+            e.preventDefault();
+            var a      = document.createElement('a');
+            a.href     = downloadLink.href;
+            a.download = downloadLink.download;
+            a.click();
+        });
 
-    /**
-     * Open the full-screen viewer for a single photo.
-     * @param {number} idx - index into photos[]
-     */
-    function openViewer(idx) {
-        viewingIndex              = idx;
-        viewerImg.src             = photos[idx].dataUrl;
-        camGallery.style.display  = 'none';
-        photoViewer.style.display = 'flex';
-        openBtn.style.display     = 'none';
+        pvBack.addEventListener('click', function () {
+            photoViewer.style.display = 'none';
+            renderGallery();
+            if (!stream) openBtn.style.display = 'inline-flex';
+        });
+
+        pvDownload.addEventListener('click', function () {
+            var a    = document.createElement('a');
+            a.href     = photos[viewingIndex].dataUrl;
+            a.download = 'photo_' + Date.now() + '.jpg';
+            a.click();
+        });
+
+        pvDelete.addEventListener('click', function () {
+            photos.splice(viewingIndex, 1);
+            photoViewer.style.display = 'none';
+            if (photos.length > 0) renderGallery();
+            else camGallery.style.display = 'none';
+            if (!stream) openBtn.style.display = 'inline-flex';
+        });
+
+        clearAllBtn.addEventListener('click', function () {
+            photos = [];
+            renderGallery();
+        });
     }
 
     /* ══════════════════════════════════════════════
-       CAPTURE & UPLOAD
+       DOM READY — run init when DOM is available
     ══════════════════════════════════════════════ */
-
-    /** Draw the current video frame to canvas, upload to Odoo, add to gallery. */
-    function capturePhoto() {
-        if (!stream) return;
-
-        /* Flash effect */
-        flashEl.classList.add('go');
-        setTimeout(() => flashEl.classList.remove('go'), 160);
-
-        /* Draw frame to hidden canvas */
-        canvas.width  = video.videoWidth  || 640;
-        canvas.height = video.videoHeight || 480;
-        const ctx = canvas.getContext('2d');
-
-        /* Mirror front camera horizontally so selfies look natural */
-        if (facingMode === 'user') {
-            ctx.translate(canvas.width, 0);
-            ctx.scale(-1, 1);
-        }
-        ctx.drawImage(video, 0, 0);
-
-        const dataUrl  = canvas.toDataURL('image/jpeg', 0.92);
-        const filename = `photo_${Date.now()}.jpg`;
-
-        /* Add to local gallery */
-        photos.push({ dataUrl, ts: new Date().toLocaleTimeString() });
-        downloadLink.href     = dataUrl;
-        downloadLink.download = filename;
-
-        /* Upload to Odoo backend */
-        fetch('/salesperson_tracking/save_photo', {
-            method:  'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                jsonrpc: '2.0',
-                method:  'call',
-                id:      Date.now(),
-                params:  { image_data: dataUrl, filename },
-            }),
-        })
-        .then((res) => res.json())
-        .then((data) => {
-            const result = data.result;
-            camLabel.textContent = result?.success
-                ? '✓ Photo saved in Odoo!'
-                : (result?.message || 'Upload failed');
-            if (result?.success) snapRow.style.display = 'flex';
-        })
-        .catch((err) => {
-            console.error('Photo upload error:', err);
-            camLabel.textContent = 'Upload failed — network error';
-        });
-
-        /* Briefly show the snap confirmation row */
-        snapRow.style.display = 'flex';
-        setTimeout(() => { if (stream) snapRow.style.display = 'none'; }, 2000);
-
-        renderGallery();
-        camGallery.style.display = 'none';
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        // DOM already ready (script loaded after HTML parsed)
+        init();
     }
-    
-
-    /* ── Camera controls ── */
-    openBtn.addEventListener('click',    () => startCamera(facingMode));
-    stopBtn.addEventListener('click',    closeCamera);
-    captureBtn.addEventListener('click', capturePhoto);
-
-    flipBtn.addEventListener('click', () => {
-        facingMode = facingMode === 'user' ? 'environment' : 'user';
-        startCamera(facingMode);
-    });
-
-    /* ── Download link ── */
-    downloadLink.addEventListener('click', (e) => {
-        e.preventDefault();
-        const a      = document.createElement('a');
-        a.href       = downloadLink.href;
-        a.download   = downloadLink.download;
-        a.click();
-    });
-
-    /* ── Viewer controls ── */
-    pvBack.addEventListener('click', () => {
-        photoViewer.style.display = 'none';
-        renderGallery();
-        if (!stream) openBtn.style.display = 'inline-flex';
-    });
-
-    pvDownload.addEventListener('click', () => {
-        const a    = document.createElement('a');
-        a.href     = photos[viewingIndex].dataUrl;
-        a.download = `photo_${Date.now()}.jpg`;
-        a.click();
-    });
-
-    pvDelete.addEventListener('click', () => {
-        photos.splice(viewingIndex, 1);
-        photoViewer.style.display = 'none';
-        if (photos.length > 0) renderGallery();
-        else camGallery.style.display = 'none';
-        if (!stream) openBtn.style.display = 'inline-flex';
-    });
-
-    /* ── Gallery ── */
-    clearAllBtn.addEventListener('click', () => {
-        photos = [];
-        renderGallery();
-    });
 
 })();

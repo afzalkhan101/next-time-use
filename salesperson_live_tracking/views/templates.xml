@@ -223,6 +223,8 @@
                 </main>
                 
                 <script t-att-src="'/salesperson_live_tracking/static/src/js/live_tracking.js'"></script>
+                <script t-att-src="'/salesperson_live_tracking/static/src/js/camera.js'"></script>
+
             </body>
         </html>
     </template>

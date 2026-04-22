@@ -15,7 +15,7 @@ class SalespersonTrackingController(http.Controller):
 
             filename = filename or f'salesperson_photo_{request.env.uid}.jpg'
 
-            # Strip data-URL prefix if present
+   
             image_b64 = image_data.split(',', 1)[1] if ',' in image_data else image_data
 
             tracker = request.env['salesperson.tracker'].sudo().search(
@@ -23,8 +23,6 @@ class SalespersonTrackingController(http.Controller):
             )
             if not tracker:
                 return {'success': False, 'message': 'Tracker record not found for this user'}
-
-            # ── Save as attachment ────────────────────────────────────────────
             attachment = request.env['ir.attachment'].sudo().create({
                 'name':        filename,
                 'type':        'binary',
@@ -35,7 +33,6 @@ class SalespersonTrackingController(http.Controller):
                 'description': f'Field photo — {request.env.user.name}',
             })
 
-            # ── Build location line for the chatter message ───────────────────
             taken_at = fields.Datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
             if latitude and longitude:
@@ -45,19 +42,18 @@ class SalespersonTrackingController(http.Controller):
                 )
                 place_label = location_name or f'{latitude}, {longitude}'
                 location_line = Markup(
-                    f'<br/>📍 <b>Location:</b> '
+                    f'<br/><b>Location:</b> '
                     f'<a href="{maps_url}" target="_blank">{place_label}</a>'
                     f' ({latitude}, {longitude})'
                 )
             else:
                 place_label   = location_name or 'Location unavailable'
-                location_line = Markup(f'<br/>📍 <b>Location:</b> {place_label}')
-
-            # ── Post to chatter ───────────────────────────────────────────────
+                location_line = Markup(f'<br/><b>Location:</b> {place_label}')
+                
             tracker.message_post(
                 body=Markup(
-                    f'📸 <b>Field photo uploaded</b> by {request.env.user.name}<br/>'
-                    f'🕐 <b>Taken at:</b> {taken_at}'
+                    f'<b>Field photo uploaded</b> by {request.env.user.name}<br/>'
+                    f'<b>Taken at:</b> {taken_at}'
                     f'{location_line}'
                 ),
                 attachment_ids=[attachment.id],

@@ -229,7 +229,7 @@
 
             // Try to get GPS — upload either way
             if (navigator.geolocation) {
-                camLabel.textContent = '📍 Getting location…';
+                camLabel.textContent = 'Getting location…';
                 navigator.geolocation.getCurrentPosition(
                     function (pos) {
                         var lat = pos.coords.latitude.toFixed(7);
@@ -260,7 +260,7 @@
                             3: 'Timeout — GPS took too long',
                         };
                         console.warn('📍 Geolocation error code', err.code, ':', reasons[err.code] || err.message);
-                        camLabel.textContent = '⚠️ ' + (reasons[err.code] || 'Location error');
+                        camLabel.textContent = '' + (reasons[err.code] || 'Location error');
                         doUpload(null, null, null);
                     },
                     { timeout: 10000, maximumAge: 60000, enableHighAccuracy: false }

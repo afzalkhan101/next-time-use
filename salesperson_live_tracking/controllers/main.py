@@ -165,12 +165,10 @@ class SalespersonTrackingController(http.Controller):
         except (TypeError, ValueError):
             duration_seconds = 0
 
-        # fallback calculation
         if duration_seconds <= 0 and tracker.last_tracking_start:
             delta = fields.Datetime.now() - tracker.last_tracking_start
             duration_seconds = int(delta.total_seconds())
 
-        # 👉 PUSH ONLY TO MODEL
         tracker.sudo().action_stop_tracking(duration_seconds)
 
         return request.make_json_response({
@@ -276,7 +274,6 @@ class SalespersonTrackingController(http.Controller):
         lng = payload.get("longitude")
 
         if not checkin_id:
-            # attach to the currently open check-in
             checkin = request.env["salesperson.checkin"].sudo().search(
                 [("user_id", "=", user.id), ("state", "=", "checked_in")], limit=1
             )
@@ -285,8 +282,7 @@ class SalespersonTrackingController(http.Controller):
 
         if not checkin or not checkin.exists():
             return request.make_json_response({"ok": False, "error": "No active check-in."})
-
-        # Strip data URL prefix if present
+        
         if "," in image_b64:
             image_b64 = image_b64.split(",", 1)[1]
 
@@ -302,8 +298,6 @@ class SalespersonTrackingController(http.Controller):
             "checkin_id": checkin.id,
             "selfie_taken_at": fields.Datetime.to_string(checkin.selfie_taken_at),
         })
-
-    # ── offline sync ───────────────────────────────────────────────────────────
 
     @http.route("/salesperson_tracking/sync_offline", type="http", auth="user", methods=["POST"], csrf=False)
     def salesperson_tracking_sync_offline(self, **kwargs):
@@ -361,9 +355,7 @@ class SalespersonTrackingController(http.Controller):
             "processed": processed,
             "errors": errors,
         })
-
-    # ── visit plan data for mobile map ─────────────────────────────────────────
-
+    
     @http.route("/salesperson_tracking/my_plans", type="http", auth="user", methods=["GET"], csrf=False)
     def salesperson_tracking_my_plans(self, **kwargs):
         """Return today's visit plans as JSON for the mobile tracking page."""
@@ -389,8 +381,7 @@ class SalespersonTrackingController(http.Controller):
         ]
         return request.make_json_response({"ok": True, "plans": data})
 
-    # ── moving map ─────────────────────────────────────────────────────────────
-
+    
     @http.route("/salesperson_tracking/moving_map/<int:tracker_id>", type="http", auth="user", website=False)
     def salesperson_tracking_moving_map(self, tracker_id, **kwargs):
         user = self._check_salesperson_access()
@@ -449,7 +440,7 @@ class SalespersonTrackingController(http.Controller):
 
 class SalespersonDashboard(http.Controller):
 
-    @http.route('/salesperson/dashboard', type='http', auth='user', website=True)
+    @http.route('/salesperson/dashboard', type='http', auth='user', website=False)
     def dashboard(self, **kwargs):
         user = request.env.user
         today = fields.Date.context_today(user)

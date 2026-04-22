@@ -5,6 +5,7 @@
     "category": "Sales/Sales",
     "depends": ["sale_management", "web_map", "base_geolocalize", "crm", "mail", "website"],
     "data": [
+        "security/salesperson_tracking_security.xml",
         "security/ir.model.access.csv",
         "security/ir.rule.xml",
         "views/salesperson_tracking_views.xml",

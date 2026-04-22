@@ -177,10 +177,9 @@
         function capturePhoto() {
             if (!stream) return;
 
-            // Flash effect
             flashEl.classList.add('go');
             setTimeout(function () { flashEl.classList.remove('go'); }, 160);
-
+            console.log("📸 Capture button clicked");
             // Draw frame to hidden canvas
             canvas.width  = video.videoWidth  || 640;
             canvas.height = video.videoHeight || 480;
@@ -216,7 +215,7 @@
             .then(function (data) {
                 var result = data.result;
 
-                console.log("######################$fmodmfdmfdf",result)
+                console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@#$#$#$",result)
 
                 
                 camLabel.textContent = result && result.success
@@ -229,7 +228,6 @@
                 camLabel.textContent = 'Upload failed — network error';
             });
 
-            // Show snap confirmation row briefly
             snapRow.style.display = 'flex';
             setTimeout(function () {
                 if (stream) snapRow.style.display = 'none';
@@ -239,9 +237,6 @@
             camGallery.style.display = 'none';
         }
 
-        /* ══════════════════════════════════════════════
-           EVENT LISTENERS
-        ══════════════════════════════════════════════ */
         openBtn.addEventListener('click',    function () { startCamera(facingMode); });
         stopBtn.addEventListener('click',    closeCamera);
         captureBtn.addEventListener('click', capturePhoto);
@@ -286,9 +281,6 @@
         });
     }
 
-    /* ══════════════════════════════════════════════
-       DOM READY — run init when DOM is available
-    ══════════════════════════════════════════════ */
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', init);
     } else {

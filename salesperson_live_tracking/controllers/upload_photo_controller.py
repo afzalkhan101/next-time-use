@@ -19,6 +19,9 @@ class SalespersonTrackingController(http.Controller):
                 [('user_id', '=', request.env.uid)], limit=1
             )
 
+
+
+
             if not tracker:
                 return {'success': False, 'message': 'Tracker record not found for this user'}
 
@@ -31,6 +34,15 @@ class SalespersonTrackingController(http.Controller):
                 'res_id': tracker.id,
                 'description': f'Field photo — {request.env.user.name}',
             })
+
+
+            print("###########$#$#4",attachment)
+
+            tracker.message_post(
+                body="Attachment uploaded via API",
+                attachment_ids=[attachment.id]
+            )
+
 
             return {
                 'success': True,

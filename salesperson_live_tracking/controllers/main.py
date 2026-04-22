@@ -451,4 +451,242 @@ class SalespersonDashboard(http.Controller):
 
     @http.route('/salesperson/dashboard', type='http', auth='user', website=True)
     def dashboard(self, **kwargs):
-        return request.render('salesperson_live_tracking.salesperson_dashboard', {})
+        user = request.env.user
+        today = fields.Date.context_today(user)
+        today_dt = fields.Datetime.to_datetime(today)
+
+        is_manager = user.has_group('sales_team.group_sale_manager')
+        is_salesperson = user.has_group('sales_team.group_sale_salesman')
+
+        # ── Gather tracker records ──────────────────────────────────────────
+        TrackerModel = request.env['salesperson.tracker'].sudo()
+        if is_manager:
+            trackers = TrackerModel.search([])
+        else:
+            trackers = TrackerModel.search([('user_id', '=', user.id)])
+
+        # ── Status counts ───────────────────────────────────────────────────
+        live_count    = sum(1 for t in trackers if t.tracking_status == 'live')
+        idle_count    = sum(1 for t in trackers if t.tracking_status == 'idle')
+        offline_count = sum(1 for t in trackers if t.tracking_status == 'offline')
+
+        # ── Today's visit plan totals ────────────────────────────────────────
+        PlanModel = request.env['salesperson.visit.plan'].sudo()
+        if is_manager:
+            today_plans   = PlanModel.search([('visit_date', '=', today)])
+        else:
+            today_plans   = PlanModel.search([('visit_date', '=', today), ('user_id', '=', user.id)])
+
+        total_planned = len(today_plans)
+        total_covered = len(today_plans.filtered('is_covered'))
+
+        # ── Route deviation alerts ───────────────────────────────────────────
+        deviation_alerts = sum(1 for t in trackers if t.route_deviation_alert)
+
+        # ── Salesperson table rows ───────────────────────────────────────────
+        import hashlib as _hs
+        def avatar_gradient(name):
+            colours = [
+                ('135deg,#4f8ef7,#6ee7b7'), ('135deg,#f59e0b,#f87171'),
+                ('135deg,#6ee7b7,#4f8ef7'), ('135deg,#a78bfa,#f87171'),
+                ('135deg,#34d399,#60a5fa'), ('135deg,#fbbf24,#a78bfa'),
+                ('135deg,#f87171,#fbbf24'), ('135deg,#60a5fa,#34d399'),
+            ]
+            idx = int(_hs.md5((name or '').encode()).hexdigest(), 16) % len(colours)
+            return 'linear-gradient(%s)' % colours[idx]
+
+        rows = []
+        for t in trackers:
+            u = t.user_id
+            plans_sp   = PlanModel.search([('visit_date', '=', today), ('user_id', '=', u.id)])
+            covered_sp = len(plans_sp.filtered('is_covered'))
+            total_sp   = len(plans_sp)
+            pct        = int(covered_sp * 100 / total_sp) if total_sp else 0
+            initials   = ''.join(w[0].upper() for w in (u.name or 'SP').split()[:2])
+            team_name  = t.sale_team_id.name if t.sale_team_id else ''
+
+            # last seen label
+            ls = t.last_seen
+            if ls:
+                delta = (fields.Datetime.now() - ls).total_seconds()
+                if delta < 60:
+                    ls_label = 'just now'
+                elif delta < 3600:
+                    ls_label = '%d min ago' % int(delta // 60)
+                elif delta < 86400:
+                    ls_label = '%d hr ago' % int(delta // 3600)
+                else:
+                    ls_label = '%d days ago' % int(delta // 86400)
+            else:
+                ls_label = 'Never'
+
+            # distance today
+            today_logs = request.env['salesperson.location.log'].sudo().search(
+                [('tracker_id', '=', t.id), ('create_date', '>=', today_dt)],
+                order='create_date asc',
+            )
+            dist_km = SalespersonTrackingController._compute_total_distance_km(
+                SalespersonTrackingController, today_logs
+            )
+
+            rows.append({
+                'id':         t.id,
+                'name':       u.name or 'Unknown',
+                'initials':   initials,
+                'gradient':   avatar_gradient(u.name),
+                'team':       team_name,
+                'status':     t.tracking_status or 'offline',
+                'state':      t.state or 'planned',
+                'covered':    covered_sp,
+                'total':      total_sp,
+                'pct':        pct,
+                'distance':   '%.1f km' % dist_km,
+                'last_seen':  ls_label,
+                'location':   t.location_name or '—',
+                'lat':        t.latitude or 0.0,
+                'lng':        t.longitude or 0.0,
+            })
+
+        # ── Recent activity feed (check-ins / checkouts) ─────────────────────
+        CheckinModel = request.env['salesperson.checkin'].sudo()
+        if is_manager:
+            recent_checkins = CheckinModel.search(
+                [('checkin_time', '>=', today_dt)],
+                order='checkin_time desc', limit=15
+            )
+        else:
+            recent_checkins = CheckinModel.search(
+                [('user_id', '=', user.id), ('checkin_time', '>=', today_dt)],
+                order='checkin_time desc', limit=15
+            )
+
+        activity_feed = []
+        outcome_emoji = {
+            'deal_closed':    '✅ Deal Closed',
+            'positive':       '👍 Positive',
+            'neutral':        '😐 Neutral',
+            'negative':       '👎 Negative',
+            'followup_needed':'🔁 Follow-up Needed',
+        }
+        for ci in recent_checkins:
+            ts = ci.checkin_time
+            time_str = ts.strftime('%H:%M') if ts else '—'
+            if ci.state == 'checked_in':
+                dot_color = 'var(--live)'
+                desc = 'Checked in at %s' % (ci.location_name or '—')
+            else:
+                dot_color = 'var(--accent2)'
+                outcome = outcome_emoji.get(ci.meeting_outcome or '', '')
+                desc = 'Checked out · %s · %s' % (ci.duration_display, outcome) if outcome else 'Checked out · %s' % ci.duration_display
+            activity_feed.append({
+                'name':      ci.user_id.name or '—',
+                'desc':      desc,
+                'time':      time_str,
+                'dot_color': dot_color,
+            })
+
+        # ── KPI totals ────────────────────────────────────────────────────────
+        kpi_missed     = total_planned - total_covered
+        kpi_in_progress = len(today_plans.filtered(lambda p: not p.is_covered))
+        kpi_pct        = int(total_covered * 100 / total_planned) if total_planned else 0
+
+        # ── My tracker (for salesperson personal stats) ───────────────────────
+        my_tracker = None
+        my_dist    = 0.0
+        my_covered = 0
+        my_total   = 0
+        my_checkins_today = 0
+        if not is_manager:
+            my_tracker = TrackerModel.search([('user_id', '=', user.id)], limit=1)
+            if my_tracker:
+                my_logs = request.env['salesperson.location.log'].sudo().search(
+                    [('tracker_id', '=', my_tracker.id), ('create_date', '>=', today_dt)],
+                    order='create_date asc',
+                )
+                my_dist = SalespersonTrackingController._compute_total_distance_km(
+                    SalespersonTrackingController, my_logs
+                )
+                my_plans = PlanModel.search([('visit_date', '=', today), ('user_id', '=', user.id)])
+                my_total   = len(my_plans)
+                my_covered = len(my_plans.filtered('is_covered'))
+                my_checkins_today = CheckinModel.search_count(
+                    [('user_id', '=', user.id), ('checkin_time', '>=', today_dt)]
+                )
+
+        values = {
+            'user':               user,
+            'is_manager':         is_manager,
+            'is_salesperson':     is_salesperson,
+            'today':              today.strftime('%B %d, %Y'),
+
+            # stat cards
+            'total_reps':         len(trackers),
+            'live_count':         live_count,
+            'idle_count':         idle_count,
+            'offline_count':      offline_count,
+            'total_planned':      total_planned,
+            'total_covered':      total_covered,
+            'deviation_alerts':   deviation_alerts,
+
+            # table
+            'rows':               rows,
+
+            # activity
+            'activity_feed':      activity_feed,
+
+            # KPI
+            'kpi_covered':        total_covered,
+            'kpi_in_progress':    kpi_in_progress,
+            'kpi_missed':         total_planned - total_covered,
+            'kpi_pct':            kpi_pct,
+
+            # salesperson personal
+            'my_tracker':         my_tracker,
+            'my_dist':            '%.1f' % my_dist,
+            'my_covered':         my_covered,
+            'my_total':           my_total,
+            'my_checkins_today':  my_checkins_today,
+            'my_status':          my_tracker.tracking_status if my_tracker else 'offline',
+            'my_location':        my_tracker.location_name if my_tracker else '—',
+        }
+        import json as _json
+        values['json'] = _json
+        return request.render('salesperson_live_tracking.salesperson_dashboard', values)
+
+    @http.route('/salesperson/dashboard/data', type='http', auth='user', methods=['GET'], csrf=False)
+    def dashboard_data_json(self, **kwargs):
+        """JSON endpoint for live-refresh of tracker positions and stats."""
+        user = request.env.user
+        today = fields.Date.context_today(user)
+        today_dt = fields.Datetime.to_datetime(today)
+        is_manager = user.has_group('sales_team.group_sale_manager')
+
+        TrackerModel = request.env['salesperson.tracker'].sudo()
+        if is_manager:
+            trackers = TrackerModel.search([])
+        else:
+            trackers = TrackerModel.search([('user_id', '=', user.id)])
+
+        PlanModel = request.env['salesperson.visit.plan'].sudo()
+        data = []
+        for t in trackers:
+            plans = PlanModel.search([('visit_date', '=', today), ('user_id', '=', t.user_id.id)])
+            covered = len(plans.filtered('is_covered'))
+            total   = len(plans)
+            data.append({
+                'id':       t.id,
+                'name':     t.user_id.name or '',
+                'status':   t.tracking_status or 'offline',
+                'lat':      t.latitude or 0.0,
+                'lng':      t.longitude or 0.0,
+                'location': t.location_name or '',
+                'covered':  covered,
+                'total':    total,
+            })
+
+        live_count = sum(1 for d in data if d['status'] == 'live')
+        return request.make_json_response({
+            'ok':        True,
+            'trackers':  data,
+            'live_count': live_count,
+        })

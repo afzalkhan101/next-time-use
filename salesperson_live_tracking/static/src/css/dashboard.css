@@ -1,18 +1,77 @@
-
 :root {
-    --sp-bg:       #f5f7fa;
+    --sp-bg:       #f7f8fc;
     --sp-surface:  #ffffff;
-    --sp-surface2: #f0f2f5;
-    --sp-border:   rgba(0, 0, 0, 0.08);
-    --sp-text:     #111827;
-    --sp-muted:    #6b7280;
+    --sp-surface2: #eef0f5;
+    --sp-border:   rgba(0, 0, 0, 0.07);
+    --sp-text:     #1e2330;
+    --sp-muted:    #8a94a6;
     --sp-accent:   #4f8ef7;
     --sp-live:     #22c55e;
     --sp-warn:     #f59e0b;
     --sp-danger:   #f87171;
-    --sp-offline:  #6b7280;
+    --sp-offline:  #a0aab8;
     --sp-radius:   12px;
     --sp-radius-sm: 8px;
+}
+
+/* ── Remove Odoo dark theme from dashboard ── */
+body,
+html,
+.o_web_client,
+.o_action_manager,
+.o_action,
+.o_content,
+.o_view_controller,
+.o_renderer,
+.o_form_view,
+.o_list_view,
+.o_main_navbar,
+.o_menu_brand {
+    background: #f7f8fc !important;
+    background-color: #f7f8fc !important;
+    color: #fdfeff !important;
+}
+
+body.sp-dashboard-page,
+body.sp-dashboard-page .o_web_client,
+body.sp-dashboard-page .o_action_manager,
+body.sp-dashboard-page .o_action,
+body.sp-dashboard-page .o_content,
+body.sp-dashboard-page .layout,
+body.sp-dashboard-page .main,
+body.sp-dashboard-page .content {
+    background: #f7f8fc !important;
+    background-color: #f7f8fc !important;
+    color: #1e2330 !important;
+}
+
+body.sp-dashboard-page .sidebar,
+body.sp-dashboard-page .topbar,
+body.sp-dashboard-page .stat-card,
+body.sp-dashboard-page .map-card,
+body.sp-dashboard-page .activity-card,
+body.sp-dashboard-page .table-card,
+body.sp-dashboard-page .kpi-card,
+body.sp-dashboard-page .card-header {
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+}
+
+body.sp-dashboard-page .map-container {
+    background: #e8edf5 !important;
+    background-color: #e8edf5 !important;
+}
+
+body.sp-dashboard-page .map-overlay {
+    background: rgba(240,242,248,0.95) !important;
+    color: #8a94a6 !important;
+}
+
+/* Force Odoo page/body wrappers to light */
+body,
+html {
+    background: var(--sp-bg) !important;
+    color: var(--sp-text) !important;
 }
 
 .sp-dashboard-page #wrapwrap,
@@ -37,6 +96,19 @@
     background: var(--sp-bg) !important;
 }
 
+/* Force all Odoo inner wrappers to light */
+.o_action_manager,
+.o_view_controller,
+.o_content,
+.o_form_view,
+.o_web_client,
+.o_main_navbar,
+.o_action,
+.o_renderer {
+    background: var(--sp-bg) !important;
+    color: var(--sp-text) !important;
+}
+
 
 .layout ::-webkit-scrollbar         { width: 6px; }
 .layout ::-webkit-scrollbar-track   { background: var(--sp-bg); }
@@ -46,7 +118,7 @@
 .layout {
     display: flex;
     height: 100vh;
-    background: var(--sp-bg);
+    background: var(--sp-bg) !important;
     overflow: hidden;
     box-sizing: border-box;
 }
@@ -57,7 +129,7 @@
 
 .sidebar {
     width: 64px;
-    background: var(--sp-surface);
+    background: var(--sp-surface) !important;
     border-right: 1px solid var(--sp-border);
     display: flex;
     flex-direction: column;
@@ -142,7 +214,7 @@
 .topbar {
     height: 60px;
     flex-shrink: 0;
-    background: var(--sp-surface);
+    background: var(--sp-surface) !important;
     border-bottom: 1px solid var(--sp-border);
     display: flex;
     align-items: center;
@@ -212,6 +284,7 @@
     min-height: 0;
     overflow-y: auto;
     padding: 24px 28px;
+    background: var(--sp-bg) !important;
 }
 
 
@@ -223,7 +296,7 @@
 }
 
 .stat-card {
-    background: var(--sp-surface);
+    background: var(--sp-surface) !important;
     border: 1px solid var(--sp-border);
     border-radius: var(--sp-radius);
     padding: 20px;
@@ -265,8 +338,6 @@
 .delta.down { color: var(--sp-danger); }
 
 
-
-
 .mid-grid {
     display: grid;
     grid-template-columns: 1fr 320px;
@@ -282,6 +353,7 @@
     padding: 16px 20px;
     border-bottom: 1px solid var(--sp-border);
     flex-shrink: 0;
+    background: var(--sp-surface) !important;
 }
 .card-header h2 {
     font-size: 13px;
@@ -298,23 +370,26 @@
 }
 .chip.live    { background: rgba(34,197,94,.12);  color: var(--sp-live);   border: 1px solid rgba(34,197,94,.2); }
 .chip.idle    { background: rgba(245,158,11,.12); color: var(--sp-warn);   border: 1px solid rgba(245,158,11,.2); }
-.chip.offline { background: rgba(75,85,99,.2);    color: var(--sp-muted);  border: 1px solid rgba(75,85,99,.3); }
+.chip.offline { background: rgba(75,85,99,.15);   color: var(--sp-muted);  border: 1px solid rgba(75,85,99,.2); }
 
 
 
 .map-card {
-    background: var(--sp-surface);
+    background: var(--sp-surface) !important;
     border: 1px solid var(--sp-border);
     border-radius: var(--sp-radius);
     overflow: hidden;
 }
 
-.map-container { position: relative; }
+.map-container {
+    position: relative;
+    background: #e8edf5 !important;
+}
 .map-svg { width: 100%; display: block; }
 .map-overlay {
     position: absolute;
     bottom: 12px; left: 12px;
-    background: rgba(13,15,20,.8);
+    background: rgba(240,242,248,0.92) !important;
     border: 1px solid var(--sp-border);
     border-radius: var(--sp-radius-sm);
     padding: 6px 10px;
@@ -325,7 +400,7 @@
 
 
 .activity-card {
-    background: var(--sp-surface);
+    background: var(--sp-surface) !important;
     border: 1px solid var(--sp-border);
     border-radius: var(--sp-radius);
     display: flex;
@@ -384,7 +459,7 @@
 
 
 .table-card {
-    background: var(--sp-surface);
+    background: var(--sp-surface) !important;
     border: 1px solid var(--sp-border);
     border-radius: var(--sp-radius);
     overflow: hidden;
@@ -404,7 +479,7 @@
     letter-spacing: .5px;
     border-bottom: 1px solid var(--sp-border);
     white-space: nowrap;
-    background: var(--sp-surface);
+    background: var(--sp-surface) !important;
 }
 .table-card tbody tr {
     border-bottom: 1px solid var(--sp-border);
@@ -484,7 +559,7 @@
 
 
 .kpi-card {
-    background: var(--sp-surface);
+    background: var(--sp-surface) !important;
     border: 1px solid var(--sp-border);
     border-radius: var(--sp-radius);
     overflow: hidden;
@@ -527,6 +602,7 @@
     font-size: 14px;
     font-weight: 700;
     font-family: 'DM Mono', monospace;
+    color: var(--sp-text);
 }
 
 

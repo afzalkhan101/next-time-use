@@ -72,10 +72,8 @@
                                     </div>
                                 </div>
 
-                                <!-- Status Badges -->
                                 <div class="d-flex flex-column align-items-end gap-1">
-
-                                    <!-- Tracking Status Badge -->
+                                
                                     <span t-attf-class="badge rounded-pill d-flex align-items-center gap-1
                                         #{record.tracking_status.raw_value == 'live' and 'text-bg-success' or
                                         record.tracking_status.raw_value == 'idle' and 'text-bg-warning' or
@@ -168,7 +166,7 @@
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <div class="d-flex gap-2 flex-wrap">
                                 <button type="object" name="action_open_live_tracking_page"
                                         class="btn btn-sm btn-primary flex-grow-1"

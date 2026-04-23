@@ -156,6 +156,23 @@ class SalespersonVisitPlan(models.Model):
     def action_reset_draft(self):
         self.write({'state': 'draft'})
 
+    def action_accept(self):
+       self.state = "accepted"
+
+    
+
+    def action_open_moving_map_view(self):
+        self.ensure_one()
+        return {
+            "type":   "ir.actions.act_url",
+            "url":    "/salesperson_tracking/moving_map/%d" % self.id,
+            "target": "new",
+        }
+
+    def action_open_live_tracking_page(self):
+        self.ensure_one()
+        return self.user_id.action_open_live_tracking_page()
+
 
     def _push_to_dashboard(self):
 

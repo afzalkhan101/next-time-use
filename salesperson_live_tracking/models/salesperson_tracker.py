@@ -263,8 +263,7 @@ class SalespersonTracker(models.Model):
                 tracker.today_covered_count       = covered_count
                 tracker.today_visit_summary       = summary or False
                 tracker.kpi_visit_completion_rate = completion_rate
-
-  
+                
     def action_set_planned(self):
         self.filtered(lambda r: r.state in ('accepted', 'visited')).write({'state': 'planned'})
 

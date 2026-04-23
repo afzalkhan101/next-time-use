@@ -7,10 +7,16 @@ from odoo.exceptions import AccessError, ValidationError
 from odoo.http import request
 
 class SalespersonTrackingController(http.Controller):
+
     def _check_salesperson_access(self):
         user = request.env.user
-        if not user.has_group("sales_team.group_sale_salesman"):
-            raise AccessError(_("Only salespeople can use live tracking."))
+
+        if not (
+            user.has_group("sales_team.group_sale_salesman") or
+            user.has_group("sales_team.group_sale_manager")
+        ):
+            raise AccessError(_("Only Salespersons and Sales Managers can use live tracking."))
+
         return user
     
     def _json_body(self):

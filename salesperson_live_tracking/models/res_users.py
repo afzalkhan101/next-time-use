@@ -12,6 +12,7 @@ class ResUsers(models.Model):
 
     is_manager = fields.Boolean(string="Is Manager", default=False)
     is_salesperson = fields.Boolean(string="Is Salesperson", default=False)
+    
     def _ensure_salesperson_tracker(self):
         self.ensure_one()
         tracker = self.env["salesperson.tracker"].sudo().search([("user_id", "=", self.id)], limit=1)

@@ -55,7 +55,11 @@
           .btn-primary:hover{opacity:.85}
           .btn-outline{background:transparent;color:var(--text);border:1px solid var(--border);padding:8px 16px;border-radius:var(--radius-sm);font-size:12px;font-weight:600;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:6px;transition:border-color .2s}
           .btn-outline:hover{border-color:rgba(255,255,255,.2)}
-          .stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
+          .stat-row {display: flex;gap: 16px;width: 100%; .stat-card {
+                flex: 1;          // ← each card takes equal share of full width
+                min-width: 0;     // prevents overflow on small screens
+              }
+            }
           .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;position:relative;overflow:hidden;transition:transform .2s,border-color .2s;cursor:default;animation:fadeUp .4s ease both}
           .stat-card:hover{transform:translateY(-2px);border-color:rgba(255,255,255,.12)}
           .stat-card::after{content:'';position:absolute;top:0;left:0;right:0;height:2px}
@@ -177,7 +181,17 @@
               <t t-if="is_manager">&#128081; Manager</t>
               <t t-else="">&#128100; Salesperson</t>
             </span>
-            <div class="icon-btn" id="refreshBtn" data-tip="Refresh">&#128260;</div>
+            <div class="icon-btn" id="refreshBtn" data-tip="Refresh">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 2v6h-6"/>
+                    <path d="M3 12a9 9 0 0 1 15-6.7L21 8"/>
+                    <path d="M3 22v-6h6"/>
+                    <path d="M21 12a9 9 0 0 1-15 6.7L3 16"/>
+                </svg>
+            </div>
+           
           </header>
 
           <div class="content">
@@ -217,64 +231,67 @@
             </t>
 
             <!-- Stat cards -->
-            <div class="stat-row">
-              <t t-if="is_manager">
-                <div class="stat-card blue">
-                  <div class="stat-label">Total Field Reps</div>
-                  <div class="stat-value"><t t-esc="total_reps"/></div>
-                  <div class="stat-icon">&#128100;</div>
-                  <div class="delta neutral">&#128101; Tracked</div>
+             <div class="stat-row">
+                  <t t-if="is_manager">
+
+                    <div class="stat-card blue">
+                      <div class="stat-icon">&#128100;</div>
+                      <div class="stat-label">Total Field Reps</div>
+                      <div class="stat-value"><t t-esc="total_reps"/></div>
+                      <div class="stat-sub neutral">&#128101; Tracked</div>
+                    </div>
+
+                    <div class="stat-card green">
+                      <div class="stat-icon">&#128994;</div>
+                      <div class="stat-label">Live Right Now</div>
+                      <div class="stat-value" style="color:var(--live)"><t t-esc="live_count"/></div>
+                      <div class="stat-sub"><t t-esc="idle_count"/> idle · <t t-esc="offline_count"/> offline</div>
+                    </div>
+
+                    <div class="stat-card warn">
+                      <div class="stat-icon">&#128203;</div>
+                      <div class="stat-label">Today's Visits Planned</div>
+                      <div class="stat-value" style="color:var(--warn)"><t t-esc="total_planned"/></div>
+                      <div class="stat-sub up">&#9650; <t t-esc="total_covered"/> covered</div>
+                    </div>
+
+                  </t>
+                  <t t-else="">
+
+                    <div class="stat-card green">
+                      <div class="stat-icon">&#128247;</div>
+                      <div class="stat-label">My Status</div>
+                      <div class="stat-value" style="font-size:18px; padding-top:6px;">
+                        <span t-if="my_status == 'live'" style="color:var(--live)">&#128247; Live</span>
+                        <span t-elif="my_status == 'idle'" style="color:var(--warn)">&#128336; Idle</span>
+                        <span t-else="" style="color:var(--muted)">&#128900; Offline</span>
+                      </div>
+                      <div class="stat-sub"><t t-esc="my_location"/></div>
+                    </div>
+
+                    <div class="stat-card blue">
+                      <div class="stat-icon">&#128346;</div>
+                      <div class="stat-label">Distance Today</div>
+                      <div class="stat-value"><t t-esc="my_dist"/></div>
+                      <div class="stat-sub">km travelled</div>
+                    </div>
+
+                    <div class="stat-card warn">
+                      <div class="stat-icon">&#128203;</div>
+                      <div class="stat-label">Visits Covered</div>
+                      <div class="stat-value" style="color:var(--warn)"><t t-esc="my_covered"/>/<t t-esc="my_total"/></div>
+                      <div class="stat-sub">today's plan</div>
+                    </div>
+
+                    <div class="stat-card blue">
+                      <div class="stat-icon">&#9989;</div>
+                      <div class="stat-label">Check-ins Today</div>
+                      <div class="stat-value" style="color:var(--accent2)"><t t-esc="my_checkins_today"/></div>
+                      <div class="stat-sub">visits recorded</div>
+                    </div>
+
+                  </t>
                 </div>
-                <div class="stat-card green">
-                  <div class="stat-label">Live Right Now</div>
-                  <div class="stat-value" style="color:var(--live)"><t t-esc="live_count"/></div>
-                  <div class="stat-icon">&#128994;</div>
-                  <div class="stat-sub"><t t-esc="idle_count"/> idle · <t t-esc="offline_count"/> offline</div>
-                </div>
-                <div class="stat-card warn">
-                  <div class="stat-label">Today's Visits Planned</div>
-                  <div class="stat-value" style="color:var(--warn)"><t t-esc="total_planned"/></div>
-                  <div class="stat-icon">&#128203;</div>
-                  <div class="delta up">&#9650; <t t-esc="total_covered"/> covered</div>
-                </div>
-                <div class="stat-card red">
-                  <div class="stat-label">Route Deviation Alerts</div>
-                  <div class="stat-value" style="color:var(--danger)"><t t-esc="deviation_alerts"/></div>
-                  <div class="stat-icon">&#9888;</div>
-                  <div class="delta down">&#9660; Needs review</div>
-                </div>
-              </t>
-              <t t-else="">
-                <div class="stat-card green">
-                  <div class="stat-label">My Status</div>
-                  <div class="stat-value" style="font-size:18px;padding-top:6px;">
-                    <t t-if="my_status == 'live'" t-attf-style="color:var(--live)">&#128247; Live</t>
-                    <t t-elif="my_status == 'idle'" t-attf-style="color:var(--warn)">&#128336; Idle</t>
-                    <t t-else="" t-attf-style="color:var(--muted)">&#128900; Offline</t>
-                  </div>
-                  <div class="stat-icon">&#128247;</div>
-                  <div class="stat-sub"><t t-esc="my_location"/></div>
-                </div>
-                <div class="stat-card blue">
-                  <div class="stat-label">Distance Today</div>
-                  <div class="stat-value"><t t-esc="my_dist"/></div>
-                  <div class="stat-icon">&#128346;</div>
-                  <div class="stat-sub">km travelled</div>
-                </div>
-                <div class="stat-card warn">
-                  <div class="stat-label">Visits Covered</div>
-                  <div class="stat-value" style="color:var(--warn)"><t t-esc="my_covered"/>/<t t-esc="my_total"/></div>
-                  <div class="stat-icon">&#128203;</div>
-                  <div class="stat-sub">today's plan</div>
-                </div>
-                <div class="stat-card blue">
-                  <div class="stat-label">Check-ins Today</div>
-                  <div class="stat-value" style="color:var(--accent2)"><t t-esc="my_checkins_today"/></div>
-                  <div class="stat-icon">&#9989;</div>
-                  <div class="stat-sub">visits recorded</div>
-                </div>
-              </t>
-            </div>
 
             <!-- Mid grid -->
             <div class="mid-grid">

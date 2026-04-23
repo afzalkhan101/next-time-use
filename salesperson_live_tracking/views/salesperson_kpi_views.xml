@@ -19,8 +19,4 @@
         <field name="view_mode">list,form</field>
         <field name="context">{}</field>
     </record>
-
-    <menuitem id="menu_salesperson_tracking_root"
-          name="Salesperson Tracking"
-          sequence="10"/>
 </odoo>

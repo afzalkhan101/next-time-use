@@ -18,7 +18,7 @@
         </field>
     </record>
 
-    <record id="view_users_form_inherit_role" model="ir.ui.view">
+    <!-- <record id="view_users_form_inherit_role" model="ir.ui.view">
         <field name="name">res.users.form.inherit.role</field>
         <field name="model">res.users</field>
         <field name="inherit_id" ref="base.view_users_form"/>
@@ -30,7 +30,7 @@
                 </group>
             </xpath>
         </field>
-    </record>
+    </record> -->
    
     <record id="view_salesperson_visit_plan_kanban" model="ir.ui.view">
         <field name="name">salesperson.visit.plan.kanban</field>
@@ -325,23 +325,4 @@
         <field name="url">/salesperson/dashboard</field>
         <field name="target">self</field> 
     </record>
-    
-   
-    <menuitem id="menu_salesperson_tracking_root"
-          name="Salesperson Tracking"
-          sequence="1"/>
-
-    <menuitem id="menu_salesperson_dashboard"
-            name="Live Dashboard"
-            parent="menu_salesperson_tracking_root"
-            action="action_salesperson_dashboard"
-            sequence="100"/>
-
-    <menuitem id="menu_salesperson_visit_plan_my"
-            name="Send Planned Visits"
-            parent="menu_salesperson_tracking_root"
-            action="action_salesperson_visit_plan_my"
-            sequence="1"/>
-
-
 </odoo>

@@ -116,9 +116,4 @@
         <field name="domain">[('user_id', '=', uid)]</field>
         <field name="context">{'default_user_id': uid, 'search_default_today': 1}</field>
     </record>
-
-
-        <menuitem id="menu_salesperson_tracking_root"
-          name="Salesperson Tracking"
-          sequence="5"/>
 </odoo>

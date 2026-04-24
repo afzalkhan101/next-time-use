@@ -225,7 +225,7 @@
 
                     <field name="state"
                         widget="statusbar"
-                        statusbar_visible="draft,submitted,accepted,done"/>
+                        statusbar_visible="draft,submitted,accepted,rejected,done"/>
 
                 </header>
                 <sheet>

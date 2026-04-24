@@ -272,15 +272,8 @@ class SalespersonTracker(models.Model):
         records.write({'state': 'accepted'})
 
         for rec in records:
-            today = fields.Date.context_today(rec)
-
-            plans = self.env["salesperson.visit.plan"].search([
-                ("user_id", "=", rec.user_id.id),
-                ("visit_date", "=", today),
-            ])
-
-            if plans:
-                plans.with_context(tracking_disable=True).write({
+            if rec.plan_id:
+                rec.plan_id.with_context(tracking_disable=True).write({
                     "state": "accepted"
                 })
 
@@ -296,11 +289,20 @@ class SalespersonTracker(models.Model):
         }
     
     def action_set_visited(self):
-        self.filtered(lambda r: r.state == 'accepted').write({'state': 'visited'})
+        records = self.filtered(lambda r: r.state == 'accepted')
+        records.write({'state': 'visited'})
+
+        for rec in records:
+            if rec.plan_id:
+                rec.plan_id.state = 'accepted'   # or 'visited' if you add it
 
     def action_set_done(self):
-        self.filtered(lambda r: r.state == 'visited').write({'state': 'done'})
+        records = self.filtered(lambda r: r.state == 'visited')
+        records.write({'state': 'done'})
 
+        for rec in records:
+            if rec.plan_id:
+                rec.plan_id.state = 'done'
 
     def action_stop_tracking(self, duration_seconds):
         self.ensure_one()
@@ -340,7 +342,7 @@ class SalespersonTracker(models.Model):
             )
 
         
-        print("EEEEEEEEEEEEEEEEEEEEEE$R#$#$#$#$#$#$", distance)
+       
 
         self.write({
             "is_tracking":   True,
@@ -546,7 +548,11 @@ class SalesPersonSpaceLine(models.Model):
         'salesperson.tracker', string="Salesperson Tracker",
         ondelete="cascade", index=True,
     )
-    plan_id    = fields.Many2one('salesperson.visit.plan', string="Plan", ondelete="set null")
+    plan_id = fields.Many2one(
+    "salesperson.visit.plan",
+    string="Visit Plan",
+    ondelete="cascade"
+   )
     partner_id = fields.Many2one("res.partner", string="Customer", required=True)
     visit_date    = fields.Date(string="Visit Date", required=True, tracking=True)
     from_location = fields.Char(string="From")

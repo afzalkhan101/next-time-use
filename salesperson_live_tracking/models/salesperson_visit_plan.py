@@ -27,7 +27,10 @@ class SalespersonVisitPlan(models.Model):
     user_id = fields.Many2one("res.users", required=True, string="Sales person", ondelete="cascade")
     company_id = fields.Many2one("res.company", related="user_id.company_id", store=True)
     sale_team_id = fields.Many2one("crm.team", related="user_id.sale_team_id", store=True)
-
+    tracker_id = fields.Many2one(
+    "salesperson.tracker",
+    string="Tracker"
+     )
     visit_date = fields.Date(required=True, tracking=True, default=fields.Date.context_today)
 
     partner_ids = fields.Many2many(
@@ -97,6 +100,7 @@ class SalespersonVisitPlan(models.Model):
         ("draft", "Draft"),
         ("submitted", "Submitted"),
         ("accepted", "Accepted"),
+        ("rejected", "Rejected"),
         ("done", "Done")
     ], default="draft", tracking=True)
 
@@ -105,8 +109,7 @@ class SalespersonVisitPlan(models.Model):
         "plan_id",
         string="Space Lines"
     )
-
-
+    
     stay_duration_display = fields.Char(
         compute="_compute_stay_duration_display",
         store=False
@@ -193,10 +196,11 @@ class SalespersonVisitPlan(models.Model):
                 "expense_transport": rec.expense_transport,
                 "expense_food": rec.expense_food,
                 "expense_other": rec.expense_other,
-
+                "plan_id": rec.id, 
                 "checkin_time": rec.checkin_time,
                 "checkout_time": rec.checkout_time,
             })
+            rec.tracker_id = tracker.id 
 
             tracker.partner_ids = [(6, 0, rec.partner_ids.ids)]
             for space_line in rec.space_line_ids:

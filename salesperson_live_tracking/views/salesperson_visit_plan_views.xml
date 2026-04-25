@@ -215,6 +215,7 @@
                         type="object"
                         class="oe_highlight btn-primary"
                         icon="fa-paper-plane"
+                        groups="sales_team.group_sale_salesman"
                         invisible="state != 'draft'"/>
                     <button name="action_reset_draft"
                         string="Reset to Draft"

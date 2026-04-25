@@ -398,7 +398,7 @@ class SalespersonTrackingController(http.Controller):
             fields.Datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
         )
         logs = request.env["salesperson.location.log"].sudo().search(
-            [("tracker_id", "=", tracker_id), ("tracked_at", ">=", today_start)],
+            [("tracker_id", "=", tracker_id)],
             order="tracked_at asc",
         )
         location_points = [

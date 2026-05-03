@@ -5,6 +5,8 @@ import math
 from odoo import fields, http, _
 from odoo.exceptions import AccessError, ValidationError
 from odoo.http import request
+import json as json_lib, base64 as b64_lib
+
 
 class SalespersonTrackingController(http.Controller):
 
@@ -24,13 +26,22 @@ class SalespersonTrackingController(http.Controller):
         return json.loads(payload.decode("utf-8"))
 
     @http.route("/salesperson_tracking/live", type="http", auth="user", website=False)
-    def salesperson_tracking_live_page(self, **kwargs):
-        user    = self._check_salesperson_access()
-        tracker = user.sudo()._ensure_salesperson_tracker()
-        today   = fields.Date.context_today(request.env.user)
+    def salesperson_tracking_live_page(self, tracker_id=None, **kwargs):
+        user = self._check_salesperson_access()
+
+        if tracker_id:
+            tracker = request.env["salesperson.tracker"].sudo().browse(int(tracker_id))
+            if not tracker.exists():
+                return request.not_found()
+            card_user = tracker.user_id
+        else:
+            tracker = user.sudo()._ensure_salesperson_tracker()
+            card_user = user
+
+        today = fields.Date.context_today(request.env.user)
 
         plans = request.env["salesperson.visit.plan"].sudo().search(
-            [("user_id", "=", user.id), ("visit_date", "=", today)]
+            [("user_id", "=", card_user.id), ("visit_date", "=", today)]
         )
         plan_data = [
             {
@@ -47,36 +58,31 @@ class SalespersonTrackingController(http.Controller):
         ]
 
         active_checkin = request.env["salesperson.checkin"].sudo().search(
-            [("user_id", "=", user.id), ("state", "=", "checked_in")], limit=1
+            [("user_id", "=", card_user.id), ("state", "=", "checked_in")], limit=1
         )
-        
+
         today_start = fields.Datetime.to_datetime(today)
-        today_logs  = request.env["salesperson.location.log"].sudo().search(
-            [
-                ("tracker_id", "=", tracker.id),
-                ("create_date", ">=", today_start),
-            ],
+        today_logs = request.env["salesperson.location.log"].sudo().search(
+            [("tracker_id", "=", tracker.id), ("create_date", ">=", today_start)],
             order="create_date asc",
         )
-        total_distance_km = self._compute_total_distance_km(today_logs)  # always float
+        total_distance_km = self._compute_total_distance_km(today_logs)
 
-        import json as json_lib, base64 as b64_lib
         plan_b64 = b64_lib.b64encode(json_lib.dumps(plan_data).encode()).decode()
-
         my_tracking_action = request.env.ref("salesperson_live_tracking.action_salesperson_tracker_my")
 
         values = {
             "tracker":             tracker,
-            "user":                user,
+            "user":                card_user,  # ← card-এর user
             "my_tracking_url":     "/web#action=%s&model=salesperson.tracker&view_type=list" % my_tracking_action.id,
             "plan_points_b64":     plan_b64,
             "active_checkin":      active_checkin,
             "today_plan_count":    len(plans),
             "today_covered_count": len(plans.filtered("is_covered")),
-            "total_distance_km":   total_distance_km,   # ← fix
+            "total_distance_km":   total_distance_km,
         }
         return request.render("salesperson_live_tracking.live_tracking_page", values)
-    
+        
     @staticmethod
     def _haversine_km(lat1, lon1, lat2, lon2):
         R = 6371.0
@@ -116,7 +122,15 @@ class SalespersonTrackingController(http.Controller):
         if not -180.0 <= longitude <= 180.0:
             raise ValidationError(_("Longitude must be between -180 and 180."))
 
-        tracker = user.sudo()._ensure_salesperson_tracker()
+        # ← tracker_id payload থেকে নাও
+        tracker_id = payload.get("tracker_id")
+        if tracker_id:
+            tracker = request.env["salesperson.tracker"].sudo().browse(int(tracker_id))
+            if not tracker.exists():
+                return request.make_json_response({"ok": False, "error": "Tracker not found"})
+        else:
+            tracker = user.sudo()._ensure_salesperson_tracker()
+
         tracker.sudo().update_live_location(
             latitude=latitude,
             longitude=longitude,
@@ -137,16 +151,16 @@ class SalespersonTrackingController(http.Controller):
         total_distance_km = self._compute_total_distance_km(today_logs)
 
         return request.make_json_response({
-            "ok":               True,
-            "tracker_id":       tracker.id,
-            "status":           tracker.tracking_status,
-            "status_label":     tracker.tracking_status_label,
-            "last_seen":        fields.Datetime.to_string(tracker.last_seen),
-            "latitude":         tracker.partner_id.partner_latitude,
-            "longitude":        tracker.partner_id.partner_longitude,
-            "location_name":    tracker.location_name,
-            "map_url":          tracker.openstreetmap_url,
-            "total_distance_km": total_distance_km,   # ← new
+            "ok":                True,
+            "tracker_id":        tracker.id,
+            "status":            tracker.tracking_status,
+            "status_label":      tracker.tracking_status_label,
+            "last_seen":         fields.Datetime.to_string(tracker.last_seen),
+            "latitude":          tracker.partner_id.partner_latitude,
+            "longitude":         tracker.partner_id.partner_longitude,
+            "location_name":     tracker.location_name,
+            "map_url":           tracker.openstreetmap_url,
+            "total_distance_km": total_distance_km,
         })
 
   
@@ -432,7 +446,7 @@ class SalespersonTrackingController(http.Controller):
             for p in plans
             if p.latitude or p.longitude
         ]
-        import json as json_lib, base64 as b64_lib
+        
         json_b64 = b64_lib.b64encode(json_lib.dumps(location_points).encode()).decode()
         plans_b64 = b64_lib.b64encode(json_lib.dumps(plan_markers).encode()).decode()
         values = {

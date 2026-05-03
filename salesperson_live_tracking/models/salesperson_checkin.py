@@ -110,7 +110,7 @@ class SalespersonCheckin(models.Model):
         if longitude:
             vals["checkout_longitude"] = longitude
         self.write(vals)
-        # Trigger KPI update
+        
         self.env["salesperson.kpi"]._refresh_today(self.user_id)
         return True
 

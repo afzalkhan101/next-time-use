@@ -78,7 +78,6 @@
         return res.json();
     };
 
-    // OPTIONAL: distance calculation (Haversine)
     const getDistance = (lat1, lon1, lat2, lon2) => {
         const R = 6371;
         const dLat = (lat2 - lat1) * Math.PI / 180;
@@ -121,7 +120,6 @@
             const lat = position.coords.latitude;
             const lng = position.coords.longitude;
 
-            // distance update
             if (state.lastLat !== null && state.lastLng !== null) {
                 state.totalDistance += getDistance(state.lastLat, state.lastLng, lat, lng);
             }
@@ -209,24 +207,11 @@
                 console.warn('Stop request failed:', e.message);
             }
         };
-    const autoResumeTracking = () => {
-        if (localStorage.getItem('isTracking') === 'true') {
-            state.tracking = true;
-            state.trackingStart = parseInt(localStorage.getItem('trackingStart'));
 
-            el.startButton.disabled = true;
-            updateStatus('live', 'Live');
-
-            state.timerId = setInterval(tickTimer, 1000);
-            state.intervalId = setInterval(fetchAndSend, INTERVAL_MS);
-
-            fetchAndSend();
-        }
-    };
-
+    
     el.startButton.addEventListener('click', startTracking);
     el.stopButton.addEventListener('click', stopTracking);
 
-    window.addEventListener('load', autoResumeTracking);
+   
 
 })();

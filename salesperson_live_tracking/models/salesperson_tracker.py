@@ -142,11 +142,11 @@ class SalespersonTracker(models.Model):
             if not rec.today_plan_count:
                 rec.coverage_color = 0
             elif rec.today_covered_count >= rec.today_plan_count:
-                rec.coverage_color = 10   # green
+                rec.coverage_color = 10  
             elif rec.today_covered_count >= rec.today_plan_count * 0.5:
-                rec.coverage_color = 3    # yellow
+                rec.coverage_color = 3   
             else:
-                rec.coverage_color = 1    # red
+                rec.coverage_color = 1    
 
    
     @api.depends('checkin_time', 'checkout_time')
@@ -299,7 +299,7 @@ class SalespersonTracker(models.Model):
 
         for rec in records:
             if rec.plan_id:
-                rec.plan_id.state = 'accepted'   # or 'visited' if you add it
+                rec.plan_id.state = 'accepted'  
 
     def action_set_done(self):
         records = self.filtered(lambda r: r.state == 'visited')
@@ -346,8 +346,6 @@ class SalespersonTracker(models.Model):
                 self._reverse_geocode_location(latitude, longitude) or self.location_name
             )
 
-        
-       
 
         self.write({
             "is_tracking":   True,
@@ -413,7 +411,7 @@ class SalespersonTracker(models.Model):
             self.sudo().write({"route_deviation_alert": True, "last_alert_sent": now})
             self.message_post(
                 body=_(
-                    "⚠️ Route Deviation Alert: %s is %.0f meters away from nearest unvisited location."
+                    "Route Deviation Alert: %s is %.0f meters away from nearest unvisited location."
                 ) % (self.user_id.name, min_dist),
                 subject=_("Route Deviation Alert"),
                 partner_ids=[self.env.ref("base.user_admin").partner_id.id],
@@ -484,8 +482,7 @@ class SalespersonTracker(models.Model):
             return False
         return area
 
-    # ── Smart buttons / actions ───────────────────────────────────────────────
-
+   
     def action_view_history(self):
         self.ensure_one()
         return {
@@ -541,9 +538,7 @@ class SalespersonTracker(models.Model):
             "view_mode": "list,form",
             "domain":    [("user_id", "=", self.user_id.id)],
         }
-
-
-# ══════════════════════════════════════════════════════════════════════════════
+    
 class SalesPersonSpaceLine(models.Model):
     _name        = "sales.person.space.line"
     _description = "Sales Person Space Line"

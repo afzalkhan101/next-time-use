@@ -14,7 +14,7 @@
         timerId: null,
         lastLat: null,
         lastLng: null,
-        totalDistance: initialDist, // optional initial distance
+        totalDistance: initialDist,
     };
 
     const $ = (id) => document.getElementById(id);

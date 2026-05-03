@@ -24,10 +24,6 @@
                         <div class="header-row">
                             <div>
                                 <p class="page-title">Live GPS Tracking</p>
-                                <p class="page-sub">
-                                    <strong><t t-out="user.name"/></strong> — start live GPS sharing from this page.
-                                    Keep it open on mobile for continuous updates.
-                                </p>
                             </div>
                             <div id="statusBadge"
                                  t-attf-class="status-badge #{ 'badge-' + tracker.tracking_status }">

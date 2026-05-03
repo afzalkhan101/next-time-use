@@ -14,7 +14,7 @@
         timerId: null,
         lastLat: null,
         lastLng: null,
-        totalDistance: initialDist,
+        totalDistance: initialDist, // optional initial distance
     };
 
     const $ = (id) => document.getElementById(id);
@@ -78,6 +78,7 @@
         return res.json();
     };
 
+    // OPTIONAL: distance calculation (Haversine)
     const getDistance = (lat1, lon1, lat2, lon2) => {
         const R = 6371;
         const dLat = (lat2 - lat1) * Math.PI / 180;
@@ -120,6 +121,7 @@
             const lat = position.coords.latitude;
             const lng = position.coords.longitude;
 
+            // distance update
             if (state.lastLat !== null && state.lastLng !== null) {
                 state.totalDistance += getDistance(state.lastLat, state.lastLng, lat, lng);
             }
@@ -175,39 +177,38 @@
     };
 
     const stopTracking = async () => {
-            if (!state.tracking) return;
+        if (!state.tracking) return;
 
-            state.tracking = false;
+        state.tracking = false;
 
-            if (state.intervalId) clearInterval(state.intervalId);
-            if (state.timerId) clearInterval(state.timerId);
+        if (state.intervalId) clearInterval(state.intervalId);
+        if (state.timerId) clearInterval(state.timerId);
 
-            state.intervalId = null;
-            state.timerId = null;
+        state.intervalId = null;
+        state.timerId = null;
 
-            el.startButton.disabled = false;
+        el.startButton.disabled = false;
 
-            const durationSeconds = state.trackingStart
-                ? Math.floor((Date.now() - state.trackingStart) / 1000)
-                : 0;
+        const durationSeconds = state.trackingStart
+            ? Math.floor((Date.now() - state.trackingStart) / 1000)
+            : 0;
 
-            state.trackingStart = null;
+        state.trackingStart = null;
 
-            localStorage.removeItem('isTracking');
-            localStorage.removeItem('trackingStart');
+        localStorage.removeItem('isTracking');
+        localStorage.removeItem('trackingStart');
 
-            updateStatus('offline', 'Offline');
-            setNotice('', 'Stopped', 'Tracking stopped');
+        updateStatus('offline', 'Offline');
+        setNotice('', 'Stopped', 'Tracking stopped');
 
-            try {
-                await postJson('/salesperson_tracking/stop', {
-                    duration_seconds: durationSeconds,
-                });
-            } catch (e) {
-                console.warn('Stop request failed:', e.message);
-            }
-        };
-        
+        try {
+            await postJson('/salesperson_tracking/stop', {
+                duration_seconds: durationSeconds,
+            });
+        } catch (e) {
+            console.warn('Stop request failed:', e.message);
+        }
+    };
     const autoResumeTracking = () => {
         if (localStorage.getItem('isTracking') === 'true') {
             state.tracking = true;

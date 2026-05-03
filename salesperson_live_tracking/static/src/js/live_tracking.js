@@ -111,6 +111,22 @@
         }
     };
 
+    const saveStateToStorage = () => {
+        localStorage.setItem('isTracking', 'true');
+        localStorage.setItem('trackingStart', state.trackingStart);
+        localStorage.setItem('totalDistance', state.totalDistance);
+        if (state.lastLat !== null) localStorage.setItem('lastLat', state.lastLat);
+        if (state.lastLng !== null) localStorage.setItem('lastLng', state.lastLng);
+    };
+
+    const clearStorage = () => {
+        localStorage.removeItem('isTracking');
+        localStorage.removeItem('trackingStart');
+        localStorage.removeItem('totalDistance');
+        localStorage.removeItem('lastLat');
+        localStorage.removeItem('lastLng');
+    };
+
     const GPS_OPTS = { enableHighAccuracy: true, maximumAge: 0, timeout: 15000 };
     const INTERVAL_MS = 3 * 60 * 1000;
 
@@ -126,6 +142,9 @@
 
             state.lastLat = lat;
             state.lastLng = lng;
+
+            // Persist updated distance & coords so reload doesn't lose them
+            saveStateToStorage();
 
             const payload = {
                 latitude: lat,
@@ -162,55 +181,89 @@
 
         state.tracking = true;
         el.startButton.disabled = true;
+        el.stopButton.disabled = false;
 
         updateStatus('live', 'Starting...');
         state.trackingStart = Date.now();
 
         state.timerId = setInterval(tickTimer, 1000);
-        localStorage.setItem('isTracking', 'true');
-        localStorage.setItem('trackingStart', state.trackingStart);
+
+        saveStateToStorage();
 
         state.intervalId = setInterval(fetchAndSend, INTERVAL_MS);
         fetchAndSend();
     };
 
     const stopTracking = async () => {
-            if (!state.tracking) return;
+        if (!state.tracking) return;
 
-            state.tracking = false;
+        state.tracking = false;
 
-            if (state.intervalId) clearInterval(state.intervalId);
-            if (state.timerId) clearInterval(state.timerId);
+        if (state.intervalId) clearInterval(state.intervalId);
+        if (state.timerId) clearInterval(state.timerId);
 
-            state.intervalId = null;
-            state.timerId = null;
+        state.intervalId = null;
+        state.timerId = null;
 
-            el.startButton.disabled = false;
+        el.startButton.disabled = false;
+        el.stopButton.disabled = true;
 
-            const durationSeconds = state.trackingStart
-                ? Math.floor((Date.now() - state.trackingStart) / 1000)
-                : 0;
+        const durationSeconds = state.trackingStart
+            ? Math.floor((Date.now() - state.trackingStart) / 1000)
+            : 0;
 
-            state.trackingStart = null;
+        state.trackingStart = null;
+        state.lastLat = null;
+        state.lastLng = null;
+        state.totalDistance = initialDist;
 
-            localStorage.removeItem('isTracking');
-            localStorage.removeItem('trackingStart');
+        clearStorage();
 
-            updateStatus('offline', 'Offline');
-            setNotice('', 'Stopped', 'Tracking stopped');
+        updateStatus('offline', 'Offline');
+        setNotice('', 'Stopped', 'Tracking stopped');
 
-            try {
-                await postJson('/salesperson_tracking/stop', {
-                    duration_seconds: durationSeconds,
-                });
-            } catch (e) {
-                console.warn('Stop request failed:', e.message);
-            }
-        };
+        try {
+            await postJson('/salesperson_tracking/stop', {
+                duration_seconds: durationSeconds,
+            });
+        } catch (e) {
+            console.warn('Stop request failed:', e.message);
+        }
+    };
 
-    
+    const autoResumeTracking = () => {
+        if (localStorage.getItem('isTracking') !== 'true') return;
+
+        const savedStart = parseInt(localStorage.getItem('trackingStart'));
+        const savedDist  = parseFloat(localStorage.getItem('totalDistance') || '0');
+        const savedLat   = localStorage.getItem('lastLat');
+        const savedLng   = localStorage.getItem('lastLng');
+
+        if (!savedStart || isNaN(savedStart)) {
+            clearStorage();
+            return;
+        }
+
+        state.tracking      = true;
+        state.trackingStart = savedStart;
+        state.totalDistance = isNaN(savedDist) ? initialDist : savedDist;
+        state.lastLat       = savedLat !== null ? parseFloat(savedLat) : null;
+        state.lastLng       = savedLng !== null ? parseFloat(savedLng) : null;
+
+        el.startButton.disabled = true;
+        el.stopButton.disabled  = false;
+
+        updateStatus('live', 'Live');
+
+        state.timerId    = setInterval(tickTimer, 1000);
+        state.intervalId = setInterval(fetchAndSend, INTERVAL_MS);
+
+        fetchAndSend();
+    };
+
     el.startButton.addEventListener('click', startTracking);
     el.stopButton.addEventListener('click', stopTracking);
-    
+
+    window.addEventListener('load', autoResumeTracking);
 
 })();

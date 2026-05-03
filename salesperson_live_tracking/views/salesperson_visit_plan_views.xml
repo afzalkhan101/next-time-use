@@ -182,7 +182,7 @@
                                         <i class="fa fa-undo me-1"/> Reset
                                     </button>
                                 </t>
-                                <t t-if="!['done','visited','rejected','planned','draft'].includes(record.state.raw_value)">
+                                <t t-if="!['done','visited','rejected','planned','draft'].includes(record.state.raw_value) and record.user_id.raw_value == uid">
                                     <button type="object" name="action_open_live_tracking_page"
                                             class="btn btn-sm btn-primary flex-grow-1"
                                             style="font-size:10px;padding:4px;border-radius:6px;">

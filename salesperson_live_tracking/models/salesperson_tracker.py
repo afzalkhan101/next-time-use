@@ -601,6 +601,9 @@ class SalespersonLocationLog(models.Model):
             else:
                 log.openstreetmap_url = False
 
+
+
+
 class RejectReasonWizard(models.TransientModel):
     _name        = "reject.reason.wizard"
     _description = "Reject Reason Wizard"

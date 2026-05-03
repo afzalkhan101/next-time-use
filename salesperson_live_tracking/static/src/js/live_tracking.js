@@ -177,21 +177,38 @@
     };
 
     const stopTracking = async () => {
-        state.tracking = false;
+            if (!state.tracking) return;
 
-        if (state.intervalId) clearInterval(state.intervalId);
-        if (state.timerId) clearInterval(state.timerId);
+            state.tracking = false;
 
-        state.intervalId = null;
-        state.timerId = null;
+            if (state.intervalId) clearInterval(state.intervalId);
+            if (state.timerId) clearInterval(state.timerId);
 
-        el.startButton.disabled = false;
-        state.trackingStart = null;
+            state.intervalId = null;
+            state.timerId = null;
 
-        updateStatus('offline', 'Offline');
-        setNotice('', 'Stopped', 'Tracking stopped');
-    };
+            el.startButton.disabled = false;
 
+            const durationSeconds = state.trackingStart
+                ? Math.floor((Date.now() - state.trackingStart) / 1000)
+                : 0;
+
+            state.trackingStart = null;
+
+            localStorage.removeItem('isTracking');
+            localStorage.removeItem('trackingStart');
+
+            updateStatus('offline', 'Offline');
+            setNotice('', 'Stopped', 'Tracking stopped');
+
+            try {
+                await postJson('/salesperson_tracking/stop', {
+                    duration_seconds: durationSeconds,
+                });
+            } catch (e) {
+                console.warn('Stop request failed:', e.message);
+            }
+        };
     const autoResumeTracking = () => {
         if (localStorage.getItem('isTracking') === 'true') {
             state.tracking = true;

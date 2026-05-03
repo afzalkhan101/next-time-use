@@ -10,7 +10,6 @@
                 <link rel="stylesheet" t-att-href="'/salesperson_live_tracking/static/src/css/live_tracking.css'"/>
             </head>
             <body>
-                <!-- Pass server-side data to JS via data-* attributes -->
                 <div id="trackingRoot"
                      t-att-data-user-id="user.id"
                      t-att-data-tracker-id="tracker.id"

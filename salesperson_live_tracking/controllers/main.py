@@ -166,6 +166,8 @@ class SalespersonTrackingController(http.Controller):
 
         duration_seconds = 0
 
+        print("#$ERERERERERERERERER STOP !")
+
         try:
             duration_seconds = int(payload.get("duration_seconds") or 0)
         except (TypeError, ValueError):

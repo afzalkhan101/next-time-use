@@ -3,7 +3,13 @@
     "summary": "Full salesperson field tracking: GPS, check-in/out, selfie proof, KPI, alerts, offline sync, CRM integration",
     "version": "19.0.2.0.0",
     "category": "Sales/Sales",
-    "depends": ["sale_management", "web_map", "base_geolocalize", "crm", "mail"],
+    "author": "Your Name",
+    "depends": [
+        "sale_management",
+        "base_geolocalize",
+        "crm",
+        "mail",
+    ],
     "data": [
         "security/salesperson_tracking_groups.xml",
         "security/salesperson_tracking_security.xml",
@@ -21,10 +27,10 @@
     ],
     "assets": {
         "web.assets_backend": [
-            "salesperson_live_tracking/static/src/scss/style.css",
             "salesperson_live_tracking/static/src/css/style.css",
         ],
     },
     "application": True,
+    "installable": True,
     "license": "LGPL-3",
 }

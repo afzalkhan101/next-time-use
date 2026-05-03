@@ -24,6 +24,7 @@
                         <div class="header-row">
                             <div>
                                 <p class="page-title">Live GPS Tracking</p>
+
                             </div>
                             <div id="statusBadge"
                                  t-attf-class="status-badge #{ 'badge-' + tracker.tracking_status }">

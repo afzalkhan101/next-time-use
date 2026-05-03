@@ -4,7 +4,6 @@
     if (!document.getElementById('startButton')) return;
 
     const root = document.getElementById('trackingRoot');
-    const trackerId = root.dataset.trackerId; 
     const initialDist = root ? parseFloat(root.dataset.distance || '0') : 0;
 
     const state = {
@@ -144,6 +143,7 @@
             state.lastLat = lat;
             state.lastLng = lng;
 
+            // Persist updated distance & coords so reload doesn't lose them
             saveStateToStorage();
 
             const payload = {
@@ -154,7 +154,6 @@
                 heading: position.coords.heading,
                 source: 'browser',
                 distance: state.totalDistance,
-                tracker_id: ROOT.dataset.trackerId,  
             };
 
             state.lastPayload = payload;

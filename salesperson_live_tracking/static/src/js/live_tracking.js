@@ -207,11 +207,25 @@
                 console.warn('Stop request failed:', e.message);
             }
         };
+        
+    const autoResumeTracking = () => {
+        if (localStorage.getItem('isTracking') === 'true') {
+            state.tracking = true;
+            state.trackingStart = parseInt(localStorage.getItem('trackingStart'));
 
-    
+            el.startButton.disabled = true;
+            updateStatus('live', 'Live');
+
+            state.timerId = setInterval(tickTimer, 1000);
+            state.intervalId = setInterval(fetchAndSend, INTERVAL_MS);
+
+            fetchAndSend();
+        }
+    };
+
     el.startButton.addEventListener('click', startTracking);
     el.stopButton.addEventListener('click', stopTracking);
 
-   
+    window.addEventListener('load', autoResumeTracking);
 
 })();

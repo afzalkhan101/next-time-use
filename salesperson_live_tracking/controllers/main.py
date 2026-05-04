@@ -471,7 +471,6 @@ class SalespersonDashboard(http.Controller):
         is_manager = user.has_group('sales_team.group_sale_manager')
         is_salesperson = user.has_group('sales_team.group_sale_salesman')
 
-        # ── Gather tracker records ──────────────────────────────────────────
         TrackerModel = request.env['salesperson.tracker'].sudo()
         if is_manager:
             trackers = TrackerModel.search([])
@@ -485,6 +484,7 @@ class SalespersonDashboard(http.Controller):
 
         # ── Today's visit plan totals ────────────────────────────────────────
         PlanModel = request.env['salesperson.visit.plan'].sudo()
+        print("#E$#$#$#$#$#$",PlanModel)
         if is_manager:
             today_plans   = PlanModel.search([('visit_date', '=', today)])
         else:

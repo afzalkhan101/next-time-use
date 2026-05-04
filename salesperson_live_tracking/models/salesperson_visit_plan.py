@@ -166,9 +166,23 @@ class SalespersonVisitPlan(models.Model):
 
     def action_open_moving_map_view(self):
         self.ensure_one()
+        tracker = self.env["salesperson.tracker"].sudo().search(
+            [("user_id", "=", self.user_id.id)], limit=1
+        )
+        if not tracker:
+            return {
+                "type": "ir.actions.client",
+                "tag": "display_notification",
+                "params": {
+                    "title": "Tracker Not Found",
+                    "message": "No active tracker found for this salesperson.",
+                    "type": "warning",
+                    "sticky": False,
+                },
+            }
         return {
-            "type":   "ir.actions.act_url",
-            "url":    "/salesperson_tracking/moving_map/%d" % self.id,
+            "type": "ir.actions.act_url",
+            "url": "/salesperson_tracking/moving_map/%d" % tracker.id,
             "target": "new",
         }
 

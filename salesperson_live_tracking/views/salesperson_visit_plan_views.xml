@@ -53,7 +53,7 @@
                 <field name="total_expense"/>
                 <templates>
                     <t t-name="card">
-                        <div t-attf-class="o_kanban_record #{!record.is_covered.raw_value and 'border-start border-primary border-3' or ''}"
+                        <div t-attf-class="o_kanban_reMarc Democord #{!record.is_covered.raw_value and 'border-start border-primary border-3' or ''}"
                             style="border-radius:10px; padding:12px; font-size:12px; background:#fff;">
 
                             <!-- Header Row: Avatar + Name + Badges -->

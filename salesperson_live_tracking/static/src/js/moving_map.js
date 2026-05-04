@@ -48,7 +48,10 @@
 
     var latlngs = valid.map(function (p) { return [p.lat, p.lng]; });
 
-    
+    /* ══════════════════════════════════════════════
+       HELPERS
+    ══════════════════════════════════════════════ */
+
     function haversineKm(a, b) {
         var R = 6371;
         var dLat = (b[0] - a[0]) * Math.PI / 180;
@@ -85,11 +88,36 @@
     }
 
     function addEndMarker(p) {
+        var heading = (p.heading !== null && p.heading !== undefined && !isNaN(p.heading))
+            ? p.heading : 0;
+
+        var html = [
+            '<div style="position:relative;width:44px;height:44px;">',
+            '<div style="',
+            'position:absolute;top:0;left:50%;transform:translateX(-50%) rotate(' + heading + 'deg);',
+            'width:0;height:0;',
+            'border-left:7px solid transparent;',
+            'border-right:7px solid transparent;',
+            'border-bottom:16px solid #dc2626;',
+            '"></div>',
+            '<div style="',
+            'position:absolute;bottom:0;left:50%;transform:translateX(-50%);',
+            'width:32px;height:32px;',
+            'background:#dc2626;',
+            'border-radius:50%;',
+            'border:3px solid #fff;',
+            'box-shadow:0 2px 10px rgba(0,0,0,.35);',
+            'display:flex;align-items:center;justify-content:center;',
+            'font-size:17px;line-height:1;',
+            '">&#x1F6B6;</div>',
+            '</div>',
+        ].join('');
+
         return L.marker([p.lat, p.lng], {
             icon: L.divIcon({
-                html: '<div style="width:22px;height:22px;background:#dc2626;border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:3px solid #fff;box-shadow:0 2px 10px rgba(0,0,0,.3)"></div>',
-                iconSize:   [22, 22],
-                iconAnchor: [11, 22],
+                html:       html,
+                iconSize:   [44, 44],
+                iconAnchor: [22, 44],
                 className:  '',
             }),
         })
@@ -97,7 +125,8 @@
         .bindPopup(
             '<b>Current / last position</b><br>' + (p.time || '') +
             (p.location_name ? '<br>' + p.location_name : '') +
-            '<br>Accuracy: ' + (p.accuracy ? p.accuracy.toFixed(1) + ' m' : '—')
+            '<br>Accuracy: ' + (p.accuracy ? p.accuracy.toFixed(1) + ' m' : '—') +
+            (heading ? '<br>Heading: ' + Math.round(heading) + '\u00b0' : '')
         )
         .openPopup();
     }
@@ -161,6 +190,10 @@
         });
     }
 
+    /* ══════════════════════════════════════════════
+       MAP BOUNDS
+    ══════════════════════════════════════════════ */
+
     function fitAll(bounds) {
         var allLatLngs = latlngs.slice();
         if (plans) {
@@ -178,7 +211,10 @@
         setTimeout(function () { map.invalidateSize(); }, 300);
     }
 
-   
+    /* ══════════════════════════════════════════════
+       ROUTE INFO CARD  (GPS distance only)
+    ══════════════════════════════════════════════ */
+
     function showRouteInfo(distKm) {
         var box = document.getElementById('routeInfoBox');
         var dp  = document.getElementById('routeDistancePill');
@@ -191,13 +227,19 @@
         if (dp) { dp.style.display = 'flex'; dv.textContent = distKm + ' km'; }
     }
 
- 
+    /* ══════════════════════════════════════════════
+       DRAW EXACT GPS PATH  (no road snapping)
+    ══════════════════════════════════════════════ */
+
     function drawExactGpsPath() {
+        /* white outline for legibility on the tile layer */
         L.polyline(latlngs, {
             color:   '#ffffff',
             weight:  9,
             opacity: 0.5,
         }).addTo(map);
+
+        /* coloured GPS track */
         var line = L.polyline(latlngs, {
             color:   '#1a73e8',
             weight:  5,
@@ -207,7 +249,10 @@
         return line;
     }
 
-   
+    /* ══════════════════════════════════════════════
+       FINISH RENDER
+    ══════════════════════════════════════════════ */
+
     function finishRender(bounds) {
         addIntermediateMarkers(valid);
         addStartMarker(valid[0]);
@@ -215,6 +260,10 @@
         addPlanMarkers(plans);
         fitAll(bounds || null);
     }
+
+    /* ══════════════════════════════════════════════
+       MAIN
+    ══════════════════════════════════════════════ */
 
     var loadingEl = document.getElementById('routeLoading');
     if (loadingEl) loadingEl.style.display = 'none'; // no async loading needed
@@ -226,6 +275,8 @@
         setTimeout(function () { map.invalidateSize(); }, 300);
         return;
     }
+
+    /* Draw exact GPS polyline for ALL point counts (≥ 2) */
     var gpxLine = drawExactGpsPath();
     var distKm  = totalDistanceKm(latlngs);
     showRouteInfo(distKm);

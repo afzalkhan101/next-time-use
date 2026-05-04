@@ -24,8 +24,7 @@
               action="action_salesperson_location_history"
               sequence="3"
               groups="salesperson_live_tracking.group_salesperson_tracking_user"/>
-
-    
+              
     <menuitem id="menu_salesperson_tracking_dashboard"
           name="Team Dashboard"
           parent="menu_salesperson_tracking_root"

@@ -27,11 +27,11 @@
 
     
     <menuitem id="menu_salesperson_tracking_dashboard"
-              name="Team Dashboard"
-              parent="menu_salesperson_tracking_root"
-              action="action_salesperson_tracker_dashboard"
-              sequence="10"
-              groups="salesperson_live_tracking.group_salesperson_tracking_manager"/>
+          name="Team Dashboard"
+          parent="menu_salesperson_tracking_root"
+          action="action_salesperson_tracker_dashboard"
+          sequence="10"
+          groups="salesperson_live_tracking.group_salesperson_tracking_user,salesperson_live_tracking.group_salesperson_tracking_manager"/>
 
     <menuitem id="menu_salesperson_dashboard"
               name="Live Dashboard"

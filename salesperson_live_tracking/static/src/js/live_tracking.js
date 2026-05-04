@@ -128,7 +128,7 @@
     };
 
     const GPS_OPTS = { enableHighAccuracy: true, maximumAge: 0, timeout: 15000 };
-    const INTERVAL_MS = 3 * 60 * 1000;
+    const INTERVAL_MS = 30 * 1000;
 
     const fetchAndSend = () => {
         navigator.geolocation.getCurrentPosition(async (position) => {

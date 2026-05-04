@@ -48,20 +48,24 @@
 
     var latlngs = valid.map(function (p) { return [p.lat, p.lng]; });
 
-    /* ══════════════════════════════════════════════
-       HELPERS
-    ══════════════════════════════════════════════ */
+    
+    function haversineKm(a, b) {
+        var R = 6371;
+        var dLat = (b[0] - a[0]) * Math.PI / 180;
+        var dLng = (b[1] - a[1]) * Math.PI / 180;
+        var sin1 = Math.sin(dLat / 2);
+        var sin2 = Math.sin(dLng / 2);
+        var x = sin1 * sin1 +
+                Math.cos(a[0] * Math.PI / 180) *
+                Math.cos(b[0] * Math.PI / 180) *
+                sin2 * sin2;
+        return R * 2 * Math.atan2(Math.sqrt(x), Math.sqrt(1 - x));
+    }
 
-    function downsample(arr, maxPts) {
-        if (arr.length <= maxPts) return arr;
-        var step = arr.length / maxPts;
-        var out  = [];
-        for (var i = 0; i < arr.length; i += step) {
-            out.push(arr[Math.floor(i)]);
-        }
-        var last = arr[arr.length - 1];
-        if (out[out.length - 1] !== last) out.push(last);
-        return out;
+    function totalDistanceKm(pts) {
+        var d = 0;
+        for (var i = 1; i < pts.length; i++) d += haversineKm(pts[i - 1], pts[i]);
+        return d.toFixed(1);
     }
 
     function addStartMarker(p) {
@@ -157,19 +161,15 @@
         });
     }
 
-    /* ══════════════════════════════════════════════
-       MAP BOUNDS
-    ══════════════════════════════════════════════ */
-
-    function fitAll(routeBounds) {
+    function fitAll(bounds) {
         var allLatLngs = latlngs.slice();
         if (plans) {
             plans.forEach(function (pl) {
                 if (typeof pl.lat === 'number') allLatLngs.push([pl.lat, pl.lng]);
             });
         }
-        if (routeBounds) {
-            map.fitBounds(routeBounds, { padding: [50, 50] });
+        if (bounds) {
+            map.fitBounds(bounds, { padding: [50, 50] });
         } else if (allLatLngs.length > 1) {
             map.fitBounds(L.latLngBounds(allLatLngs), { padding: [50, 50] });
         } else {
@@ -178,40 +178,36 @@
         setTimeout(function () { map.invalidateSize(); }, 300);
     }
 
-    /* ══════════════════════════════════════════════
-       ROUTE INFO CARD
-    ══════════════════════════════════════════════ */
-
-    function showRouteInfo(distKm, durMin) {
+   
+    function showRouteInfo(distKm) {
         var box = document.getElementById('routeInfoBox');
         var dp  = document.getElementById('routeDistancePill');
-        var tp  = document.getElementById('routeDurationPill');
         var dv  = document.getElementById('routeDistVal');
-        var tv  = document.getElementById('routeDurVal');
 
-        document.getElementById('ribDur').textContent  = durMin + ' min';
-        document.getElementById('ribDist').textContent = distKm + ' km';
+        document.getElementById('ribDur').style.display  = 'none'; // no ETA for GPS path
+        document.getElementById('ribDist').textContent   = distKm + ' km';
         if (box) box.style.display = 'block';
 
         if (dp) { dp.style.display = 'flex'; dv.textContent = distKm + ' km'; }
-        if (tp) { tp.style.display = 'flex'; tv.textContent = durMin + ' min'; }
     }
 
-    /* ══════════════════════════════════════════════
-       GPS FALLBACK POLYLINE
-       Used when point count < 3 OR OSRM unavailable
-    ══════════════════════════════════════════════ */
-
-    function drawGpsFallback() {
+ 
+    function drawExactGpsPath() {
         L.polyline(latlngs, {
-            color:     '#6366f1',
-            weight:    3,
-            opacity:   0.85,
-            dashArray: '7 5',
+            color:   '#ffffff',
+            weight:  9,
+            opacity: 0.5,
         }).addTo(map);
+        var line = L.polyline(latlngs, {
+            color:   '#1a73e8',
+            weight:  5,
+            opacity: 0.9,
+        }).addTo(map);
+
+        return line;
     }
 
-
+   
     function finishRender(bounds) {
         addIntermediateMarkers(valid);
         addStartMarker(valid[0]);
@@ -221,74 +217,18 @@
     }
 
     var loadingEl = document.getElementById('routeLoading');
+    if (loadingEl) loadingEl.style.display = 'none'; // no async loading needed
 
-    if (valid.length < 3) {
-        if (loadingEl) loadingEl.style.display = 'none';
-
-        if (valid.length === 1) {
-
-            addEndMarker(valid[0]);
-            addPlanMarkers(plans);
-            map.setView([valid[0].lat, valid[0].lng], 16);
-            setTimeout(function () { map.invalidateSize(); }, 300);
-        } else {
-            drawGpsFallback();
-            finishRender(null);
-        }
+    if (valid.length === 1) {
+        addEndMarker(valid[0]);
+        addPlanMarkers(plans);
+        map.setView([valid[0].lat, valid[0].lng], 16);
+        setTimeout(function () { map.invalidateSize(); }, 300);
         return;
     }
+    var gpxLine = drawExactGpsPath();
+    var distKm  = totalDistanceKm(latlngs);
+    showRouteInfo(distKm);
+    finishRender(gpxLine.getBounds());
 
-    function fetchRoadRoute(callback) {
-        var sampled  = downsample(valid, 80);
-        var coordStr = sampled.map(function (p) { return p.lng + ',' + p.lat; }).join(';');
-        var url      = 'https://router.project-osrm.org/route/v1/driving/' + coordStr
-                       + '?overview=full&geometries=geojson&steps=false';
-
-        fetch(url)
-            .then(function (r) { return r.json(); })
-            .then(function (data) {
-                if (data.routes && data.routes.length > 0) {
-                    callback(null, data.routes[0]);
-                } else {
-                    callback(new Error('No route returned'), null);
-                }
-            })
-            .catch(function (e) { callback(e, null); });
-    }
-
-    fetchRoadRoute(function (err, route) {
-        if (loadingEl) loadingEl.style.display = 'none';
-
-        if (!err && route) {
-            var roadCoords = route.geometry.coordinates.map(function (c) {
-                return [c[1], c[0]];
-            });
-
-            L.polyline(roadCoords, {
-                color:   '#ffffff',
-                weight:  11,
-                opacity: 0.55,
-            }).addTo(map);
-
-            var roadLine = L.polyline(roadCoords, {
-                color:   '#1a73e8',
-                weight:  6,
-                opacity: 0.9,
-            }).addTo(map);
-
-            var distKm = (route.distance / 1000).toFixed(1);
-            var durMin = Math.round(route.duration / 60);
-            showRouteInfo(distKm, durMin);
-
-            finishRender(roadLine.getBounds());
-
-        } else {
-            console.warn('OSRM unavailable — using GPS fallback:', err);
-            drawGpsFallback();
-            finishRender(null);
-        }
-    });
-    
 })();
-
-

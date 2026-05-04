@@ -16,8 +16,7 @@
         attribution: '\u00a9 <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
         maxZoom: 19,
     }).addTo(map);
-
-    /* ── No data at all ── */
+    
     if (!points || points.length === 0) {
         document.getElementById('routeLoading').style.display = 'none';
 
@@ -48,10 +47,7 @@
 
     var latlngs = valid.map(function (p) { return [p.lat, p.lng]; });
 
-    /* ══════════════════════════════════════════════
-       HELPERS
-    ══════════════════════════════════════════════ */
-
+  
     function haversineKm(a, b) {
         var R = 6371;
         var dLat = (b[0] - a[0]) * Math.PI / 180;
@@ -190,10 +186,7 @@
         });
     }
 
-    /* ══════════════════════════════════════════════
-       MAP BOUNDS
-    ══════════════════════════════════════════════ */
-
+ 
     function fitAll(bounds) {
         var allLatLngs = latlngs.slice();
         if (plans) {
@@ -211,9 +204,7 @@
         setTimeout(function () { map.invalidateSize(); }, 300);
     }
 
-    /* ══════════════════════════════════════════════
-       ROUTE INFO CARD  (GPS distance only)
-    ══════════════════════════════════════════════ */
+ 
 
     function showRouteInfo(distKm) {
         var box = document.getElementById('routeInfoBox');
@@ -227,9 +218,7 @@
         if (dp) { dp.style.display = 'flex'; dv.textContent = distKm + ' km'; }
     }
 
-    /* ══════════════════════════════════════════════
-       DRAW EXACT GPS PATH  (no road snapping)
-    ══════════════════════════════════════════════ */
+    
 
     function drawExactGpsPath() {
         /* white outline for legibility on the tile layer */
@@ -239,7 +228,6 @@
             opacity: 0.5,
         }).addTo(map);
 
-        /* coloured GPS track */
         var line = L.polyline(latlngs, {
             color:   '#1a73e8',
             weight:  5,
@@ -249,9 +237,6 @@
         return line;
     }
 
-    /* ══════════════════════════════════════════════
-       FINISH RENDER
-    ══════════════════════════════════════════════ */
 
     function finishRender(bounds) {
         addIntermediateMarkers(valid);
@@ -261,10 +246,7 @@
         fitAll(bounds || null);
     }
 
-    /* ══════════════════════════════════════════════
-       MAIN
-    ══════════════════════════════════════════════ */
-
+  
     var loadingEl = document.getElementById('routeLoading');
     if (loadingEl) loadingEl.style.display = 'none'; // no async loading needed
 

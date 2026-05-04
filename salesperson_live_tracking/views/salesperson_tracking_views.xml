@@ -279,16 +279,16 @@
                         </button>
                     </div> -->
                     <div class="oe_title">
-                        <h1><field name="user_id" readonly="user_id != uid"/></h1>
+                        <h1><field name="user_id"/></h1>
                         <div class="text-muted">
                             <field name="sale_team_id"/>
                         </div>
                     </div>
 
 
-                    <group string="Basic Informations" >
+                    <group string="Basic Informations">
                         <group>
-                            <field name="user_id" readonly="user_id != uid"/>
+                            <field name="user_id"/>
                             <field name="visit_date"/>
                         </group>
                         <group>

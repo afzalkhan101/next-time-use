@@ -55,8 +55,6 @@
                     <t t-name="card">
                         <div t-attf-class="o_kanban_reMarc Democord #{!record.is_covered.raw_value and 'border-start border-primary border-3' or ''}"
                             style="border-radius:10px; padding:12px; font-size:12px; background:#fff;">
-
-                            <!-- Header Row: Avatar + Name + Badges -->
                             <div class="d-flex justify-content-between align-items-start mb-2">
 
                                 <div class="d-flex align-items-center gap-2">
@@ -80,7 +78,6 @@
 
                                 <div class="d-flex flex-column align-items-end gap-1">
 
-                                    <!-- State Badge -->
                                     <span t-attf-class="badge rounded-pill
                                         #{record.state.raw_value == 'draft'     ? 'text-bg-secondary' :
                                         record.state.raw_value == 'submitted' ? 'text-bg-warning' :
@@ -90,7 +87,6 @@
                                         <t t-esc="record.state.value"/>
                                     </span>
 
-                                    <!-- Priority Badge -->
                                     <span t-attf-class="badge rounded-pill
                                         #{record.priority.raw_value == '2' ? 'text-bg-danger' :
                                         record.priority.raw_value == '1' ? 'text-bg-warning' :
@@ -100,8 +96,6 @@
                                         <t t-elif="record.priority.raw_value == '1'">Med</t>
                                         <t t-else="">Normal</t>
                                     </span>
-
-                                    <!-- Not Covered Badge -->
                                     <span t-if="!record.is_covered.raw_value"
                                         class="badge text-bg-primary"
                                         style="font-size:9px;padding:3px 8px;">
